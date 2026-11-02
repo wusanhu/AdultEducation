@@ -52,6 +52,7 @@ java -jar target/credit-platform.jar
 ```
 
 后端地址：`http://127.0.0.1:8080`
+入口页：`http://127.0.0.1:8080/`（可选择管理后台或学员 H5）
 Swagger UI：`http://127.0.0.1:8080/swagger-ui.html`
 
 ### 3. 启动管理后台（开发模式）
