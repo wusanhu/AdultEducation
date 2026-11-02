@@ -1,0 +1,18 @@
+# build output
+backend/target/
+admin/dist/
+admin/node_modules/
+mobile/node_modules/
+mobile/dist/
+
+# runtime data
+backend/data/
+data/
+logs/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store
