@@ -73,7 +73,7 @@
         <div class="page-card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
             <div style="font-size:15px;font-weight:600">最近毕业学员</div>
-            <a-button type="link" size="small" @click="$router.push('/graduate/file')">查看档案</a-button>
+            <a-button v-if="auth.hasPerm('graduate:file') || auth.hasPerm('graduate:list')" type="link" size="small" @click="$router.push('/graduate/file')">查看档案</a-button>
           </div>
           <a-table :data-source="recentGraduates" :columns="graduateColumns" :pagination="false" size="small" row-key="certificateNo">
             <template #bodyCell="{ column, record }">

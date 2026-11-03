@@ -26,7 +26,7 @@
       <div class="page-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div style="font-size:15px;font-weight:600">最近补录记录</div>
-          <a-button type="link" size="small" @click="$router.push('/credit/list')">查看台账</a-button>
+          <a-button v-if="canViewLedger" type="link" size="small" @click="$router.push('/credit/list')">查看台账</a-button>
         </div>
         <a-empty v-if="recent.length === 0" description="暂无补录记录" />
         <div v-for="item in recent" :key="item.id" style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px dashed #f1f5f9">
@@ -58,7 +58,11 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { message, type FormInstance } from 'ant-design-vue'
 import { creditApi, projectApi } from '../../api'
 import type { Option } from '../../api'
+import { useAuthStore } from '../../store/auth'
 import type { CreditRow, ProjectRow } from '../../types'
+
+const auth = useAuthStore()
+const canViewLedger = computed(() => auth.hasPerm('credit:list'))
 
 const formRef = ref<FormInstance>()
 const saving = ref(false)
@@ -90,6 +94,10 @@ async function loadMeta() {
   projects.value = projectPage.records
 }
 async function loadRecent() {
+  if (!canViewLedger.value) {
+    recent.value = []
+    return
+  }
   try {
     const page = await creditApi.page({ pageNum: 1, pageSize: 8, sourceType: 2 })
     recent.value = page.records

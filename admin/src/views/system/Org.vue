@@ -4,7 +4,7 @@
       <a-input v-model:value="keyword" placeholder="搜索组织 / 部门名称" allow-clear style="width:260px" />
       <a-button type="primary" @click="load">查询</a-button>
       <div class="spacer" />
-      <a-button type="primary" @click="openCreate()"><PlusOutlined /> 新增组织</a-button>
+      <a-button v-if="auth.hasPerm('system:org:edit')" type="primary" @click="openCreate()"><PlusOutlined /> 新增组织</a-button>
     </div>
     <a-table :data-source="filteredTree" :columns="columns" :loading="loading" row-key="id" :pagination="false" size="middle"
              :default-expand-all-rows="true">
@@ -15,16 +15,17 @@
           <a-tag v-else style="margin-left:8px">部门</a-tag>
         </template>
         <template v-else-if="column.key === 'status'">
-          <a-switch :checked="record.status === 1" size="small" @change="(v: boolean) => toggleStatus(record, v)" />
+          <a-switch :checked="record.status === 1" size="small" :disabled="!auth.hasPerm('system:org:edit')" @change="(v: boolean) => toggleStatus(record, v)" />
         </template>
         <template v-else-if="column.key === 'action'">
-          <a-space size="small">
+          <a-space v-if="auth.hasPerm('system:org:edit')" size="small">
             <a @click="openCreate(record)">新增下级</a>
             <a @click="openEdit(record)">编辑</a>
             <a-popconfirm title="确认删除该组织/部门？存在下级或账号时会被拒绝" @confirm="remove(record)">
               <a style="color:#dc2626">删除</a>
             </a-popconfirm>
           </a-space>
+          <span v-else class="muted">-</span>
         </template>
       </template>
     </a-table>
@@ -66,8 +67,10 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { message, type FormInstance } from 'ant-design-vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
 import { systemApi } from '../../api'
+import { useAuthStore } from '../../store/auth'
 import type { OrgNode } from '../../types'
 
+const auth = useAuthStore()
 const loading = ref(false)
 const saving = ref(false)
 const open = ref(false)

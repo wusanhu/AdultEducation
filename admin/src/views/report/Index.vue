@@ -11,7 +11,7 @@
       </a-select>
       <a-button type="primary" @click="load">刷新</a-button>
       <div class="spacer" />
-      <a-button v-if="mode === 'warning' && auth.hasPerm('report:view')" :loading="notifying" @click="notifyAll">
+      <a-button v-if="mode === 'warning' && auth.hasPerm('report:warning')" :loading="notifying" @click="notifyAll">
         <BellOutlined /> 一键提醒
       </a-button>
       <a-button v-if="auth.hasPerm('report:export')" @click="exportData"><DownloadOutlined /> 导出 Excel</a-button>

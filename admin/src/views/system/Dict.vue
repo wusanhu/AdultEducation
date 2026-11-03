@@ -5,7 +5,7 @@
       <a-input v-model:value="keyword" placeholder="字典标签 / 值" allow-clear style="width:200px" />
       <a-button type="primary" @click="load">查询</a-button>
       <div class="spacer" />
-      <a-button type="primary" @click="openCreate"><PlusOutlined /> 新增字典项</a-button>
+      <a-button v-if="canEdit" type="primary" @click="openCreate"><PlusOutlined /> 新增字典项</a-button>
     </div>
 
     <a-table :data-source="filtered" :columns="columns" :loading="loading" row-key="id" size="middle" :pagination="{ pageSize: 30 }">
@@ -16,15 +16,16 @@
           <a-tag style="margin-left:8px">{{ record.dictValue }}</a-tag>
         </template>
         <template v-else-if="column.key === 'status'">
-          <a-switch :checked="record.status === 1" size="small" @change="(v: boolean) => toggle(record, v)" />
+          <a-switch :checked="record.status === 1" size="small" :disabled="!canEdit" @change="(v: boolean) => toggle(record, v)" />
         </template>
         <template v-else-if="column.key === 'action'">
-          <a-space size="small">
+          <a-space v-if="canEdit" size="small">
             <a @click="openEdit(record)">编辑</a>
             <a-popconfirm title="确认删除该字典项？" @confirm="remove(record)">
               <a style="color:#dc2626">删除</a>
             </a-popconfirm>
           </a-space>
+          <span v-else class="muted">-</span>
         </template>
       </template>
     </a-table>
@@ -51,6 +52,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { message, type FormInstance } from 'ant-design-vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
 import { systemApi } from '../../api'
+import { useAuthStore } from '../../store/auth'
 import type { DictRow } from '../../types'
 
 const loading = ref(false)
@@ -59,6 +61,8 @@ const open = ref(false)
 const dictType = ref<string>()
 const keyword = ref('')
 const rows = ref<DictRow[]>([])
+const auth = useAuthStore()
+const canEdit = computed(() => auth.hasPerm('system:dict:edit'))
 const formRef = ref<FormInstance>()
 const form = reactive<Record<string, any>>({ id: undefined, dictName: '', dictType: '', dictValue: '', dictLabel: '', sort: 0, status: 1 })
 const statusOn = computed({ get: () => form.status === 1, set: (v) => (form.status = v ? 1 : 0) })

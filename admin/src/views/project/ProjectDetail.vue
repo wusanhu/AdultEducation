@@ -48,9 +48,10 @@
                 <span v-else class="muted">未申请</span>
               </template>
               <template v-else-if="column.key === 'action'">
-                <a-popconfirm title="确定将该学员移出培训班？" @confirm="removeMember(record.userId)">
+                <a-popconfirm v-if="auth.hasPerm('project:member')" title="确定将该学员移出培训班？" @confirm="removeMember(record.userId)">
                   <a style="color:#dc2626">移除</a>
                 </a-popconfirm>
+                <span v-else class="muted">-</span>
               </template>
             </template>
           </a-table>
@@ -72,7 +73,10 @@
         <a-tab-pane key="courses" tab="项目课程">
           <a-table :data-source="project.courses || []" :columns="courseColumns" row-key="id" :pagination="false">
             <template #bodyCell="{ column, record }">
-              <template v-if="column.key === 'name'"><a @click="$router.push('/course/list')">{{ record.courseName }}</a></template>
+              <template v-if="column.key === 'name'">
+                <a v-if="auth.hasPerm('course:list')" @click="$router.push('/course/list')">{{ record.courseName }}</a>
+                <span v-else>{{ record.courseName }}</span>
+              </template>
               <template v-else-if="column.key === 'status'"><a-tag :color="record.status === 1 ? 'green' : 'default'">{{ record.statusName }}</a-tag></template>
             </template>
           </a-table>

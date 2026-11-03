@@ -4,8 +4,8 @@
       <a-input v-model:value="keyword" placeholder="搜索参数名称 / 键名" allow-clear style="width:260px" />
       <a-button type="primary" @click="load">刷新</a-button>
       <div class="spacer" />
-      <a-button @click="openCreate"><PlusOutlined /> 新增参数</a-button>
-      <a-button type="primary" :loading="saving" @click="save"><SaveOutlined /> 保存修改</a-button>
+      <a-button v-if="canEdit" @click="openCreate"><PlusOutlined /> 新增参数</a-button>
+      <a-button v-if="canEdit" type="primary" :loading="saving" @click="save"><SaveOutlined /> 保存修改</a-button>
     </div>
 
     <a-alert type="info" show-icon style="margin-bottom:16px"
@@ -29,16 +29,16 @@
                 <code>{{ item.configKey }}</code>
                 <span v-if="item.remark" style="margin-left:8px">{{ item.remark }}</span>
               </div>
-              <a-switch v-if="item.configType === 'boolean'" v-model:checked="item.boolValue" checked-children="开启" un-checked-children="关闭" />
-              <a-input-number v-else-if="item.configType === 'number'" v-model:value="item.numValue" style="width:100%" />
-              <a-textarea v-else-if="item.configType === 'textarea' || item.configType === 'json'" v-model:value="item.configValue" :rows="3" />
+              <a-switch v-if="item.configType === 'boolean'" v-model:checked="item.boolValue" checked-children="开启" un-checked-children="关闭" :disabled="!canEdit" />
+              <a-input-number v-else-if="item.configType === 'number'" v-model:value="item.numValue" style="width:100%" :disabled="!canEdit" />
+              <a-textarea v-else-if="item.configType === 'textarea' || item.configType === 'json'" v-model:value="item.configValue" :rows="3" :disabled="!canEdit" />
               <div v-else-if="item.configType === 'image'" style="display:flex;gap:10px;align-items:center">
-                <a-input v-model:value="item.configValue" placeholder="图片地址 / 上传" />
-                <a-upload :show-upload-list="false" accept="image/*" :before-upload="(file: File) => uploadImage(file, item)">
+                <a-input v-model:value="item.configValue" placeholder="图片地址 / 上传" :disabled="!canEdit" />
+                <a-upload v-if="canEdit" :show-upload-list="false" accept="image/*" :before-upload="(file: File) => uploadImage(file, item)">
                   <a-button size="small">上传</a-button>
                 </a-upload>
               </div>
-              <a-input v-else v-model:value="item.configValue" />
+              <a-input v-else v-model:value="item.configValue" :disabled="!canEdit" />
             </div>
           </a-col>
         </a-row>
@@ -73,6 +73,7 @@ import { message } from 'ant-design-vue'
 import { PlusOutlined, SaveOutlined } from '@ant-design/icons-vue'
 import { systemApi } from '../../api'
 import { upload } from '../../api/http'
+import { useAuthStore } from '../../store/auth'
 import type { ConfigRow } from '../../types'
 
 interface Editable extends ConfigRow {
@@ -85,6 +86,8 @@ const saving = ref(false)
 const open = ref(false)
 const keyword = ref('')
 const rows = ref<Editable[]>([])
+const auth = useAuthStore()
+const canEdit = computed(() => auth.hasPerm('system:config:edit'))
 const newItem = reactive<Record<string, any>>({ configName: '', configKey: '', configValue: '', configType: 'text', remark: '' })
 
 const groups = computed(() => {

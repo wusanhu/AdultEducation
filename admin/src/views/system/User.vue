@@ -17,8 +17,8 @@
       <a-button type="primary" @click="reload">查询</a-button>
       <a-button @click="reset">重置</a-button>
       <div class="spacer" />
-      <a-button @click="downloadTemplate"><DownloadOutlined /> 导入模板</a-button>
-      <a-upload :show-upload-list="false" :before-upload="importUsers" accept=".xlsx,.xls">
+      <a-button v-if="auth.hasPerm('system:user:import')" @click="downloadTemplate"><DownloadOutlined /> 导入模板</a-button>
+      <a-upload v-if="auth.hasPerm('system:user:import')" :show-upload-list="false" :before-upload="importUsers" accept=".xlsx,.xls">
         <a-button :loading="importing"><UploadOutlined /> 批量导入</a-button>
       </a-upload>
       <a-button v-if="auth.hasPerm('system:user:export')" @click="exportUsers">导出</a-button>

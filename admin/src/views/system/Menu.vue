@@ -1,9 +1,9 @@
 <template>
   <div class="page-card">
     <div class="toolbar">
-      <span style="color:#64748b">菜单与按钮权限：目录仅用于分组，菜单对应前端页面，按钮对应操作权限标识。</span>
+      <span style="color:#64748b">菜单与按钮权限：目录仅用于分组，菜单对应前端页面，按钮对应操作权限标识；开启隐藏后，菜单不显示在导航，按钮不显示在页面。</span>
       <div class="spacer" />
-      <a-button type="primary" @click="openCreate()"><PlusOutlined /> 新增菜单</a-button>
+      <a-button v-if="auth.hasPerm('system:menu:edit')" type="primary" @click="openCreate()"><PlusOutlined /> 新增菜单</a-button>
     </div>
     <a-table :data-source="tree" :columns="columns" :loading="loading" row-key="id" :pagination="false" size="middle" :default-expand-all-rows="true">
       <template #bodyCell="{ column, record }">
@@ -15,20 +15,21 @@
         </template>
         <template v-else-if="column.key === 'perms'"><code v-if="record.perms">{{ record.perms }}</code><span v-else>—</span></template>
         <template v-else-if="column.key === 'status'">
-          <a-switch :checked="record.status === 1" size="small" @change="(v: boolean) => toggleStatus(record, v)" />
+          <a-switch :checked="record.status === 1" size="small" :disabled="!auth.hasPerm('system:menu:edit')" @change="(v: boolean) => toggleStatus(record, v)" />
         </template>
         <template v-else-if="column.key === 'visible'">
           <a-tag v-if="record.hidden" color="default">隐藏</a-tag>
           <a-tag v-else color="success">显示</a-tag>
         </template>
         <template v-else-if="column.key === 'action'">
-          <a-space size="small">
+          <a-space v-if="auth.hasPerm('system:menu:edit')" size="small">
             <a @click="openCreate(record)">新增下级</a>
             <a @click="openEdit(record)">编辑</a>
             <a-popconfirm title="确认删除该菜单？" @confirm="remove(record)">
               <a style="color:#dc2626">删除</a>
             </a-popconfirm>
           </a-space>
+          <span v-else class="muted">-</span>
         </template>
       </template>
     </a-table>
@@ -68,7 +69,7 @@
           </a-col>
         </a-row>
         <a-row :gutter="16">
-          <a-col :span="8"><a-form-item label="隐藏菜单"><a-switch v-model:checked="hiddenOn" /></a-form-item></a-col>
+          <a-col :span="8"><a-form-item :label="form.menuType === 3 ? '隐藏按钮' : '隐藏菜单'"><a-switch v-model:checked="hiddenOn" /></a-form-item></a-col>
           <a-col :span="8"><a-form-item label="状态"><a-switch v-model:checked="statusOn" checked-children="启用" un-checked-children="停用" /></a-form-item></a-col>
         </a-row>
       </a-form>
@@ -81,8 +82,10 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { message, type FormInstance } from 'ant-design-vue'
 import { PlusOutlined } from '@ant-design/icons-vue'
 import { systemApi } from '../../api'
+import { useAuthStore } from '../../store/auth'
 import type { MenuNode } from '../../types'
 
+const auth = useAuthStore()
 const loading = ref(false)
 const saving = ref(false)
 const open = ref(false)

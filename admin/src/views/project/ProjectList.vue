@@ -44,10 +44,10 @@
               <a>更多 <DownOutlined /></a>
               <template #overlay>
                 <a-menu @click="(info: any) => onAction(String(info.key), record)">
-                  <a-menu-item v-if="record.status === 0" key="start">开始培训</a-menu-item>
-                  <a-menu-item v-if="record.status === 1" key="end">结束培训</a-menu-item>
-                  <a-menu-item v-if="record.status !== 3" key="archive">归档项目</a-menu-item>
-                  <a-menu-item v-if="record.status === 2" key="restart">重新开放</a-menu-item>
+                  <a-menu-item v-if="auth.hasPerm('project:edit') && record.status === 0" key="start">开始培训</a-menu-item>
+                  <a-menu-item v-if="auth.hasPerm('project:edit') && record.status === 1" key="end">结束培训</a-menu-item>
+                  <a-menu-item v-if="auth.hasPerm('project:edit') && record.status !== 3" key="archive">归档项目</a-menu-item>
+                  <a-menu-item v-if="auth.hasPerm('project:edit') && record.status === 2" key="restart">重新开放</a-menu-item>
                   <a-menu-divider />
                   <a-menu-item v-if="auth.hasPerm('project:delete')" key="delete" danger>删除</a-menu-item>
                 </a-menu>

@@ -48,14 +48,14 @@ public class ReportController {
     }
 
     @GetMapping("/warnings")
-    @PreAuthorize("hasAuthority('report:view')")
+    @PreAuthorize("hasAnyAuthority('report:warning','report:view')")
     public R<List<Map<String, Object>>> warnings(@RequestParam(required = false) Long projectId,
                                                 @RequestParam(required = false) String type) {
         return R.ok(reportService.warnings(SecurityUtils.current(), projectId, type));
     }
 
     @PostMapping("/warnings/notify")
-    @PreAuthorize("hasAuthority('report:view')")
+    @PreAuthorize("hasAnyAuthority('report:warning','report:view')")
     @OperLog(module = "统计报表", content = "发送学习预警")
     public R<Integer> notifyWarnings(@RequestParam(required = false) Long projectId,
                                      @RequestParam(required = false) String type,

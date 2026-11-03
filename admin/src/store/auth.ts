@@ -22,6 +22,18 @@ function readJson<T>(key: string, fallback: T): T {
   }
 }
 
+// 权限标识可能来自按钮节点，隐藏按钮（hidden=1）即使已授权也视为不可用
+function findMenuByPerm(nodes: MenuNode[], perm: string): MenuNode | undefined {
+  for (const node of nodes) {
+    if (node.menuType === 3 && node.perms === perm) return node
+    if (node.children?.length) {
+      const found = findMenuByPerm(node.children, perm)
+      if (found) return found
+    }
+  }
+  return undefined
+}
+
 export const useAuthStore = defineStore('auth', {
   state: (): AuthState => ({
     token: localStorage.getItem('admin_token') || '',
@@ -67,7 +79,9 @@ export const useAuthStore = defineStore('auth', {
     },
     hasPerm(perm?: string) {
       if (!perm) return true
-      return this.perms.includes(perm)
+      if (!this.perms.includes(perm)) return false
+      const node = findMenuByPerm(this.menus, perm)
+      return !node || node.hidden !== 1
     },
     async logout() {
       try {

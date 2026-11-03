@@ -41,7 +41,7 @@
         <template v-else-if="column.key === 'action'">
           <a-space size="small">
             <a @click="openReview(record)">复核处理</a>
-            <a v-if="record.latestVerify" @click="openDetail(record)">学习明细</a>
+            <a v-if="record.latestVerify && auth.hasPerm('study:monitor')" @click="openDetail(record)">学习明细</a>
           </a-space>
         </template>
       </template>
@@ -90,10 +90,12 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { message, type TablePaginationConfig } from 'ant-design-vue'
 import { courseApi, projectApi, studyApi, verifyApi } from '../../api'
 import { fileUrl } from '../../api/http'
+import { useAuthStore } from '../../store/auth'
 import type { AbnormalRow, CourseRow, ProjectRow, StudyRecordRow, VerifyLogRow } from '../../types'
 
 interface StudyDetail extends StudyRecordRow { verifyLogs: VerifyLogRow[] }
 
+const auth = useAuthStore()
 const loading = ref(false)
 const rows = ref<AbnormalRow[]>([])
 const projects = ref<ProjectRow[]>([])

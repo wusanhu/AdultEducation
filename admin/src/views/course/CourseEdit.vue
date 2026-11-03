@@ -171,10 +171,11 @@
                 <div class="section-sub">共 {{ form.questions.length }} 题 · 总分 {{ totalScore }} 分 · 合格线 {{ form.passScore }} 分</div>
               </div>
               <div class="qb-actions">
-                <a-tooltip :title="isNew ? '请先保存课程，再导入题库' : ''">
+                <a-tag v-if="!canQuestion" color="default">无题库管理权限</a-tag>
+                <a-tooltip v-if="canQuestion" :title="isNew ? '请先保存课程，再导入题库' : ''">
                   <a-button size="small" :disabled="isNew" @click="openImport"><ImportOutlined /> 导入题库</a-button>
                 </a-tooltip>
-                <a-button type="primary" size="small" @click="addQuestion"><PlusOutlined /> 添加题目</a-button>
+                <a-button v-if="canQuestion" type="primary" size="small" @click="addQuestion"><PlusOutlined /> 添加题目</a-button>
               </div>
             </div>
 
@@ -182,26 +183,26 @@
               <div v-if="!form.needExam" class="qb-off-tip">
                 <InfoCircleOutlined />
                 <span>当前课程未开启课后测验，题库会保存但不会在移动端展示。</span>
-                <a @click="form.needExam = true">立即开启</a>
+                <a v-if="canQuestion" @click="form.needExam = true">立即开启</a>
               </div>
               <a-empty v-if="form.questions.length === 0" description="尚未配置题目，可手动添加或导入 Excel 题库" />
               <div v-for="(q, qIndex) in form.questions" :key="qIndex" class="question-card">
                 <div class="q-head">
                   <a-tag color="blue">第 {{ qIndex + 1 }} 题</a-tag>
-                  <a-select v-model:value="q.questionType" size="small" style="width:104px" @change="onTypeChange(q)">
+                  <a-select v-model:value="q.questionType" size="small" style="width:104px" :disabled="!canQuestion" @change="onTypeChange(q)">
                     <a-select-option :value="1">单选题</a-select-option>
                     <a-select-option :value="2">多选题</a-select-option>
                     <a-select-option :value="3">判断题</a-select-option>
                   </a-select>
                   <span style="flex:1" />
                   <span class="q-label">分值</span>
-                  <a-input-number v-model:value="q.score" :min="1" size="small" style="width:76px" />
-                  <a-tooltip title="删除题目">
+                  <a-input-number v-model:value="q.score" :min="1" size="small" style="width:76px" :disabled="!canQuestion" />
+                  <a-tooltip v-if="canQuestion" title="删除题目">
                     <a-button type="text" danger size="small" @click="form.questions.splice(qIndex, 1)"><DeleteOutlined /></a-button>
                   </a-tooltip>
                 </div>
 
-                <a-textarea v-model:value="q.content" :rows="2" placeholder="请输入题目内容" style="margin-bottom:10px" />
+                <a-textarea v-model:value="q.content" :rows="2" placeholder="请输入题目内容" style="margin-bottom:10px" :disabled="!canQuestion" />
 
                 <template v-if="q.questionType === 3">
                   <div class="q-judge">
@@ -214,30 +215,30 @@
                   <div class="q-option-grid">
                     <div v-for="(opt, optIndex) in q.options" :key="opt.key" class="q-option">
                       <span class="opt-key">{{ opt.key }}</span>
-                      <a-input v-model:value="opt.text" size="small" :placeholder="`选项 ${opt.key}`" />
-                      <a-button v-if="q.options.length > 2" type="text" size="small" danger @click="removeOption(q, optIndex)">
+                      <a-input v-model:value="opt.text" size="small" :placeholder="`选项 ${opt.key}`" :disabled="!canQuestion" />
+                      <a-button v-if="canQuestion && q.options.length > 2" type="text" size="small" danger @click="removeOption(q, optIndex)">
                         <CloseOutlined />
                       </a-button>
                     </div>
                   </div>
-                  <a-button type="link" size="small" style="padding-left:0" :disabled="q.options.length >= 6" @click="addOption(q)">
+                  <a-button v-if="canQuestion" type="link" size="small" style="padding-left:0" :disabled="q.options.length >= 6" @click="addOption(q)">
                     <PlusOutlined /> 添加选项
                   </a-button>
                 </template>
 
                 <div class="q-answer">
                   <span class="q-label">正确答案</span>
-                  <a-select v-if="q.questionType !== 2" v-model:value="q.answerSingle" size="small" style="width:130px">
+                  <a-select v-if="q.questionType !== 2" v-model:value="q.answerSingle" size="small" style="width:130px" :disabled="!canQuestion">
                     <a-select-option v-for="opt in q.options" :key="opt.key" :value="opt.key">
                       {{ opt.key === 'true' ? '正确' : opt.key === 'false' ? '错误' : opt.key }}
                     </a-select-option>
                   </a-select>
-                  <a-checkbox-group v-else v-model:value="q.answerMulti" :options="q.options.map((o) => ({ label: o.key, value: o.key }))" />
+                  <a-checkbox-group v-else v-model:value="q.answerMulti" :options="q.options.map((o) => ({ label: o.key, value: o.key }))" :disabled="!canQuestion" />
                   <span v-if="q.questionType === 2" class="q-hint">多选题请至少选择两个答案</span>
                 </div>
               </div>
 
-              <a-button v-if="form.questions.length" block class="qb-add-bottom" @click="addQuestion"><PlusOutlined /> 添加题目</a-button>
+              <a-button v-if="canQuestion && form.questions.length" block class="qb-add-bottom" @click="addQuestion"><PlusOutlined /> 添加题目</a-button>
             </div>
           </div>
         </a-col>
@@ -327,6 +328,7 @@ import {
 } from '@ant-design/icons-vue'
 import { courseApi, projectApi } from '../../api'
 import { upload } from '../../api/http'
+import { useAuthStore } from '../../store/auth'
 import type { Attachment, CourseDetail, ProjectRow, Question, VerifyGear } from '../../types'
 
 interface OptionItem { key: string; text: string }
@@ -361,10 +363,12 @@ interface CourseForm {
 }
 
 const OPTION_KEYS = ['A', 'B', 'C', 'D', 'E', 'F']
+const auth = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 const isNew = route.params.id === 'new'
 const courseId = isNew ? 0 : Number(route.params.id)
+const canQuestion = computed(() => auth.hasPerm('course:question'))
 const formRef = ref<FormInstance>()
 const saving = ref(false)
 const videoUploading = ref(false)

@@ -52,8 +52,9 @@ public class PermissionService {
     }
 
     public List<MenuNode> menuTree(Long roleId, boolean superAdmin) {
+        // 按钮（menuType=3）也随菜单下发，前端据此同时校验权限标识与隐藏状态
         List<SysMenu> menus = grantedMenus(roleId, superAdmin).stream()
-                .filter(m -> m.getMenuType() != null && m.getMenuType() != 3)
+                .filter(m -> m.getMenuType() != null)
                 .sorted(Comparator.comparing(SysMenu::getSort, Comparator.nullsLast(Integer::compareTo)))
                 .toList();
         Map<Long, MenuNode> nodes = menus.stream().collect(Collectors.toMap(SysMenu::getId, this::toNode, (a, b) -> a, java.util.LinkedHashMap::new));

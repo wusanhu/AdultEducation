@@ -47,9 +47,9 @@
           <div v-if="record.failReason" style="font-size:11px;color:#dc2626;margin-top:3px;max-width:140px">{{ record.failReason }}</div>
         </template>
         <template v-else-if="column.key === 'action'">
-          <a v-if="record.status !== 0 && record.status !== 4" @click="openReview(record)">复核</a>
+          <a v-if="auth.hasPerm('verify:abnormal') && record.status !== 0 && record.status !== 4" @click="openReview(record)">复核</a>
           <span v-else-if="record.status === 4" class="muted">已复核</span>
-          <span v-else class="muted">待核验</span>
+          <span v-else class="muted">{{ record.status === 0 ? '待核验' : '-' }}</span>
         </template>
       </template>
     </a-table>
@@ -82,8 +82,10 @@ import { message, type TablePaginationConfig } from 'ant-design-vue'
 import type { Dayjs } from 'dayjs'
 import { courseApi, projectApi, verifyApi } from '../../api'
 import { fileUrl } from '../../api/http'
+import { useAuthStore } from '../../store/auth'
 import type { CourseRow, ProjectRow, VerifyLogRow } from '../../types'
 
+const auth = useAuthStore()
 const route = useRoute()
 const loading = ref(false)
 const rows = ref<VerifyLogRow[]>([])

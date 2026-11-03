@@ -85,7 +85,7 @@ public class CourseController {
     }
 
     @PostMapping("/{id}/questions/import")
-    @PreAuthorize("hasAuthority('course:add') or hasAuthority('course:edit')")
+    @PreAuthorize("hasAuthority('course:question')")
     @OperLog(module = "课程管理", content = "导入课后题库")
     public R<Map<String, Object>> importQuestions(@PathVariable Long id,
                                                   @RequestParam("file") MultipartFile file) {

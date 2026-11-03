@@ -15,16 +15,17 @@
           <a-tag>{{ scopeLabel(record.dataScope) }}</a-tag>
         </template>
         <template v-else-if="column.key === 'status'">
-          <a-switch :checked="record.status === 1" size="small" :disabled="!!record.builtIn"
+          <a-switch :checked="record.status === 1" size="small" :disabled="!!record.builtIn || !auth.hasPerm('system:role:edit')"
                     @change="(v: boolean) => toggleStatus(record, v)" />
         </template>
         <template v-else-if="column.key === 'action'">
-          <a-space size="small">
+          <a-space v-if="auth.hasPerm('system:role:edit')" size="small">
             <a @click="openEdit(record)">配置权限</a>
             <a-popconfirm v-if="!record.builtIn" title="确认删除该角色？" @confirm="remove(record)">
               <a style="color:#dc2626">删除</a>
             </a-popconfirm>
           </a-space>
+          <span v-else class="muted">-</span>
         </template>
       </template>
     </a-table>

@@ -21,7 +21,8 @@
           <div style="display:flex;gap:12px;align-items:center">
             <img :src="record.cover || defaultCover" class="table-cover" alt="封面" />
             <div style="min-width:0">
-              <a @click="$router.push(`/course/edit/${record.id}`)" style="font-weight:600">{{ record.courseName }}</a>
+              <a v-if="auth.hasPerm('course:edit')" @click="$router.push(`/course/edit/${record.id}`)" style="font-weight:600">{{ record.courseName }}</a>
+              <span v-else style="font-weight:600">{{ record.courseName }}</span>
               <div style="font-size:12px;color:#94a3b8;margin-top:3px">
                 {{ record.isRequired === 1 ? '必修课' : '选修课' }} · {{ record.studyHour }} 学时
                 <span v-if="record.needExam === 1"> · 需测验</span>
@@ -55,14 +56,14 @@
           <a-space size="small">
             <a v-if="auth.hasPerm('course:edit')" @click="$router.push(`/course/edit/${record.id}`)">编辑</a>
             <a v-if="auth.hasPerm('course:publish')" @click="toggleStatus(record)">{{ record.status === 1 ? '下架' : '上架' }}</a>
-            <a-dropdown v-if="auth.hasPerm('course:delete')">
+            <a-dropdown v-if="auth.hasPerm('study:monitor') || auth.hasPerm('verify:list') || auth.hasPerm('course:delete')">
               <a>更多 <DownOutlined /></a>
               <template #overlay>
                 <a-menu @click="(info: any) => moreAction(String(info.key), record)">
-                  <a-menu-item key="monitor"><MonitorOutlined /> 学习监控</a-menu-item>
-                  <a-menu-item key="verify"><CameraOutlined /> 核验记录</a-menu-item>
-                  <a-menu-divider />
-                  <a-menu-item key="delete" danger>删除课程</a-menu-item>
+                  <a-menu-item v-if="auth.hasPerm('study:monitor')" key="monitor"><MonitorOutlined /> 学习监控</a-menu-item>
+                  <a-menu-item v-if="auth.hasPerm('verify:list')" key="verify"><CameraOutlined /> 核验记录</a-menu-item>
+                  <a-menu-divider v-if="auth.hasPerm('course:delete')" />
+                  <a-menu-item v-if="auth.hasPerm('course:delete')" key="delete" danger>删除课程</a-menu-item>
                 </a-menu>
               </template>
             </a-dropdown>
