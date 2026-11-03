@@ -52,7 +52,7 @@ const columns = [
   { title: '学员', key: 'student', width: 170 },
   { title: '培训班', key: 'project', width: 230 },
   { title: '证书编号', key: 'cert', width: 230 },
-  { title: '毕业学分', key: 'credit', width: 110 },
+  { title: '毕业学分', key: 'credit', width: 110, align: 'center' as const },
   { title: '毕业时间', dataIndex: 'graduateTime', key: 'time', width: 170 },
   { title: '操作', key: 'action', width: 120, align: 'right' as const }
 ]

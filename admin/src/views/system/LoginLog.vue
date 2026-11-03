@@ -18,7 +18,7 @@
           <div style="font-size:12px;color:#94a3b8">{{ record.device }}</div>
         </template>
         <template v-else-if="column.key === 'status'">
-          <a-tag :color="record.status === 1 ? 'success' : 'error'">{{ record.status === 1 ? '成功' : '失败' }}</a-tag>
+          <a-tag :color="record.status === 1 ? 'green' : 'red'">{{ record.status === 1 ? '成功' : '失败' }}</a-tag>
           <span style="margin-left:6px;font-size:12px;color:#64748b">{{ record.msg }}</span>
         </template>
       </template>

@@ -97,9 +97,9 @@ const projectOptions = computed(() => projects.value.map((p) => ({ value: p.id, 
 const columns = [
   { title: '学员', key: 'student', width: 160 },
   { title: '培训班 / 课程', key: 'project', width: 220 },
-  { title: '学分', key: 'credit', width: 90 },
-  { title: '来源', key: 'source', width: 110 },
-  { title: '状态', key: 'status', width: 130 },
+  { title: '学分', key: 'credit', width: 90, align: 'center' as const },
+  { title: '来源', key: 'source', width: 110, align: 'center' as const },
+  { title: '状态', key: 'status', width: 130, align: 'center' as const },
   { title: '审批人 / 时间', key: 'audit', width: 170 },
   { title: '备注', key: 'remark', width: 190 },
   { title: '操作', key: 'action', width: 80, fixed: 'right' as const, align: 'right' as const }

@@ -100,9 +100,9 @@ const rules = {
 const columns = [
   { title: '角色', key: 'role', width: 220 },
   { title: '说明', dataIndex: 'roleDesc', key: 'roleDesc' },
-  { title: '数据范围', key: 'scope', width: 140 },
-  { title: '账号数', dataIndex: 'userCount', key: 'userCount', width: 100 },
-  { title: '状态', key: 'status', width: 100 },
+  { title: '数据范围', key: 'scope', width: 140, align: 'center' as const },
+  { title: '账号数', dataIndex: 'userCount', key: 'userCount', width: 100, align: 'center' as const },
+  { title: '状态', key: 'status', width: 100, align: 'center' as const },
   { title: '操作', key: 'action', width: 170, align: 'right' as const }
 ]
 

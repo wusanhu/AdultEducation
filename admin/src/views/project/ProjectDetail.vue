@@ -135,7 +135,7 @@ const memberColumns = [
   { title: '学员', key: 'student', width: 160 },
   { title: '所属单位', dataIndex: 'orgName', key: 'org', width: 190 },
   { title: '学习进度', key: 'progress', width: 280 },
-  { title: '毕业状态', key: 'graduate', width: 150 },
+  { title: '毕业状态', key: 'graduate', width: 150, align: 'center' as const },
   { title: '加入时间', dataIndex: 'joinTime', key: 'join', width: 160 },
   { title: '操作', key: 'action', width: 80, align: 'right' as const }
 ]
@@ -147,8 +147,8 @@ const teacherColumns = [
 ]
 const courseColumns = [
   { title: '课程名称', key: 'name' },
-  { title: '学分', dataIndex: 'credit', key: 'credit', width: 100 },
-  { title: '状态', key: 'status', width: 110 }
+  { title: '学分', dataIndex: 'credit', key: 'credit', width: 100, align: 'center' as const },
+  { title: '状态', key: 'status', width: 110, align: 'center' as const }
 ]
 
 const studentSelectOptions = computed(() => studentOptions.value.map((s) => ({

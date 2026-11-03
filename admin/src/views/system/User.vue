@@ -147,7 +147,7 @@ const columns = [
   { title: '手机号', dataIndex: 'phone', key: 'phone', width: 130 },
   { title: '组织 / 部门', key: 'org', width: 190 },
   { title: '角色', key: 'role', width: 140 },
-  { title: '状态', key: 'status', width: 140 },
+  { title: '状态', key: 'status', width: 140, align: 'center' as const },
   { title: '最近登录', key: 'login', width: 170 },
   { title: '操作', key: 'action', width: 230, fixed: 'right', align: 'right' as const }
 ]

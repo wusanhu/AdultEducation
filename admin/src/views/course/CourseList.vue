@@ -100,11 +100,11 @@ const gearOptions = computed(() => gears.value.map((g) => ({ value: g.gearCode, 
 const columns = [
   { title: '课程', key: 'course', width: 320 },
   { title: '培训班 / 授课', key: 'project', width: 210 },
-  { title: '学分', key: 'credit', width: 90 },
-  { title: '核验档位', key: 'gear', width: 120 },
+  { title: '学分', key: 'credit', width: 90, align: 'center' as const },
+  { title: '核验档位', key: 'gear', width: 120, align: 'center' as const },
   { title: '学习情况', key: 'study', width: 150 },
-  { title: '题库', key: 'question', width: 80 },
-  { title: '状态', key: 'status', width: 90 },
+  { title: '题库', key: 'question', width: 80, align: 'center' as const },
+  { title: '状态', key: 'status', width: 90, align: 'center' as const },
   { title: '操作', key: 'action', width: 180, fixed: 'right' as const, align: 'right' as const }
 ]
 

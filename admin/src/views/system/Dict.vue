@@ -81,10 +81,10 @@ const filtered = computed(() => {
 const columns = [
   { title: '字典名称', dataIndex: 'dictName', key: 'dictName', width: 160 },
   { title: '字典类型', key: 'type', width: 180 },
-  { title: '字典值', key: 'value', width: 120 },
+  { title: '字典值', key: 'value', width: 120, align: 'center' as const },
   { title: '字典标签', key: 'label', width: 200 },
-  { title: '排序', dataIndex: 'sort', key: 'sort', width: 80 },
-  { title: '状态', key: 'status', width: 100 },
+  { title: '排序', dataIndex: 'sort', key: 'sort', width: 80, align: 'center' as const },
+  { title: '状态', key: 'status', width: 100, align: 'center' as const },
   { title: '操作', key: 'action', width: 140, align: 'right' as const }
 ]
 

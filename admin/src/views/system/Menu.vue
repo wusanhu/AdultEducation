@@ -18,10 +18,10 @@
           <a-switch :checked="record.status === 1" size="small" :disabled="!auth.hasPerm('system:menu:edit')" @change="(v: boolean) => toggleStatus(record, v)" />
         </template>
         <template v-else-if="column.key === 'visible'">
-          <a-tag :color="record.hidden === 1 ? 'default' : 'success'">{{ record.hidden === 1 ? '隐藏' : '显示' }}</a-tag>
+          <a-tag :color="record.hidden === 1 ? 'default' : 'green'">{{ record.hidden === 1 ? '隐藏' : '显示' }}</a-tag>
         </template>
         <template v-else-if="column.key === 'mobile'">
-          <a-tag :color="record.mobileVisible === 1 ? 'success' : 'default'">{{ record.mobileVisible === 1 ? '显示' : '隐藏' }}</a-tag>
+          <a-tag :color="record.mobileVisible === 1 ? 'green' : 'default'">{{ record.mobileVisible === 1 ? '显示' : '隐藏' }}</a-tag>
         </template>
         <template v-else-if="column.key === 'action'">
           <a-space v-if="auth.hasPerm('system:menu:edit')" size="small">
@@ -105,10 +105,10 @@ const columns = [
   { title: '菜单名称', key: 'menuName', width: 280 },
   { title: '路由', dataIndex: 'path', key: 'path', width: 180 },
   { title: '权限标识', key: 'perms', width: 200 },
-  { title: '排序', dataIndex: 'sort', key: 'sort', width: 70 },
-  { title: '导航可见', key: 'visible', width: 90 },
-  { title: '移动端', key: 'mobile', width: 90 },
-  { title: '状态', key: 'status', width: 90 },
+  { title: '排序', dataIndex: 'sort', key: 'sort', width: 70, align: 'center' as const },
+  { title: '导航可见', key: 'visible', width: 90, align: 'center' as const },
+  { title: '移动端', key: 'mobile', width: 90, align: 'center' as const },
+  { title: '状态', key: 'status', width: 90, align: 'center' as const },
   { title: '操作', key: 'action', width: 190, align: 'right' as const }
 ]
 const parentTree = computed<MenuNode[]>(() => {

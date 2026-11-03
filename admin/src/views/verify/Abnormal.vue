@@ -117,15 +117,15 @@ const columns = [
   { title: '异常原因', key: 'abnormal', width: 300 },
   { title: '最近核验', key: 'latest', width: 170 },
   { title: '学习进度', key: 'progress', width: 180 },
-  { title: '锁定状态', key: 'locked', width: 120 },
+  { title: '锁定状态', key: 'locked', width: 120, align: 'center' as const },
   { title: '操作', key: 'action', width: 140, fixed: 'right' as const, align: 'right' as const }
 ]
 const verifyColumns = [
   { title: '时间', dataIndex: 'verifyTime', width: 165 },
-  { title: '方式', dataIndex: 'verifyTypeLabel', width: 110 },
-  { title: '结果', key: 'result', width: 90 },
-  { title: '相似度', dataIndex: 'similarity', width: 90 },
-  { title: '抓拍', key: 'image', width: 70 }
+  { title: '方式', dataIndex: 'verifyTypeLabel', width: 110, align: 'center' as const },
+  { title: '结果', key: 'result', width: 90, align: 'center' as const },
+  { title: '相似度', dataIndex: 'similarity', width: 90, align: 'center' as const },
+  { title: '抓拍', key: 'image', width: 70, align: 'center' as const }
 ]
 
 function formatDuration(seconds: number) {

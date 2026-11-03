@@ -107,8 +107,8 @@ const columns = [
   { title: '课程 / 培训班', key: 'course', width: 200 },
   { title: '核验时间', dataIndex: 'verifyTime', key: 'time', width: 170 },
   { title: '方式 / 触发点', key: 'type', width: 130 },
-  { title: '结果', key: 'result', width: 120 },
-  { title: '抓拍', key: 'image', width: 80 },
+  { title: '结果', key: 'result', width: 120, align: 'center' as const },
+  { title: '抓拍', key: 'image', width: 80, align: 'center' as const },
   { title: '处理状态', key: 'status', width: 160 },
   { title: '操作', key: 'action', width: 80, fixed: 'right' as const, align: 'right' as const }
 ]

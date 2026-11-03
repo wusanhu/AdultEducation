@@ -131,9 +131,9 @@ const stepItems = [{ title: '教员初审' }, { title: '领导复审' }, { title
 const columns = [
   { title: '学员', key: 'student', width: 150 },
   { title: '培训班', key: 'project', width: 190, ellipsis: true },
-  { title: '学分 / 学时', key: 'credit', width: 140 },
+  { title: '学分 / 学时', key: 'credit', width: 140, align: 'center' as const },
   { title: '审批进度', key: 'node', width: 290 },
-  { title: '状态', key: 'status', width: 180 },
+  { title: '状态', key: 'status', width: 180, align: 'center' as const },
   { title: '申请时间', key: 'time', width: 170 },
   { title: '操作', key: 'action', width: 100, fixed: 'right' as const, align: 'right' as const }
 ]

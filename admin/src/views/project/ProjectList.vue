@@ -158,9 +158,9 @@ const form = reactive<ProjectForm>(emptyForm())
 const columns = [
   { title: '培训班', key: 'project', width: 260 },
   { title: '培训周期', key: 'period', width: 190 },
-  { title: '毕业学分', key: 'credit', width: 110 },
+  { title: '毕业学分', key: 'credit', width: 110, align: 'center' as const },
   { title: '规模', key: 'scale', width: 180 },
-  { title: '状态', key: 'status', width: 100 },
+  { title: '状态', key: 'status', width: 100, align: 'center' as const },
   { title: '创建人', dataIndex: 'createUserName', key: 'creator', width: 100 },
   { title: '操作', key: 'action', width: 190, fixed: 'right' as const, align: 'right' as const }
 ]

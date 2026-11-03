@@ -80,51 +80,51 @@ const columns = computed(() => {
   if (mode.value === 'org') {
     return [
       { title: '单位名称', dataIndex: 'orgName', key: 'orgName', width: 220, fixed: 'left' },
-      { title: '学员数', dataIndex: 'studentCount', key: 'studentCount', width: 90 },
-      { title: '学习记录', dataIndex: 'studyCount', key: 'studyCount', width: 100 },
-      { title: '完成数', dataIndex: 'completedCount', key: 'completedCount', width: 90 },
-      { title: '学习学时', dataIndex: 'studyHours', key: 'studyHours', width: 110 },
-      { title: '学分合计', dataIndex: 'creditTotal', key: 'creditTotal', width: 110 },
-      { title: '人均学分', dataIndex: 'avgCredit', key: 'avgCredit', width: 110 },
-      { title: '毕业人数', dataIndex: 'graduateCount', key: 'graduateCount', width: 100 },
-      { title: '完成率', dataIndex: 'completionRate', key: 'rate', width: 110 }
+      { title: '学员数', dataIndex: 'studentCount', key: 'studentCount', width: 90, align: 'center' as const },
+      { title: '学习记录', dataIndex: 'studyCount', key: 'studyCount', width: 100, align: 'center' as const },
+      { title: '完成数', dataIndex: 'completedCount', key: 'completedCount', width: 90, align: 'center' as const },
+      { title: '学习学时', dataIndex: 'studyHours', key: 'studyHours', width: 110, align: 'center' as const },
+      { title: '学分合计', dataIndex: 'creditTotal', key: 'creditTotal', width: 110, align: 'center' as const },
+      { title: '人均学分', dataIndex: 'avgCredit', key: 'avgCredit', width: 110, align: 'center' as const },
+      { title: '毕业人数', dataIndex: 'graduateCount', key: 'graduateCount', width: 100, align: 'center' as const },
+      { title: '完成率', dataIndex: 'completionRate', key: 'rate', width: 110, align: 'center' as const }
     ]
   }
   if (mode.value === 'credit') {
     return [
       { title: '培训班', dataIndex: 'projectName', key: 'projectName', width: 240, fixed: 'left' },
-      { title: '状态', dataIndex: 'status', key: 'status', width: 100 },
-      { title: '人数', dataIndex: 'memberCount', key: 'memberCount', width: 80 },
-      { title: '所需学分', dataIndex: 'needCredit', key: 'needCredit', width: 110 },
-      { title: '学分合计', dataIndex: 'creditTotal', key: 'creditTotal', width: 110 },
-      { title: '人均学分', dataIndex: 'avgCredit', key: 'avgCredit', width: 110 },
-      { title: '已发放人数', dataIndex: 'issuedCount', key: 'issuedCount', width: 110 },
-      { title: '毕业人数', dataIndex: 'graduateCount', key: 'graduateCount', width: 100 },
-      { title: '自动录入', dataIndex: 'autoCreditTotal', key: 'autoCreditTotal', width: 110 },
-      { title: '手工补录', dataIndex: 'manualCreditTotal', key: 'manualCreditTotal', width: 110 }
+      { title: '状态', dataIndex: 'status', key: 'status', width: 100, align: 'center' as const },
+      { title: '人数', dataIndex: 'memberCount', key: 'memberCount', width: 80, align: 'center' as const },
+      { title: '所需学分', dataIndex: 'needCredit', key: 'needCredit', width: 110, align: 'center' as const },
+      { title: '学分合计', dataIndex: 'creditTotal', key: 'creditTotal', width: 110, align: 'center' as const },
+      { title: '人均学分', dataIndex: 'avgCredit', key: 'avgCredit', width: 110, align: 'center' as const },
+      { title: '已发放人数', dataIndex: 'issuedCount', key: 'issuedCount', width: 110, align: 'center' as const },
+      { title: '毕业人数', dataIndex: 'graduateCount', key: 'graduateCount', width: 100, align: 'center' as const },
+      { title: '自动录入', dataIndex: 'autoCreditTotal', key: 'autoCreditTotal', width: 110, align: 'center' as const },
+      { title: '手工补录', dataIndex: 'manualCreditTotal', key: 'manualCreditTotal', width: 110, align: 'center' as const }
     ]
   }
   if (mode.value === 'course') {
     return [
       { title: '课程名称', dataIndex: 'courseName', key: 'courseName', width: 260, fixed: 'left' },
-      { title: '测验', dataIndex: 'needExam', key: 'needExam', width: 100 },
-      { title: '学习人数', dataIndex: 'studyCount', key: 'studyCount', width: 100 },
-      { title: '完成人数', dataIndex: 'completedCount', key: 'completedCount', width: 100 },
-      { title: '完成率', dataIndex: 'completionRate', key: 'rate', width: 100 },
-      { title: '测验次数', dataIndex: 'examCount', key: 'examCount', width: 100 },
-      { title: '通过人数', dataIndex: 'examPassCount', key: 'examPassCount', width: 100 },
-      { title: '通过率', dataIndex: 'examPassRate', key: 'rate', width: 100 },
-      { title: '平均分', dataIndex: 'avgScore', key: 'avgScore', width: 100 },
-      { title: '平均进度', dataIndex: 'avgProgress', key: 'progress', width: 160 }
+      { title: '测验', dataIndex: 'needExam', key: 'needExam', width: 100, align: 'center' as const },
+      { title: '学习人数', dataIndex: 'studyCount', key: 'studyCount', width: 100, align: 'center' as const },
+      { title: '完成人数', dataIndex: 'completedCount', key: 'completedCount', width: 100, align: 'center' as const },
+      { title: '完成率', dataIndex: 'completionRate', key: 'rate', width: 100, align: 'center' as const },
+      { title: '测验次数', dataIndex: 'examCount', key: 'examCount', width: 100, align: 'center' as const },
+      { title: '通过人数', dataIndex: 'examPassCount', key: 'examPassCount', width: 100, align: 'center' as const },
+      { title: '通过率', dataIndex: 'examPassRate', key: 'rate', width: 100, align: 'center' as const },
+      { title: '平均分', dataIndex: 'avgScore', key: 'avgScore', width: 100, align: 'center' as const },
+      { title: '平均进度', dataIndex: 'avgProgress', key: 'progress', width: 160, align: 'center' as const }
     ]
   }
   return [
     { title: '预警类型', dataIndex: 'typeLabel', key: 'type', width: 120, fixed: 'left' },
     { title: '学员 / 联系电话', key: 'student', width: 180 },
     { title: '培训班', dataIndex: 'projectName', key: 'projectName', width: 220 },
-    { title: '所需学分', dataIndex: 'needCredit', key: 'needCredit', width: 100 },
-    { title: '当前学分', dataIndex: 'currentCredit', key: 'currentCredit', width: 100 },
-    { title: '差额', dataIndex: 'deficit', key: 'deficit', width: 90 },
+    { title: '所需学分', dataIndex: 'needCredit', key: 'needCredit', width: 100, align: 'center' as const },
+    { title: '当前学分', dataIndex: 'currentCredit', key: 'currentCredit', width: 100, align: 'center' as const },
+    { title: '差额', dataIndex: 'deficit', key: 'deficit', width: 90, align: 'center' as const },
     { title: '到期 / 未学习', dataIndex: 'lastLoginTime', key: 'lastLoginTime', width: 160 },
     { title: '预警说明', dataIndex: 'message', key: 'message', width: 280 }
   ]

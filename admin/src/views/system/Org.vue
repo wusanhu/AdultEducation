@@ -98,9 +98,9 @@ const columns = [
   { title: '名称', key: 'name', width: 360 },
   { title: '编码', dataIndex: 'orgCode', key: 'orgCode', width: 160 },
   { title: '负责人', dataIndex: 'leaderName', key: 'leaderName', width: 120 },
-  { title: '账号数', dataIndex: 'userCount', key: 'userCount', width: 100 },
-  { title: '排序', dataIndex: 'sort', key: 'sort', width: 80 },
-  { title: '状态', key: 'status', width: 90 },
+  { title: '账号数', dataIndex: 'userCount', key: 'userCount', width: 100, align: 'center' as const },
+  { title: '排序', dataIndex: 'sort', key: 'sort', width: 80, align: 'center' as const },
+  { title: '状态', key: 'status', width: 90, align: 'center' as const },
   { title: '操作', key: 'action', width: 190, align: 'right' as const }
 ]
 

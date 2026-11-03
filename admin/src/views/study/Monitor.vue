@@ -145,30 +145,30 @@ const columns = [
   { title: '课程 / 培训班', key: 'course', width: 220 },
   { title: '学习进度', key: 'progress', width: 190 },
   { title: '核验情况', key: 'verify', width: 160 },
-  { title: '状态', key: 'status', width: 150 },
+  { title: '状态', key: 'status', width: 150, align: 'center' as const },
   { title: '最近心跳', key: 'heartbeat', width: 150 },
   { title: '操作', key: 'action', width: 140, fixed: 'right' as const, align: 'right' as const }
 ]
 const heartbeatColumns = [
   { title: '上报时间', dataIndex: 'reportTime', width: 170 },
-  { title: '增量(秒)', dataIndex: 'deltaSeconds', width: 100 },
-  { title: '进度(%)', dataIndex: 'progress', width: 100 },
-  { title: '前后台', key: 'fg', width: 90 },
-  { title: '切屏', key: 'switch', width: 90 },
+  { title: '增量(秒)', dataIndex: 'deltaSeconds', width: 100, align: 'center' as const },
+  { title: '进度(%)', dataIndex: 'progress', width: 100, align: 'center' as const },
+  { title: '前后台', key: 'fg', width: 90, align: 'center' as const },
+  { title: '切屏', key: 'switch', width: 90, align: 'center' as const },
   { title: 'IP', dataIndex: 'ip' }
 ]
 const verifyColumns = [
   { title: '核验时间', dataIndex: 'verifyTime', width: 170 },
-  { title: '类型', dataIndex: 'verifyTypeLabel', width: 110 },
-  { title: '触发点', dataIndex: 'triggerPoint', width: 100 },
-  { title: '结果', key: 'result', width: 90 },
-  { title: '相似度', dataIndex: 'similarity', width: 90 },
-  { title: '抓拍', key: 'image', width: 70 }
+  { title: '类型', dataIndex: 'verifyTypeLabel', width: 110, align: 'center' as const },
+  { title: '触发点', dataIndex: 'triggerPoint', width: 100, align: 'center' as const },
+  { title: '结果', key: 'result', width: 90, align: 'center' as const },
+  { title: '相似度', dataIndex: 'similarity', width: 90, align: 'center' as const },
+  { title: '抓拍', key: 'image', width: 70, align: 'center' as const }
 ]
 const creditColumns = [
-  { title: '学分', key: 'value', width: 90 },
-  { title: '来源', dataIndex: 'sourceLabel', width: 110 },
-  { title: '状态', key: 'status', width: 100 },
+  { title: '学分', key: 'value', width: 90, align: 'center' as const },
+  { title: '来源', dataIndex: 'sourceLabel', width: 110, align: 'center' as const },
+  { title: '状态', key: 'status', width: 100, align: 'center' as const },
   { title: '时间', dataIndex: 'createTime' }
 ]
 

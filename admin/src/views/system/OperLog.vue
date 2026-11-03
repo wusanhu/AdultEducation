@@ -19,7 +19,7 @@
           <span style="color:#334155">{{ record.operContent }}</span>
         </template>
         <template v-else-if="column.key === 'result'">
-          <a-tag :color="record.result === 1 ? 'success' : 'error'">{{ record.result === 1 ? '成功' : '失败' }}</a-tag>
+          <a-tag :color="record.result === 1 ? 'green' : 'red'">{{ record.result === 1 ? '成功' : '失败' }}</a-tag>
         </template>
         <template v-else-if="column.key === 'device'">
           <span style="font-size:12px;color:#64748b">{{ record.ip }}</span>
@@ -47,9 +47,9 @@ const columns = [
   { title: '操作人', key: 'user', width: 150 },
   { title: '模块', key: 'module', width: 130 },
   { title: '操作内容', key: 'content', width: 300 },
-  { title: '结果', key: 'result', width: 90 },
+  { title: '结果', key: 'result', width: 90, align: 'center' as const },
   { title: 'IP / 终端', key: 'device', width: 200 },
-  { title: '耗时', dataIndex: 'duration', key: 'duration', width: 90 },
+  { title: '耗时', dataIndex: 'duration', key: 'duration', width: 90, align: 'center' as const },
   { title: '操作时间', dataIndex: 'operTime', key: 'operTime', width: 170 }
 ]
 async function load() {
