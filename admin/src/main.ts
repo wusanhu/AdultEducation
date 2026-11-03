@@ -8,7 +8,7 @@ import 'ant-design-vue/dist/reset.css'
 import App from './App.vue'
 import router from './router'
 import { applySkinVariables } from './theme'
-import './style.css'
+import './views/assets/styles/global.css'
 
 dayjs.locale('zh-cn')
 applySkinVariables()

@@ -1,18 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { auth as authApi } from '@/api'
-
-export interface UserInfo {
-  id: number
-  username: string
-  realName: string
-  phone?: string
-  avatar?: string
-  roleCode?: string
-  roleName?: string
-  perms?: string[]
-  orgName?: string
-}
+import type { LoginResult, UserInfo } from '@/types'
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('mobile_token') || '')
@@ -27,7 +16,7 @@ export const useUserStore = defineStore('user', () => {
   const isTeacher = computed(() => ['teacher', 'leader', 'admin', 'super_admin'].includes(user.value?.roleCode || ''))
   const isLeader = computed(() => ['leader', 'admin', 'super_admin'].includes(user.value?.roleCode || ''))
 
-  function setLogin(data: any) {
+  function setLogin(data: LoginResult) {
     token.value = data.token
     mustChangePwd.value = !!data.mustChangePwd
     localStorage.setItem('mobile_must_change', mustChangePwd.value ? '1' : '0')
