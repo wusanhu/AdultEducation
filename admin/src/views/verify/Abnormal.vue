@@ -26,7 +26,7 @@
         </template>
         <template v-else-if="column.key === 'latest'">
           <template v-if="record.latestVerify">
-            <a-tag :color="record.latestVerify.status === 3 ? 'orange' : 'red'">{{ record.latestVerify.status === 3 ? '核验超时' : record.latestVerify.verifyResultLabel || '核验失败' }}</a-tag>
+            <a-tag :color="verifyColor(record.latestVerify.status)">{{ verifyLabel(record.latestVerify.status) }}</a-tag>
             <div style="font-size:12px;color:#94a3b8;margin-top:3px">{{ record.latestVerify.verifyTime }}</div>
           </template>
           <span v-else class="muted" style="font-size:12px">防刷规则触发</span>
@@ -76,7 +76,7 @@
           <a-table :data-source="detail.verifyLogs" size="small" :pagination="{ pageSize: 6 }" row-key="id" :columns="verifyColumns">
             <template #bodyCell="{ column, record }">
               <template v-if="column.key === 'result'"><a-tag :color="record.verifyResult === 1 ? 'green' : record.verifyResult === 2 ? 'orange' : 'red'">{{ record.verifyResultLabel }}</a-tag></template>
-              <template v-else-if="column.key === 'image'"><a-image v-if="record.imgUrl" :src="record.imgUrl" :width="50" :height="36" style="object-fit:cover;border-radius:4px" /></template>
+              <template v-else-if="column.key === 'image'"><a-image v-if="record.imgUrl" :src="fileUrl(record.imgUrl)" :width="50" :height="36" style="object-fit:cover;border-radius:4px" /></template>
             </template>
           </a-table>
         </template>
@@ -89,6 +89,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { message, type TablePaginationConfig } from 'ant-design-vue'
 import { courseApi, projectApi, studyApi, verifyApi } from '../../api'
+import { fileUrl } from '../../api/http'
 import type { AbnormalRow, CourseRow, ProjectRow, StudyRecordRow, VerifyLogRow } from '../../types'
 
 interface StudyDetail extends StudyRecordRow { verifyLogs: VerifyLogRow[] }
@@ -131,6 +132,12 @@ function formatDuration(seconds: number) {
   const m = Math.floor((s % 3600) / 60)
   return h > 0 ? `${h} 小时 ${m} 分` : `${m} 分钟`
 }
+function verifyLabel(status?: number) {
+  return status === 0 ? '核验中' : status === 2 ? '核验未通过' : status === 3 ? '核验超时' : '待处理'
+}
+function verifyColor(status?: number) {
+  return status === 0 ? 'blue' : status === 3 ? 'orange' : 'red'
+}
 async function loadMeta() {
   const [projectPage, coursePage] = await Promise.all([projectApi.page({ pageNum: 1, pageSize: 200 }), courseApi.page({ pageNum: 1, pageSize: 200 })])
   projects.value = projectPage.records
@@ -160,7 +167,15 @@ async function submitReview() {
   reviewing.value = true
   try {
     if (current.value.latestVerify) {
-      await verifyApi.review(current.value.latestVerify.id, reviewForm.action, reviewForm.remark)
+      if (current.value.latestVerify.status === 0) {
+        if (reviewForm.action !== 'allow') {
+          message.warning('该核验尚未完成，暂只能解除学习限制')
+          return
+        }
+        await studyApi.unlock(current.value.id, true)
+      } else {
+        await verifyApi.review(current.value.latestVerify.id, reviewForm.action, reviewForm.remark)
+      }
     } else if (reviewForm.action === 'allow') {
       await studyApi.unlock(current.value.id, true)
     } else {

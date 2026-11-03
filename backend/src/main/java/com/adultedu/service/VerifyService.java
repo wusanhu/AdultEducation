@@ -346,7 +346,7 @@ public class VerifyService {
         Map<String, Object> base = enrichStudy(List.of(record)).get(0);
         m.putAll(base);
         m.put("course", course);
-        m.put("student", user);
+        m.put("student", studentView(user));
         m.put("project", project);
         List<StudyHeartbeatLog> heartbeats = heartbeatMapper.selectList(new LambdaQueryWrapper<StudyHeartbeatLog>()
                 .eq(StudyHeartbeatLog::getStudyRecordId, studyRecordId)
@@ -423,6 +423,12 @@ public class VerifyService {
         if (log == null) {
             throw new BusinessException("核验记录不存在");
         }
+        if (log.getStatus() != null && log.getStatus() == 4) {
+            throw new BusinessException("该核验记录已复核，不能重复处理");
+        }
+        if (log.getStatus() == null || log.getStatus() == 0) {
+            throw new BusinessException("该核验记录尚未完成，不能复核");
+        }
         Course course = courseMapper.selectById(log.getCourseId());
         boolean admin = current.isSuperAdmin() || (current.getDataScope() != null && current.getDataScope() == 1);
         if (!admin && !("teacher".equals(current.getRoleCode()) && course != null
@@ -448,17 +454,23 @@ public class VerifyService {
         if (record != null) {
             if ("allow".equals(action)) {
                 studyService.unlock(record.getId(), true);
+            } else if ("invalidate".equals(action)) {
+                studyService.unlock(record.getId(), true);
+                record.setIsAbnormal(0);
+                record.setAbnormalReason(null);
+                record.setValidDuration(0);
+                record.setProgress(BigDecimal.ZERO);
+                record.setLastPosition(0);
+                record.setStatus(1);
+                record.setEndTime(null);
+                studyMapper.updateById(record);
+                revokeCourseCredit(record, current, actionName, req.remark());
             } else {
                 studyService.unlock(record.getId(), false);
                 record.setIsAbnormal(1);
-                if ("invalidate".equals(action)) {
-                    record.setValidDuration(0);
-                    record.setProgress(BigDecimal.ZERO);
-                    record.setLastPosition(0);
-                    record.setStatus(1);
-                    record.setEndTime(null);
-                }
                 studyMapper.updateById(record);
+                // 违规结论需要重新锁定学习，避免学员继续刷课
+                studyService.markAbnormal(record, "复核判定违规：" + StrUtil.blankToDefault(req.remark(), actionName));
                 revokeCourseCredit(record, current, actionName, req.remark());
             }
         }
@@ -506,5 +518,36 @@ public class VerifyService {
         }
         SysOrg org = orgMapper.selectById(orgId);
         return org == null ? null : org.getOrgName();
+    }
+
+    private Map<String, Object> studentView(SysUser user) {
+        if (user == null) {
+            return null;
+        }
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("id", user.getId());
+        m.put("username", user.getUsername());
+        m.put("realName", user.getRealName());
+        m.put("phone", maskPhone(user.getPhone()));
+        m.put("idCard", maskIdCard(user.getIdCard()));
+        m.put("orgId", user.getOrgId());
+        m.put("deptId", user.getDeptId());
+        m.put("orgName", orgName(user.getOrgId() == null ? user.getDeptId() : user.getOrgId()));
+        m.put("userType", user.getUserType());
+        return m;
+    }
+
+    private String maskPhone(String phone) {
+        if (phone == null || phone.length() < 7) {
+            return phone;
+        }
+        return phone.substring(0, 3) + "****" + phone.substring(phone.length() - 4);
+    }
+
+    private String maskIdCard(String idCard) {
+        if (idCard == null || idCard.length() < 10) {
+            return idCard;
+        }
+        return idCard.substring(0, 6) + "********" + idCard.substring(idCard.length() - 4);
     }
 }

@@ -38,6 +38,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -138,7 +139,16 @@ public class StudyService {
             record.setLastHeartbeat(LocalDateTime.now());
             record.setDevice(currentDevice());
             record.setIp(currentIp());
-            studyMapper.insert(record);
+            try {
+                studyMapper.insert(record);
+            } catch (DuplicateKeyException e) {
+                // 双击/并发首次进入时唯一键冲突，复用已存在的学习记录
+                record = studyMapper.selectOne(new LambdaQueryWrapper<StudyRecord>()
+                        .eq(StudyRecord::getUserId, current.getId()).eq(StudyRecord::getCourseId, courseId));
+                if (record == null) {
+                    throw e;
+                }
+            }
         } else {
             if (record.getStatus() != null && record.getStatus() == 2) {
                 return state(record, course, gearOf(course), Map.of("completed", true));
@@ -226,10 +236,15 @@ public class StudyService {
         }
 
         boolean screenSwitch = req.screenSwitch() != null && req.screenSwitch() == 1;
+        int switchDuration = req.screenSwitchDuration() == null ? 0 : Math.max(0, req.screenSwitchDuration());
         if (screenSwitch) {
             record.setScreenSwitchCount(nz(record.getScreenSwitchCount()) + 1);
-            record.setScreenSwitchDuration(nz(record.getScreenSwitchDuration())
-                    + (req.screenSwitchDuration() == null ? 0 : Math.max(0, req.screenSwitchDuration())));
+        }
+        // 前后台切换时长可能在下一次心跳回传，只要上报了时长就累计
+        if (switchDuration > 0) {
+            record.setScreenSwitchDuration(nz(record.getScreenSwitchDuration()) + switchDuration);
+        }
+        if (screenSwitch || switchDuration > 0) {
             if (record.getScreenSwitchCount() >= 3 || record.getScreenSwitchDuration() >= 30) {
                 markAbnormal(record, "切屏次数或时长超过阈值（次数 " + record.getScreenSwitchCount()
                         + "，累计 " + record.getScreenSwitchDuration() + " 秒）");
@@ -278,13 +293,12 @@ public class StudyService {
         BigDecimal progress = oldProgress;
         if (!paused && record.getStatus() != null && record.getStatus() != 2) {
             if (course.getVideoDuration() != null && course.getVideoDuration() > 0) {
-                BigDecimal byPosition = BigDecimal.valueOf(reportedPosition)
+                BigDecimal byPosition = BigDecimal.valueOf(Math.min(reportedPosition, course.getVideoDuration()))
                         .multiply(BigDecimal.valueOf(100))
                         .divide(BigDecimal.valueOf(course.getVideoDuration()), 2, RoundingMode.HALF_UP);
                 progress = byPosition.max(oldProgress);
-            } else if (req.progress() != null) {
-                progress = req.progress().max(oldProgress);
             }
+            // 未配置视频时长时不再信任客户端上报的 progress，避免一次请求刷到 100%
             progress = progress.min(BigDecimal.valueOf(100));
         }
         record.setProgress(progress);
@@ -504,6 +518,9 @@ public class StudyService {
         }
         String base64 = req.imageBase64();
         boolean validImage = StrUtil.isNotBlank(base64) && base64.length() > 200;
+        if (!faceMock) {
+            throw new BusinessException(503, "人脸核验服务未配置，请联系管理员");
+        }
         String data = base64 == null ? "" : base64;
         int comma = data.indexOf(',');
         if (data.startsWith("data:") && comma > 0) {
@@ -515,8 +532,7 @@ public class StudyService {
         } catch (IllegalArgumentException e) {
             bytes = new byte[0];
         }
-        boolean forcedFail = base64 != null && base64.toLowerCase().contains("fail");
-        double similarity = (validImage && bytes.length > 0 && !forcedFail) ? mockPassSimilarity : mockFailSimilarity;
+        double similarity = (validImage && bytes.length > 0) ? mockPassSimilarity : mockFailSimilarity;
         boolean passed = bytes.length > 0 && similarity >= faceThreshold;
         if (bytes.length > 0) {
             String url = saveVerifyImage(record.getUserId(), bytes);

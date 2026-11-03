@@ -39,7 +39,7 @@
           <div v-if="record.similarity != null" style="font-size:12px;color:#94a3b8">相似度 {{ record.similarity }}</div>
         </template>
         <template v-else-if="column.key === 'image'">
-          <a-image v-if="record.imgUrl" :src="record.imgUrl" :width="52" :height="38" style="object-fit:cover;border-radius:5px" />
+          <a-image v-if="record.imgUrl" :src="fileUrl(record.imgUrl)" :width="52" :height="38" style="object-fit:cover;border-radius:5px" />
           <span v-else class="muted" style="font-size:12px">无抓拍</span>
         </template>
         <template v-else-if="column.key === 'status'">
@@ -47,7 +47,8 @@
           <div v-if="record.failReason" style="font-size:11px;color:#dc2626;margin-top:3px;max-width:140px">{{ record.failReason }}</div>
         </template>
         <template v-else-if="column.key === 'action'">
-          <a v-if="record.status !== 0" @click="openReview(record)">复核</a>
+          <a v-if="record.status !== 0 && record.status !== 4" @click="openReview(record)">复核</a>
+          <span v-else-if="record.status === 4" class="muted">已复核</span>
           <span v-else class="muted">待核验</span>
         </template>
       </template>
@@ -80,6 +81,7 @@ import { useRoute } from 'vue-router'
 import { message, type TablePaginationConfig } from 'ant-design-vue'
 import type { Dayjs } from 'dayjs'
 import { courseApi, projectApi, verifyApi } from '../../api'
+import { fileUrl } from '../../api/http'
 import type { CourseRow, ProjectRow, VerifyLogRow } from '../../types'
 
 const route = useRoute()

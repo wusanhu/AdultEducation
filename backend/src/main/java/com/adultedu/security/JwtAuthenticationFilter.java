@@ -40,6 +40,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String path = request.getRequestURI();
         String header = request.getHeader("Authorization");
+        if (header == null && path.startsWith("/uploads/")) {
+            // 浏览器 img/a 标签无法携带 Authorization 头，私有附件允许通过 token 查询参数访问
+            String queryToken = request.getParameter("token");
+            if (queryToken != null && !queryToken.isBlank()) {
+                header = "Bearer " + queryToken.trim();
+            }
+        }
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7).trim();
             try {

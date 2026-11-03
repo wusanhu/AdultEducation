@@ -133,6 +133,24 @@
         </div>
       </van-tab>
     </van-tabs>
+
+    <van-dialog
+      v-model:show="rejectVisible"
+      title="填写驳回原因"
+      show-cancel-button
+      :before-close="onRejectBeforeClose"
+    >
+      <van-field
+        v-model="rejectReason"
+        rows="3"
+        autosize
+        type="textarea"
+        maxlength="200"
+        show-word-limit
+        placeholder="请填写驳回原因，将通知申请人"
+        class="reject-field"
+      />
+    </van-dialog>
   </div>
 </template>
 
@@ -140,7 +158,8 @@
 import { ref, computed, onMounted } from 'vue'
 import {
   Tabs as VanTabs, Tab as VanTab, Button as VanButton, Tag as VanTag,
-  Progress as VanProgress, Loading as VanLoading, showToast, showConfirmDialog,
+  Progress as VanProgress, Loading as VanLoading, Dialog as VanDialog,
+  Field as VanField, showToast, showConfirmDialog,
 } from 'vant'
 import PageHeader from '@/components/PageHeader.vue'
 import EmptyState from '@/components/EmptyState.vue'
@@ -155,7 +174,7 @@ const perms = computed(() => userStore.user?.perms || [])
 const isLeader = computed(() => userStore.isLeader)
 const canMonitor = computed(() => perms.value.includes('study:monitor'))
 const canGraduate = computed(() => perms.value.includes('graduate:list'))
-const canAuditCredit = computed(() => perms.value.includes('credit:audit') || userStore.isLeader)
+const canAuditCredit = computed(() => isLeader.value)
 
 const activeTab = ref(
   isLeader.value ? 'dashboard' : canMonitor.value ? 'study' : canGraduate.value ? 'graduate' : 'credit'
@@ -257,11 +276,14 @@ async function loadExams() {
 }
 
 async function auditCredit(id: number, approve: boolean) {
+  if (!approve) {
+    openReject('credit', id)
+    return
+  }
   try {
-    const action = approve ? '通过' : '驳回'
-    await showConfirmDialog({ title: '确认', message: `确定${action}该学分申请？` })
-    await credits.audit(id, { approve })
-    showToast(`${action}成功`)
+    await showConfirmDialog({ title: '确认', message: '确定通过该学分申请？' })
+    await credits.audit(id, { approve: true })
+    showToast('通过成功')
     loadCredits()
   } catch {
     // cancelled or error
@@ -269,14 +291,57 @@ async function auditCredit(id: number, approve: boolean) {
 }
 
 async function auditGraduate(id: number, action: string) {
+  if (action !== 'approve') {
+    openReject('graduate', id)
+    return
+  }
   try {
-    const label = action === 'approve' ? '通过' : '驳回'
-    await showConfirmDialog({ title: '确认', message: `确定${label}该毕业申请？` })
-    await post(`/graduate/applies/${id}/audit`, { action, opinion: '' })
-    showToast(`${label}成功`)
+    await showConfirmDialog({ title: '确认', message: '确定通过该毕业申请？' })
+    await post(`/graduate/applies/${id}/audit`, { action, opinion: '同意' })
+    showToast('通过成功')
     loadGraduate()
   } catch {
     // cancelled or error
+  }
+}
+
+type RejectType = 'credit' | 'graduate'
+const rejectVisible = ref(false)
+const rejectType = ref<RejectType>('credit')
+const rejectId = ref(0)
+const rejectReason = ref('')
+const rejectSubmitting = ref(false)
+
+function openReject(type: RejectType, id: number) {
+  rejectType.value = type
+  rejectId.value = id
+  rejectReason.value = ''
+  rejectVisible.value = true
+}
+
+async function onRejectBeforeClose(action: string) {
+  if (action !== 'confirm') return true
+  const reason = rejectReason.value.trim()
+  if (!reason) {
+    showToast('请填写驳回原因')
+    return false
+  }
+  if (rejectSubmitting.value) return false
+  rejectSubmitting.value = true
+  try {
+    if (rejectType.value === 'credit') {
+      await credits.audit(rejectId.value, { approve: false, remark: reason })
+      loadCredits()
+    } else {
+      await post(`/graduate/applies/${rejectId.value}/audit`, { action: 'reject', opinion: reason })
+      loadGraduate()
+    }
+    showToast('已驳回')
+    return true
+  } catch {
+    return false
+  } finally {
+    rejectSubmitting.value = false
   }
 }
 
@@ -355,5 +420,8 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   padding: 40px;
+}
+.reject-field {
+  padding: 8px 0 16px;
 }
 </style>

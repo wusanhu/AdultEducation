@@ -39,16 +39,16 @@
 
       <div class="bottom-action">
         <van-button
-          v-if="(detail.studyStatus ?? 0) <= 1"
+          v-if="studyStatus <= 1"
           type="primary"
           block
           round
           @click="$router.push(`/study/${detail.id}`)"
         >
-          {{ detail.studyStatus === 1 ? '继续学习' : '开始学习' }}
+          {{ studyStatus === 1 ? '继续学习' : '开始学习' }}
         </van-button>
         <van-button
-          v-if="detail.studyStatus === 2 && detail.needExam"
+          v-if="studyStatus === 2 && detail.needExam"
           type="warning"
           block
           round
@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { Button as VanButton, Icon as VanIcon, Loading as VanLoading } from 'vant'
 import PageHeader from '@/components/PageHeader.vue'
@@ -71,6 +71,7 @@ import { courses } from '@/api'
 const route = useRoute()
 const detail = ref<any>(null)
 const loading = ref(true)
+const studyStatus = computed(() => Number(detail.value?.studyRecord?.status ?? 0))
 
 function formatDuration(sec: number) {
   const m = Math.floor(sec / 60)

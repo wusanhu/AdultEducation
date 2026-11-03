@@ -567,11 +567,20 @@ public class ReportService {
             case "credit" -> {
                 name = "学分台账";
                 head = heads("学员", "账号", "单位", "培训班", "课程", "学分", "来源", "状态", "发放时间", "备注");
-                var page = creditService.ledgerPage(current, 1, 10000, null, null, projectId, null, null, null, null, null);
-                for (Map<String, Object> m : page.getRecords()) {
-                    rows.add(row(m.get("userName"), m.get("username"), m.get("orgName"), m.get("projectName"),
-                            m.get("courseName"), m.get("creditValue"), m.get("sourceLabel"), m.get("auditStatusLabel"),
-                            m.get("auditTime"), m.get("remark")));
+                long pageNum = 1;
+                long pageSize = 500;
+                while (true) {
+                    var page = creditService.ledgerPage(current, pageNum, pageSize, null, null, projectId,
+                            null, null, null, null, null);
+                    for (Map<String, Object> m : page.getRecords()) {
+                        rows.add(row(m.get("userName"), m.get("username"), m.get("orgName"), m.get("projectName"),
+                                m.get("courseName"), m.get("creditValue"), m.get("sourceLabel"), m.get("auditStatusLabel"),
+                                m.get("auditTime"), m.get("remark")));
+                    }
+                    if (page.getRecords().size() < pageSize || rows.size() >= page.getTotal()) {
+                        break;
+                    }
+                    pageNum++;
                 }
             }
             case "creditReport" -> {

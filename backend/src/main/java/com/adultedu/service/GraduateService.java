@@ -34,11 +34,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -66,6 +68,7 @@ public class GraduateService {
     private final CertificateService certificateService;
     private final NotificationService notificationService;
     private final DataScopeService dataScopeService;
+    private final StringRedisTemplate redis;
 
     // ---------------- 学员端 ----------------
 
@@ -113,46 +116,92 @@ public class GraduateService {
 
     @Transactional
     public Long apply(LoginUser current, GraduateApplyRequest req) {
-        TrainingProject project = projectMapper.selectById(req.projectId());
-        if (project == null) {
-            throw new BusinessException("培训班不存在");
+        String lockKey = "lock:graduate:apply:" + current.getId() + ":" + req.projectId();
+        boolean locked = Boolean.TRUE.equals(redis.opsForValue()
+                .setIfAbsent(lockKey, "1", Duration.ofSeconds(10)));
+        if (!locked) {
+            for (int i = 0; i < 10; i++) {
+                if (hasPendingApply(current.getId(), req.projectId())) {
+                    throw new BusinessException("您已有待审批的毕业申请，请勿重复提交");
+                }
+                try {
+                    Thread.sleep(150);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            throw new BusinessException("毕业申请正在处理中，请稍后重试");
         }
-        if (project.getStatus() != null && project.getStatus() == 3) {
-            throw new BusinessException("培训班已归档，无法申请毕业");
+        try {
+            TrainingProject project = projectMapper.selectById(req.projectId());
+            if (project == null) {
+                throw new BusinessException("培训班不存在");
+            }
+            if (project.getStatus() != null && project.getStatus() == 3) {
+                throw new BusinessException("培训班已归档，无法申请毕业");
+            }
+            ProjectMember member = memberMapper.selectOne(new LambdaQueryWrapper<ProjectMember>()
+                    .eq(ProjectMember::getProjectId, req.projectId()).eq(ProjectMember::getUserId, current.getId())
+                    .eq(ProjectMember::getStatus, 1));
+            if (member == null) {
+                throw new BusinessException("您不在该培训班中");
+            }
+            if (fileMapper.selectCount(new LambdaQueryWrapper<GraduateFile>()
+                    .eq(GraduateFile::getUserId, current.getId()).eq(GraduateFile::getProjectId, req.projectId())) > 0) {
+                throw new BusinessException("您已毕业，无需重复申请");
+            }
+            if (hasPendingApply(current.getId(), req.projectId())) {
+                throw new BusinessException("您已有待审批的毕业申请，请勿重复提交");
+            }
+            BigDecimal credits = creditService.projectCreditTotal(current.getId(), req.projectId());
+            if (credits.compareTo(project.getNeedCredit()) < 0) {
+                throw new BusinessException("学分不足，还差 " + project.getNeedCredit().subtract(credits) + " 学分，无法申请毕业");
+            }
+            BigDecimal hours = studyHours(current.getId(), req.projectId());
+            GraduateApply apply = new GraduateApply();
+            apply.setUserId(current.getId());
+            apply.setProjectId(req.projectId());
+            apply.setApplyTime(LocalDateTime.now());
+            apply.setAuditStatus(0);
+            apply.setCreditSnapshot(credits);
+            apply.setStudyHourSnapshot(hours);
+            String node = firstNode(project);
+            apply.setCurrentNode(node);
+            applyMapper.insert(apply);
+            writeLog(apply.getId(), "SUBMIT", current, node, "学员提交毕业申请");
+            notifyNode(apply, node, current.getId());
+            return apply.getId();
+        } finally {
+            releaseLockAfterCompletion(lockKey);
         }
-        ProjectMember member = memberMapper.selectOne(new LambdaQueryWrapper<ProjectMember>()
-                .eq(ProjectMember::getProjectId, req.projectId()).eq(ProjectMember::getUserId, current.getId())
-                .eq(ProjectMember::getStatus, 1));
-        if (member == null) {
-            throw new BusinessException("您不在该培训班中");
+    }
+
+    /**
+     * 事务提交后再释放锁，确保等待的请求能读到已提交的申请记录。
+     */
+    private void releaseLockAfterCompletion(String key) {
+        if (!org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
+            redis.delete(key);
+            return;
         }
-        if (fileMapper.selectCount(new LambdaQueryWrapper<GraduateFile>()
-                .eq(GraduateFile::getUserId, current.getId()).eq(GraduateFile::getProjectId, req.projectId())) > 0) {
-            throw new BusinessException("您已毕业，无需重复申请");
-        }
-        if (applyMapper.selectCount(new LambdaQueryWrapper<GraduateApply>()
-                .eq(GraduateApply::getUserId, current.getId()).eq(GraduateApply::getProjectId, req.projectId())
-                .eq(GraduateApply::getAuditStatus, 0)) > 0) {
-            throw new BusinessException("您已有待审批的毕业申请，请勿重复提交");
-        }
-        BigDecimal credits = creditService.projectCreditTotal(current.getId(), req.projectId());
-        if (credits.compareTo(project.getNeedCredit()) < 0) {
-            throw new BusinessException("学分不足，还差 " + project.getNeedCredit().subtract(credits) + " 学分，无法申请毕业");
-        }
-        BigDecimal hours = studyHours(current.getId(), req.projectId());
-        GraduateApply apply = new GraduateApply();
-        apply.setUserId(current.getId());
-        apply.setProjectId(req.projectId());
-        apply.setApplyTime(LocalDateTime.now());
-        apply.setAuditStatus(0);
-        apply.setCreditSnapshot(credits);
-        apply.setStudyHourSnapshot(hours);
-        String node = firstNode(project);
-        apply.setCurrentNode(node);
-        applyMapper.insert(apply);
-        writeLog(apply.getId(), "SUBMIT", current, node, "学员提交毕业申请");
-        notifyNode(apply, node, current.getId());
-        return apply.getId();
+        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override
+                    public void afterCompletion(int status) {
+                        try {
+                            redis.delete(key);
+                        } catch (Exception ignored) {
+                            // 锁过期会自动释放
+                        }
+                    }
+                });
+    }
+
+    private boolean hasPendingApply(Long userId, Long projectId) {
+        return applyMapper.selectCount(new LambdaQueryWrapper<GraduateApply>()
+                .eq(GraduateApply::getUserId, userId).eq(GraduateApply::getProjectId, projectId)
+                .eq(GraduateApply::getAuditStatus, 0)) > 0;
     }
 
     public Map<String, Object> myApplication(LoginUser current, Long projectId) {
@@ -189,6 +238,17 @@ public class GraduateService {
         }
         if (StrUtil.isNotBlank(currentNode)) {
             qw.eq(GraduateApply::getCurrentNode, currentNode);
+        }
+        // 待审批列表只展示当前角色有权处理的节点，避免越权节点混入
+        if (auditStatus != null && auditStatus == 0) {
+            boolean admin = current.isSuperAdmin() || (current.getDataScope() != null && current.getDataScope() == 1);
+            if (!admin) {
+                if ("teacher".equals(current.getRoleCode())) {
+                    qw.eq(GraduateApply::getCurrentNode, "TEACHER");
+                } else if ("leader".equals(current.getRoleCode())) {
+                    qw.eq(GraduateApply::getCurrentNode, "LEADER");
+                }
+            }
         }
         if (!applyScope(current, qw)) {
             return PageResult.of(List.of(), 0, pageNum, pageSize);

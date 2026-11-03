@@ -12,22 +12,20 @@ const props = defineProps<{
 }>()
 
 const statusMap: Record<string, { type: any; label: string }> = {
-  // project status
-  'project-0': { type: 'default', label: '草稿' },
+  // project status (0未开始 1进行中 2已结束 3归档)
+  'project-0': { type: 'default', label: '未开始' },
   'project-1': { type: 'primary', label: '进行中' },
   'project-2': { type: 'success', label: '已结束' },
-  'project-3': { type: 'danger', label: '已关闭' },
-  // credit audit
-  'credit-0': { type: 'warning', label: '待审核' },
-  'credit-1': { type: 'success', label: '已通过' },
-  'credit-2': { type: 'danger', label: '已驳回' },
-  'credit-3': { type: 'default', label: '已撤销' },
-  // graduate
-  'graduate-0': { type: 'warning', label: '待审核' },
-  'graduate-1': { type: 'primary', label: '教员审核中' },
-  'graduate-2': { type: 'primary', label: '领导审核中' },
-  'graduate-3': { type: 'success', label: '已毕业' },
-  'graduate-4': { type: 'danger', label: '已驳回' },
+  'project-3': { type: 'danger', label: '已归档' },
+  // credit audit (1待发放 2已发放 3已驳回 4已撤销)
+  'credit-1': { type: 'warning', label: '待发放' },
+  'credit-2': { type: 'success', label: '已发放' },
+  'credit-3': { type: 'danger', label: '已驳回' },
+  'credit-4': { type: 'default', label: '已撤销' },
+  // graduate (0待审 1通过 2驳回)
+  'graduate-0': { type: 'warning', label: '审批中' },
+  'graduate-1': { type: 'success', label: '已通过' },
+  'graduate-2': { type: 'danger', label: '已驳回' },
   // course
   'course-0': { type: 'default', label: '未开始' },
   'course-1': { type: 'primary', label: '学习中' },

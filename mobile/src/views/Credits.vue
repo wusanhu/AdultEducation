@@ -3,26 +3,22 @@
     <!-- Summary Cards -->
     <div class="summary-cards">
       <div class="summary-item">
-        <div class="stat-value">{{ summary.totalCredits || 0 }}</div>
-        <div class="stat-label">总学分</div>
+        <div class="stat-value">{{ summary.issued || 0 }}</div>
+        <div class="stat-label">已发放学分</div>
       </div>
       <div class="summary-item">
-        <div class="stat-value" style="color: #07c160">{{ summary.earnedCredits || 0 }}</div>
-        <div class="stat-label">已获得</div>
+        <div class="stat-value" style="color: #ffd8a8">{{ summary.pending || 0 }}</div>
+        <div class="stat-label">待发放学分</div>
       </div>
       <div class="summary-item">
-        <div class="stat-value" style="color: #ff976a">{{ summary.pendingCredits || 0 }}</div>
-        <div class="stat-label">待审核</div>
-      </div>
-      <div class="summary-item">
-        <div class="stat-value" style="color: #ee0a24">{{ summary.requiredCredits || 0 }}</div>
-        <div class="stat-label">需完成</div>
+        <div class="stat-value" style="color: #fff">{{ summary.count || 0 }}</div>
+        <div class="stat-label">学分记录</div>
       </div>
     </div>
 
     <!-- Apply Button -->
-    <div class="card" style="text-align: center;">
-      <van-button type="primary" plain size="small" round @click="showApply = true">
+    <div v-if="canApply" class="card" style="text-align: center;">
+      <van-button type="primary" plain size="small" round @click="openApply">
         学分补录申请
       </van-button>
     </div>
@@ -48,14 +44,31 @@
     </div>
 
     <!-- Apply Dialog -->
-    <van-popup v-model:show="showApply" position="bottom" round :style="{ maxHeight: '70vh' }">
+    <van-popup v-model:show="showApply" position="bottom" round :style="{ maxHeight: '80vh' }">
       <div class="apply-form">
         <h3 class="apply-title">学分补录申请</h3>
         <van-form @submit="onApply">
           <van-field
+            v-model="projectName"
+            label="培训班"
+            readonly
+            is-link
+            placeholder="请选择培训班"
+            @click="showProjectPicker = true"
+          />
+          <van-field
+            v-model="studentName"
+            label="学员"
+            readonly
+            is-link
+            placeholder="请选择学员"
+            :disabled="!applyForm.projectId"
+            @click="openStudentPicker"
+          />
+          <van-field
             v-model="applyForm.creditValue"
             label="补录学分"
-            type="digit"
+            type="number"
             placeholder="请输入补录学分"
             :rules="[{ required: true, message: '请输入补录学分' }]"
           />
@@ -74,28 +87,56 @@
         </van-form>
       </div>
     </van-popup>
+
+    <van-popup v-model:show="showProjectPicker" position="bottom" round>
+      <van-picker :columns="projectColumns" @confirm="onProjectConfirm" @cancel="showProjectPicker = false" />
+    </van-popup>
+    <van-popup v-model:show="showStudentPicker" position="bottom" round>
+      <van-picker :columns="studentColumns" @confirm="onStudentConfirm" @cancel="showStudentPicker = false" />
+    </van-popup>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import {
   Button as VanButton, Tag as VanTag, Popup as VanPopup,
-  Form as VanForm, Field as VanField, showToast,
+  Form as VanForm, Field as VanField, Picker as VanPicker, showToast,
 } from 'vant'
 import EmptyState from '@/components/EmptyState.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { credits, projects } from '@/api'
+import { useUserStore } from '@/stores/user'
 import dayjs from 'dayjs'
 
+const userStore = useUserStore()
 const summary = ref<any>({})
 const list = ref<any[]>([])
 const showApply = ref(false)
 const applying = ref(false)
+const projectOptions = ref<any[]>([])
+const studentOptions = ref<any[]>([])
+const showProjectPicker = ref(false)
+const showStudentPicker = ref(false)
+const projectName = ref('')
+const studentName = ref('')
 const applyForm = reactive({
+  projectId: null as number | null,
+  userId: null as number | null,
   creditValue: '',
   remark: '',
 })
+
+const canApply = computed(() => (userStore.user?.perms || []).includes('credit:apply'))
+const projectColumns = computed(() =>
+  projectOptions.value.map((p: any) => ({ text: p.projectName, value: p.id }))
+)
+const studentColumns = computed(() =>
+  studentOptions.value.map((u: any) => ({
+    text: `${u.realName || u.username}${u.orgName ? `（${u.orgName}）` : ''}`,
+    value: u.id,
+  }))
+)
 
 function formatDate(d: string) {
   return d ? dayjs(d).format('YYYY-MM-DD') : '-'
@@ -103,10 +144,8 @@ function formatDate(d: string) {
 
 function sourceLabel(t: number) {
   switch (t) {
-    case 1: return '课程学习'
-    case 2: return '考试通过'
-    case 3: return '手动补录'
-    case 4: return '毕业认定'
+    case 1: return '课程自动发放'
+    case 2: return '人工补录'
     default: return '其他'
   }
 }
@@ -117,28 +156,86 @@ async function loadData() {
       credits.summary(),
       credits.my(),
     ])
-    summary.value = sum
-    list.value = items as any[]
+    summary.value = sum || {}
+    list.value = (items as any[]) || []
   } catch {
     // ignore
   }
 }
 
+async function openApply() {
+  if (projectOptions.value.length === 0) {
+    try {
+      projectOptions.value = (await projects.options()) || []
+    } catch {
+      // ignore
+    }
+  }
+  if (projectOptions.value.length === 0) {
+    showToast('暂无可补录的培训班')
+    return
+  }
+  showApply.value = true
+}
+
+function onProjectConfirm({ selectedOptions }: any) {
+  const opt = selectedOptions?.[0]
+  showProjectPicker.value = false
+  if (!opt) return
+  applyForm.projectId = opt.value
+  applyForm.userId = null
+  projectName.value = opt.text
+  studentName.value = ''
+  loadStudents(opt.value)
+}
+
+async function loadStudents(projectId: number) {
+  try {
+    studentOptions.value = (await projects.studentOptions(projectId)) || []
+    if (studentOptions.value.length === 0) {
+      showToast('该培训班暂无学员')
+    }
+  } catch {
+    studentOptions.value = []
+  }
+}
+
+function openStudentPicker() {
+  if (!applyForm.projectId) {
+    showToast('请先选择培训班')
+    return
+  }
+  if (studentOptions.value.length === 0) {
+    showToast('该培训班暂无可补录学员')
+    return
+  }
+  showStudentPicker.value = true
+}
+
+function onStudentConfirm({ selectedOptions }: any) {
+  const opt = selectedOptions?.[0]
+  showStudentPicker.value = false
+  if (!opt) return
+  applyForm.userId = opt.value
+  studentName.value = opt.text
+}
+
 async function onApply() {
+  if (!applyForm.projectId || !applyForm.userId) {
+    showToast('请选择培训班和学员')
+    return
+  }
+  const value = Number(applyForm.creditValue)
+  if (!value || value <= 0) {
+    showToast('请输入正确的补录学分')
+    return
+  }
   applying.value = true
   try {
-    // Get first project for apply
-    const opts = await projects.options()
-    const projectId = opts?.[0]?.id
-    if (!projectId) {
-      showToast('暂无可用培训班')
-      return
-    }
-    const user = JSON.parse(localStorage.getItem('mobile_user') || '{}')
     await credits.apply({
-      userId: user.id,
-      projectId,
-      creditValue: Number(applyForm.creditValue),
+      userId: applyForm.userId,
+      projectId: applyForm.projectId,
+      creditValue: value,
       remark: applyForm.remark,
     })
     showToast('申请已提交')

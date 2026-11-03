@@ -40,19 +40,19 @@ public class ProjectController {
 
     @GetMapping("/options")
     public R<List<Map<String, Object>>> options() {
-        return R.ok(projectService.projectOptions());
+        return R.ok(projectService.projectOptions(SecurityUtils.current()));
     }
 
     @GetMapping("/teacher-options")
     @PreAuthorize("hasAuthority('project:teacher')")
     public R<List<Map<String, Object>>> teacherOptions() {
-        return R.ok(projectService.teacherOptions());
+        return R.ok(projectService.teacherOptions(SecurityUtils.current()));
     }
 
     @GetMapping("/student-options")
     @PreAuthorize("hasAuthority('project:member')")
     public R<List<Map<String, Object>>> studentOptions(@RequestParam(required = false) Long projectId) {
-        return R.ok(projectService.studentOptions(projectId));
+        return R.ok(projectService.studentOptions(projectId, SecurityUtils.current()));
     }
 
     @GetMapping("/my")
@@ -92,7 +92,7 @@ public class ProjectController {
     @PreAuthorize("hasAuthority('project:delete')")
     @OperLog(module = "培训班管理", content = "删除培训班")
     public R<Void> delete(@PathVariable Long id) {
-        projectService.deleteProject(id);
+        projectService.deleteProject(id, SecurityUtils.current());
         return R.ok();
     }
 
@@ -100,7 +100,7 @@ public class ProjectController {
     @PreAuthorize("hasAuthority('project:edit')")
     @OperLog(module = "培训班管理", content = "变更培训班状态")
     public R<Void> status(@PathVariable Long id, @RequestParam Integer status) {
-        projectService.updateProjectStatus(id, status);
+        projectService.updateProjectStatus(id, status, SecurityUtils.current());
         return R.ok();
     }
 
@@ -110,21 +110,21 @@ public class ProjectController {
                                                       @RequestParam(defaultValue = "1") long pageNum,
                                                       @RequestParam(defaultValue = "10") long pageSize,
                                                       @RequestParam(required = false) String keyword) {
-        return R.ok(projectService.memberPage(id, pageNum, pageSize, keyword));
+        return R.ok(projectService.memberPage(id, pageNum, pageSize, keyword, SecurityUtils.current()));
     }
 
     @PostMapping("/{id}/members")
     @PreAuthorize("hasAuthority('project:member')")
     @OperLog(module = "培训班管理", content = "添加培训班学员")
     public R<Map<String, Object>> addMembers(@PathVariable Long id, @RequestBody MemberRequest req) {
-        return R.ok(projectService.addMembers(id, req.userIds()));
+        return R.ok(projectService.addMembers(id, req.userIds(), SecurityUtils.current()));
     }
 
     @DeleteMapping("/{id}/members/{userId}")
     @PreAuthorize("hasAuthority('project:member')")
     @OperLog(module = "培训班管理", content = "移除培训班学员")
     public R<Void> removeMember(@PathVariable Long id, @PathVariable Long userId) {
-        projectService.removeMember(id, userId);
+        projectService.removeMember(id, userId, SecurityUtils.current());
         return R.ok();
     }
 

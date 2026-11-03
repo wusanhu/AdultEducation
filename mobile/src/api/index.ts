@@ -35,6 +35,7 @@ export const projects = {
   my: () => get<any[]>('/projects/my'),
   myDetail: (id: number) => get<any>(`/projects/my/${id}`),
   options: () => get<any[]>('/projects/options'),
+  studentOptions: (projectId: number) => get<any[]>('/projects/student-options', { projectId }),
   detail: (id: number) => get<any>(`/projects/${id}`),
 }
 

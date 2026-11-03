@@ -24,7 +24,7 @@ public class ReportController {
     private final ReportService reportService;
 
     @GetMapping("/overview")
-    @PreAuthorize("hasAuthority('report:view')")
+    @PreAuthorize("hasAnyAuthority('report:view','dashboard:view')")
     public R<Map<String, Object>> overview() {
         return R.ok(reportService.overview(SecurityUtils.current()));
     }

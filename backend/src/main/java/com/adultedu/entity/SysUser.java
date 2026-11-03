@@ -3,6 +3,7 @@ package com.adultedu.entity;
 import com.adultedu.common.BaseEntity;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
 @TableName("sys_user")
 public class SysUser extends BaseEntity {
     private String username;
+    @JsonIgnore
     private String password;
     private String realName;
     private String phone;

@@ -221,6 +221,9 @@ public class ProjectService {
         if (project == null) {
             throw new BusinessException("培训班不存在");
         }
+        if (req.id() != null) {
+            assertCanViewProject(project, current);
+        }
         project.setProjectName(req.projectName());
         project.setProjectCode(code);
         project.setDescription(req.description());
@@ -244,7 +247,12 @@ public class ProjectService {
     }
 
     @Transactional
-    public void deleteProject(Long id) {
+    public void deleteProject(Long id, LoginUser current) {
+        TrainingProject project = projectMapper.selectById(id);
+        if (project == null) {
+            throw new BusinessException("培训班不存在");
+        }
+        assertCanViewProject(project, current);
         long courses = courseMapper.selectCount(new LambdaQueryWrapper<Course>().eq(Course::getProjectId, id));
         long members = memberMapper.selectCount(new LambdaQueryWrapper<ProjectMember>().eq(ProjectMember::getProjectId, id));
         if (courses > 0 || members > 0) {
@@ -255,10 +263,14 @@ public class ProjectService {
     }
 
     @Transactional
-    public void updateProjectStatus(Long id, Integer status) {
+    public void updateProjectStatus(Long id, Integer status, LoginUser current) {
         TrainingProject project = projectMapper.selectById(id);
         if (project == null) {
             throw new BusinessException("培训班不存在");
+        }
+        assertCanViewProject(project, current);
+        if (status == null || status < 0 || status > 3) {
+            throw new BusinessException("培训班状态不合法");
         }
         project.setStatus(status);
         projectMapper.updateById(project);
@@ -272,11 +284,13 @@ public class ProjectService {
     }
 
     // ==================== 学员 ====================
-    public PageResult<Map<String, Object>> memberPage(Long projectId, long pageNum, long pageSize, String keyword) {
+    public PageResult<Map<String, Object>> memberPage(Long projectId, long pageNum, long pageSize, String keyword,
+                                                      LoginUser current) {
         TrainingProject project = projectMapper.selectById(projectId);
         if (project == null) {
             throw new BusinessException("培训班不存在");
         }
+        assertCanViewProject(project, current);
         List<ProjectMember> members = memberMapper.selectList(new LambdaQueryWrapper<ProjectMember>()
                 .eq(ProjectMember::getProjectId, projectId).eq(ProjectMember::getStatus, 1));
         List<Long> ids = members.stream().map(ProjectMember::getUserId).toList();
@@ -327,11 +341,12 @@ public class ProjectService {
     }
 
     @Transactional
-    public Map<String, Object> addMembers(Long projectId, List<Long> userIds) {
+    public Map<String, Object> addMembers(Long projectId, List<Long> userIds, LoginUser current) {
         TrainingProject project = projectMapper.selectById(projectId);
         if (project == null) {
             throw new BusinessException("培训班不存在");
         }
+        assertCanViewProject(project, current);
         if (userIds == null || userIds.isEmpty()) {
             throw new BusinessException("请选择学员");
         }
@@ -340,6 +355,10 @@ public class ProjectService {
             SysUser user = userMapper.selectById(userId);
             if (user == null || (user.getUserType() != null && user.getUserType() != 4)) {
                 continue;
+            }
+            if (!current.isSuperAdmin()
+                    && !dataScopeService.canAccessOrg(current, user.getOrgId() == null ? user.getDeptId() : user.getOrgId())) {
+                throw new BusinessException(403, "无权将其他单位的学员加入培训班");
             }
             ProjectMember existing = memberMapper.selectOne(new LambdaQueryWrapper<ProjectMember>()
                     .eq(ProjectMember::getProjectId, projectId).eq(ProjectMember::getUserId, userId));
@@ -367,7 +386,12 @@ public class ProjectService {
     }
 
     @Transactional
-    public void removeMember(Long projectId, Long userId) {
+    public void removeMember(Long projectId, Long userId, LoginUser current) {
+        TrainingProject project = projectMapper.selectById(projectId);
+        if (project == null) {
+            throw new BusinessException("培训班不存在");
+        }
+        assertCanViewProject(project, current);
         ProjectMember member = memberMapper.selectOne(new LambdaQueryWrapper<ProjectMember>()
                 .eq(ProjectMember::getProjectId, projectId).eq(ProjectMember::getUserId, userId));
         if (member == null) {
@@ -571,9 +595,17 @@ public class ProjectService {
         };
     }
 
-    public List<Map<String, Object>> projectOptions() {
-        return projectMapper.selectList(new LambdaQueryWrapper<TrainingProject>()
-                        .ne(TrainingProject::getStatus, 3).orderByDesc(TrainingProject::getId))
+    public List<Map<String, Object>> projectOptions(LoginUser current) {
+        LambdaQueryWrapper<TrainingProject> qw = new LambdaQueryWrapper<TrainingProject>()
+                .ne(TrainingProject::getStatus, 3);
+        List<Long> visible = visibleProjectIds(current);
+        if (visible != null) {
+            if (visible.isEmpty()) {
+                return List.of();
+            }
+            qw.in(TrainingProject::getId, visible);
+        }
+        return projectMapper.selectList(qw.orderByDesc(TrainingProject::getId))
                 .stream().map(p -> {
                     Map<String, Object> map = new LinkedHashMap<>();
                     map.put("id", p.getId());
@@ -584,13 +616,21 @@ public class ProjectService {
                 }).toList();
     }
 
-    public List<Map<String, Object>> teacherOptions() {
+    public List<Map<String, Object>> teacherOptions(LoginUser current) {
         SysRole role = roleMapper.selectOne(new LambdaQueryWrapper<SysRole>().eq(SysRole::getRoleCode, "teacher"));
         if (role == null) {
             return List.of();
         }
-        return userMapper.selectList(new LambdaQueryWrapper<SysUser>()
-                        .eq(SysUser::getRoleId, role.getId()).eq(SysUser::getStatus, 1))
+        LambdaQueryWrapper<SysUser> qw = new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getRoleId, role.getId()).eq(SysUser::getStatus, 1);
+        List<Long> orgIds = dataScopeService.accessibleOrgIds(current);
+        if (orgIds != null) {
+            if (orgIds.isEmpty()) {
+                return List.of();
+            }
+            qw.and(w -> w.in(SysUser::getOrgId, orgIds).or().in(SysUser::getDeptId, orgIds));
+        }
+        return userMapper.selectList(qw)
                 .stream().map(u -> {
                     Map<String, Object> map = new LinkedHashMap<>();
                     map.put("id", u.getId());
@@ -601,9 +641,25 @@ public class ProjectService {
                 }).toList();
     }
 
-    public List<Map<String, Object>> studentOptions(Long projectId) {
+    public List<Map<String, Object>> studentOptions(Long projectId, LoginUser current) {
+        if (projectId != null) {
+            TrainingProject project = projectMapper.selectById(projectId);
+            if (project == null) {
+                throw new BusinessException("培训班不存在");
+            }
+            assertCanViewProject(project, current);
+        }
         LambdaQueryWrapper<SysUser> qw = new LambdaQueryWrapper<SysUser>()
                 .eq(SysUser::getUserType, 4).eq(SysUser::getStatus, 1);
+        // 教员按培训班授权：培训班可见性已校验，成员范围不再叠加组织数据权限
+        boolean projectScoped = projectId != null && "teacher".equals(current.getRoleCode());
+        List<Long> orgIds = dataScopeService.accessibleOrgIds(current);
+        if (!projectScoped && orgIds != null) {
+            if (orgIds.isEmpty()) {
+                return List.of();
+            }
+            qw.and(w -> w.in(SysUser::getOrgId, orgIds).or().in(SysUser::getDeptId, orgIds));
+        }
         if (projectId != null) {
             List<Long> ids = memberMapper.selectList(new LambdaQueryWrapper<ProjectMember>()
                             .eq(ProjectMember::getProjectId, projectId).eq(ProjectMember::getStatus, 1))

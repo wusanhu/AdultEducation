@@ -30,10 +30,12 @@ import com.adultedu.security.LoginUser;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -59,6 +61,7 @@ public class CreditService {
     private final ApprovalLogMapper approvalLogMapper;
     private final DataScopeService dataScopeService;
     private final NotificationService notificationService;
+    private final StringRedisTemplate redis;
 
     public PageResult<Map<String, Object>> ledgerPage(LoginUser current, long pageNum, long pageSize,
                                                       String keyword, Long userId, Long projectId, Long courseId,
@@ -250,30 +253,82 @@ public class CreditService {
      */
     @Transactional
     public CreditRecord awardCourseCredit(Long userId, Long projectId, Long courseId, BigDecimal creditValue, String remark) {
-        CreditRecord exists = creditMapper.selectOne(new LambdaQueryWrapper<CreditRecord>()
+        String lockKey = "lock:credit:award:" + userId + ":" + projectId + ":" + courseId;
+        boolean locked = Boolean.TRUE.equals(redis.opsForValue()
+                .setIfAbsent(lockKey, "1", Duration.ofSeconds(15)));
+        if (!locked) {
+            // 另一个请求正在发放，等待其提交后复用结果，避免重复发放
+            for (int i = 0; i < 10; i++) {
+                CreditRecord current = findAwarded(userId, projectId, courseId);
+                if (current != null) {
+                    return current;
+                }
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            return findAwarded(userId, projectId, courseId);
+        }
+        try {
+            CreditRecord exists = findAwarded(userId, projectId, courseId);
+            if (exists != null) {
+                return exists;
+            }
+            CreditRecord record = new CreditRecord();
+            record.setUserId(userId);
+            record.setProjectId(projectId);
+            record.setCourseId(courseId);
+            record.setCreditValue(creditValue);
+            record.setSourceType(1);
+            record.setAuditStatus(2);
+            record.setAuditNode("DONE");
+            record.setAuditTime(LocalDateTime.now());
+            record.setAuditRemark("系统自动发放");
+            record.setRemark(remark);
+            try {
+                creditMapper.insert(record);
+            } catch (org.springframework.dao.DuplicateKeyException e) {
+                return findAwarded(userId, projectId, courseId);
+            }
+            Course course = courseMapper.selectById(courseId);
+            notificationService.send(userId, "学分已到账",
+                    "您已完成课程《" + (course == null ? "" : course.getCourseName()) + "》，获得 " + creditValue + " 学分。",
+                    "COURSE", courseId);
+            return record;
+        } finally {
+            releaseLockAfterCompletion(lockKey);
+        }
+    }
+
+    /**
+     * 事务提交后再释放锁，避免并发请求在数据可见前拿到锁造成重复发放。
+     */
+    private void releaseLockAfterCompletion(String key) {
+        if (!org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
+            redis.delete(key);
+            return;
+        }
+        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override
+                    public void afterCompletion(int status) {
+                        try {
+                            redis.delete(key);
+                        } catch (Exception ignored) {
+                            // 锁过期会自动释放
+                        }
+                    }
+                });
+    }
+
+    private CreditRecord findAwarded(Long userId, Long projectId, Long courseId) {
+        return creditMapper.selectOne(new LambdaQueryWrapper<CreditRecord>()
                 .eq(CreditRecord::getUserId, userId).eq(CreditRecord::getProjectId, projectId)
                 .eq(CreditRecord::getCourseId, courseId).eq(CreditRecord::getSourceType, 1)
                 .eq(CreditRecord::getAuditStatus, 2).last("limit 1"));
-        if (exists != null) {
-            return exists;
-        }
-        CreditRecord record = new CreditRecord();
-        record.setUserId(userId);
-        record.setProjectId(projectId);
-        record.setCourseId(courseId);
-        record.setCreditValue(creditValue);
-        record.setSourceType(1);
-        record.setAuditStatus(2);
-        record.setAuditNode("DONE");
-        record.setAuditTime(LocalDateTime.now());
-        record.setAuditRemark("系统自动发放");
-        record.setRemark(remark);
-        creditMapper.insert(record);
-        Course course = courseMapper.selectById(courseId);
-        notificationService.send(userId, "学分已到账",
-                "您已完成课程《" + (course == null ? "" : course.getCourseName()) + "》，获得 " + creditValue + " 学分。",
-                "COURSE", courseId);
-        return record;
     }
 
     @Transactional
@@ -305,7 +360,7 @@ public class CreditService {
         record.setRemark(req.remark());
         creditMapper.insert(record);
         writeLog("CREDIT", record.getId(), "SUBMIT", current, req.remark());
-        notifyApprovers(record, current.getId());
+        notifyApprovers(record, current.getId(), record.getAuditNode());
         return record.getId();
     }
 
@@ -325,17 +380,18 @@ public class CreditService {
         return false;
     }
 
-    private void notifyApprovers(CreditRecord record, Long applyUserId) {
-        String roleCode = needLeaderAudit() ? "leader" : "super_admin";
+    private void notifyApprovers(CreditRecord record, Long applyUserId, String node) {
+        String roleCode = "LEADER".equals(node) ? "leader" : "super_admin";
         SysRole role = roleMapper.selectOne(new LambdaQueryWrapper<SysRole>().eq(SysRole::getRoleCode, roleCode));
         if (role == null) {
             return;
         }
         SysUser student = userMapper.selectById(record.getUserId());
+        String title = "LEADER".equals(node) ? "学分补录申请待领导复核" : "学分补录申请待管理员终审";
         List<Long> approvers = userMapper.selectList(new LambdaQueryWrapper<SysUser>()
                         .eq(SysUser::getRoleId, role.getId()).eq(SysUser::getStatus, 1))
                 .stream().map(SysUser::getId).filter(id -> !id.equals(applyUserId)).toList();
-        notificationService.sendBatch(approvers, "学分补录申请待审批",
+        notificationService.sendBatch(approvers, title,
                 "学员" + (student == null ? "" : student.getRealName()) + "申请补录 " + record.getCreditValue()
                         + " 学分，原因：" + record.getRemark(), "APPROVAL", record.getId());
     }
@@ -381,7 +437,7 @@ public class CreditService {
             record.setAuditRemark(remark);
             creditMapper.updateById(record);
             writeLog("CREDIT", id, "APPROVE", current, StrUtil.blankToDefault(remark, "领导复核通过，转管理员终审"));
-            notifyApprovers(record, current.getId());
+            notifyApprovers(record, current.getId(), record.getAuditNode());
             return;
         }
         record.setAuditStatus(2);
@@ -444,9 +500,17 @@ public class CreditService {
     }
 
     public List<Map<String, Object>> pendingAudits(LoginUser current) {
+        boolean admin = current.isSuperAdmin() || (current.getDataScope() != null && current.getDataScope() == 1);
+        boolean leader = "leader".equals(current.getRoleCode());
+        if (!admin && !leader) {
+            return List.of();
+        }
         List<CreditRecord> records = creditMapper.selectList(new LambdaQueryWrapper<CreditRecord>()
                 .eq(CreditRecord::getAuditStatus, 1)
                 .orderByAsc(CreditRecord::getCreateTime));
+        if (leader && !admin) {
+            records = records.stream().filter(r -> "LEADER".equals(r.getAuditNode())).toList();
+        }
         List<Long> visible = visibleUserIds(current);
         if (visible != null) {
             records = records.stream().filter(r -> visible.contains(r.getUserId())).toList();

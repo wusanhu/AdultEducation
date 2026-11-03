@@ -80,13 +80,11 @@ async function onSubmit() {
       oldPassword: form.oldPassword,
       newPassword: form.newPassword,
     })
-    showToast('密码修改成功')
-    userStore.mustChangePwd = false
-    if (userStore.user) {
-      localStorage.setItem('mobile_user', JSON.stringify(userStore.user))
-    }
+    // 后端修改密码后会作废旧 token，需重新登录
+    userStore.clearUser()
+    showToast('密码修改成功，请重新登录')
     setTimeout(() => {
-      router.replace('/')
+      router.replace('/login')
     }, 500)
   } catch {
     // handled

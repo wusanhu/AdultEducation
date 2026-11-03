@@ -21,8 +21,8 @@
         <template v-else-if="column.key === 'credit'"><span style="font-weight:600;color:#16a34a">{{ record.creditValue }}</span></template>
         <template v-else-if="column.key === 'action'">
           <a-space size="small">
-            <a v-if="record.certificateUrl" :href="record.certificateUrl" target="_blank">查看</a>
-            <a v-if="record.certificateUrl" :href="record.certificateUrl" :download="`${record.certificateNo}.pdf`">下载</a>
+            <a v-if="record.certificateUrl" :href="fileUrl(record.certificateUrl)" target="_blank">查看</a>
+            <a v-if="record.certificateUrl" :href="fileUrl(record.certificateUrl)" :download="`${record.certificateNo}.pdf`">下载</a>
           </a-space>
         </template>
       </template>
@@ -36,6 +36,7 @@ import { message, type TablePaginationConfig } from 'ant-design-vue'
 import { DownloadOutlined } from '@ant-design/icons-vue'
 import type { Dayjs } from 'dayjs'
 import { graduateApi, projectApi, reportApi } from '../../api'
+import { fileUrl } from '../../api/http'
 import { useAuthStore } from '../../store/auth'
 import type { GraduateFileRow, ProjectRow } from '../../types'
 

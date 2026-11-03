@@ -22,11 +22,14 @@ import com.adultedu.mapper.TrainingProjectMapper;
 import com.adultedu.security.LoginUser;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +52,8 @@ public class ExamService {
     private final CreditService creditService;
     private final StudyService studyService;
     private final NotificationService notificationService;
+    private final StringRedisTemplate redis;
+    private final ObjectMapper objectMapper;
 
     public Map<String, Object> paper(LoginUser current, Long courseId) {
         Course course = courseMapper.selectById(courseId);
@@ -100,6 +105,41 @@ public class ExamService {
 
     @Transactional
     public Map<String, Object> submit(LoginUser current, Long courseId, ExamSubmitRequest req) {
+        String lockKey = "lock:exam:submit:" + current.getId() + ":" + courseId;
+        boolean locked = Boolean.TRUE.equals(redis.opsForValue()
+                .setIfAbsent(lockKey, "1", Duration.ofSeconds(15)));
+        if (!locked) {
+            throw new BusinessException("测验正在提交中，请勿重复操作");
+        }
+        try {
+            return doSubmit(current, courseId, req);
+        } finally {
+            releaseLockAfterCompletion(lockKey);
+        }
+    }
+
+    /**
+     * 事务提交后再释放锁，避免并发提交读到未提交的答题记录。
+     */
+    private void releaseLockAfterCompletion(String key) {
+        if (!org.springframework.transaction.support.TransactionSynchronizationManager.isSynchronizationActive()) {
+            redis.delete(key);
+            return;
+        }
+        org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override
+                    public void afterCompletion(int status) {
+                        try {
+                            redis.delete(key);
+                        } catch (Exception ignored) {
+                            // 锁过期会自动释放
+                        }
+                    }
+                });
+    }
+
+    private Map<String, Object> doSubmit(LoginUser current, Long courseId, ExamSubmitRequest req) {
         Course course = courseMapper.selectById(courseId);
         if (course == null) {
             throw new BusinessException("课程不存在");
@@ -170,6 +210,8 @@ public class ExamService {
         m.put("score", score);
         m.put("passScore", passScore);
         m.put("passed", pass);
+        m.put("isPass", pass);
+        m.put("totalScore", BigDecimal.valueOf(100));
         m.put("attemptNo", record.getAttemptNo());
         m.put("remainingAttempts", limit == 0 ? -1 : Math.max(0, limit - record.getAttemptNo()));
         m.put("details", details);
@@ -198,9 +240,11 @@ public class ExamService {
     }
 
     private String toJson(List<AnswerItem> answers) {
-        return answers.stream().map(a -> "{\"questionId\":" + a.questionId()
-                        + ",\"answer\":\"" + (a.answer() == null ? "" : a.answer().replace("\"", "\\\"")) + "\"}")
-                .collect(Collectors.joining(",", "[", "]"));
+        try {
+            return objectMapper.writeValueAsString(answers);
+        } catch (Exception e) {
+            throw new BusinessException("答案数据格式错误");
+        }
     }
 
     public PageResult<Map<String, Object>> recordPage(LoginUser current, long pageNum, long pageSize,

@@ -45,35 +45,39 @@
         </div>
         <div class="flex-between mb-8">
           <span>提交时间</span>
-          <span>{{ formatDate(myApplication.createTime) }}</span>
+          <span>{{ formatDate(myApplication.applyTime || myApplication.createTime) }}</span>
         </div>
-        <div v-if="myApplication.currentNode" class="flex-between mb-8">
+        <div v-if="myApplication.currentNodeLabel || myApplication.currentNode" class="flex-between mb-8">
           <span>当前节点</span>
-          <span>{{ myApplication.currentNode }}</span>
+          <span>{{ myApplication.currentNodeLabel || myApplication.currentNode }}</span>
         </div>
-        <div v-if="myApplication.opinion" class="flex-between">
-          <span>审批意见</span>
-          <span>{{ myApplication.opinion }}</span>
+        <div v-if="myApplication.rejectReason" class="flex-between reject-row">
+          <span>驳回原因</span>
+          <span class="reject-text">{{ myApplication.rejectReason }}</span>
         </div>
       </div>
 
       <!-- Certificate -->
       <div v-if="certificate" class="card">
         <h4 class="mb-8">毕业证书</h4>
-        <div v-if="certificate.certificateUrl" class="cert-preview">
-          <img :src="certificate.certificateUrl" class="cert-img" />
-          <van-button type="primary" plain size="small" round class="mt-8" @click="downloadCert">
-            下载证书
+        <template v-if="certificate.certificateUrl">
+          <p class="cert-meta">证书编号：{{ certificate.certificateNo || '-' }}</p>
+          <p v-if="certificate.graduateTime" class="cert-meta">毕业时间：{{ formatDate(certificate.graduateTime) }}</p>
+          <van-button type="primary" block round class="mt-12" @click="downloadCert">
+            查看 / 下载证书
           </van-button>
-        </div>
+        </template>
         <p v-else class="no-cert">证书生成中...</p>
       </div>
 
       <!-- Apply Button -->
-      <div v-if="!myApplication && selectedProjectId && eligibility?.eligible" class="bottom-action">
+      <div v-if="selectedProjectId && eligibility?.canApply" class="bottom-action">
         <van-button type="primary" block round :loading="applying" @click="onApply">
-          提交毕业申请
+          {{ myApplication?.auditStatus === 2 ? '重新提交毕业申请' : '提交毕业申请' }}
         </van-button>
+      </div>
+      <div v-else-if="eligibility && !eligibility.canApply && eligibility.reason" class="bottom-action tip-action">
+        {{ eligibility.reason }}
       </div>
     </template>
   </div>
@@ -89,6 +93,7 @@ import {
 import PageHeader from '@/components/PageHeader.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { graduate, projects } from '@/api'
+import { fileUrl } from '@/api/http'
 import dayjs from 'dayjs'
 
 const loading = ref(true)
@@ -108,17 +113,32 @@ const projectColumns = computed(() =>
 const steps = computed(() => {
   const e = eligibility.value
   if (!e) return []
+  const creditOk = Number(e.credits || 0) >= Number(e.needCredit || 0)
+  const app = myApplication.value
   return [
-    { title: '课程学习', desc: e.coursesCompleted !== false ? '已完成' : '未完成' },
-    { title: '考试通过', desc: e.examsPassed !== false ? '已完成' : '未完成' },
-    { title: '学分达标', desc: `${e.earnedCredits || 0}/${e.requiredCredits || 0}` },
-    { title: '身份核验', desc: e.verified !== false ? '已通过' : '待核验' },
+    {
+      title: '学分要求',
+      desc: creditOk
+        ? `已获得 ${e.credits || 0} / ${e.needCredit || 0} 学分，已达标`
+        : `已获得 ${e.credits || 0} / ${e.needCredit || 0} 学分，未达标`,
+      done: creditOk,
+    },
+    {
+      title: '提交申请',
+      desc: app
+        ? (app.auditStatus === 2 ? '申请已驳回，可重新提交' : '毕业申请已提交')
+        : (e.canApply ? '当前可提交毕业申请' : '暂未提交'),
+      done: Boolean(app),
+    },
+    {
+      title: '审核结果',
+      desc: app ? (app.auditStatusLabel || '审批中') : '待审核',
+      done: app?.auditStatus === 1,
+    },
   ]
 })
 
-const activeStep = computed(() => {
-  return steps.value.filter((s) => s.desc.includes('已完成') || s.desc.includes('已通过') || s.desc.includes('达标')).length
-})
+const activeStep = computed(() => steps.value.filter((s) => s.done).length)
 
 function formatDate(d: string) {
   return d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '-'
@@ -164,8 +184,9 @@ async function onApply() {
 }
 
 function downloadCert() {
-  if (certificate.value?.certificateUrl) {
-    window.open(certificate.value.certificateUrl, '_blank')
+  const url = fileUrl(certificate.value?.certificateUrl)
+  if (url) {
+    window.open(url, '_blank')
   }
 }
 
@@ -189,6 +210,11 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.cert-meta {
+  font-size: 13px;
+  color: #646566;
+  margin: 4px 0;
+}
 .cert-preview {
   text-align: center;
 }
@@ -196,6 +222,19 @@ onMounted(async () => {
   width: 100%;
   max-width: 300px;
   border-radius: 8px;
+}
+.reject-row {
+  align-items: flex-start;
+}
+.reject-text {
+  color: #ee0a24;
+  max-width: 65%;
+  text-align: right;
+}
+.tip-action {
+  color: #969799;
+  font-size: 13px;
+  text-align: center;
 }
 .no-cert {
   text-align: center;

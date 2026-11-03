@@ -64,6 +64,10 @@ const routes: RouteRecordRaw[] = [
     name: 'Teacher',
     component: () => import('@/views/Teacher.vue'),
   },
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/',
+  },
 ]
 
 const router = createRouter({

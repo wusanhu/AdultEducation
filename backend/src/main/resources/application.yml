@@ -63,8 +63,11 @@ springdoc:
     path: /v3/api-docs
 
 app:
+  cors:
+    # 前端开发服务器跨域白名单，生产同源部署时可不配置
+    allowed-origins: ${APP_CORS_ORIGINS:http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174}
   jwt:
-    secret: adult-education-credit-platform-2026-secret-key-for-hs256-signing
+    secret: ${APP_JWT_SECRET:adult-education-credit-platform-2026-secret-key-for-hs256-signing}
     expire-hours: 12
   upload:
     dir: ./data/uploads
@@ -82,12 +85,12 @@ app:
     max-verify-fail: 3
   face:
     # 本地演示模式：不调用第三方人脸服务，按图片特征给出模拟相似度
-    mock: true
+    mock: ${APP_FACE_MOCK:true}
     threshold: 0.75
     mock-pass-similarity: 0.92
     mock-fail-similarity: 0.32
   sms:
-    mock: true
+    mock: ${APP_SMS_MOCK:true}
     code-expire-seconds: 300
     resend-seconds: 60
     daily-limit: 10

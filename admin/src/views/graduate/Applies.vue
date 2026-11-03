@@ -83,7 +83,7 @@
               <div style="font-weight:600;color:#047857">电子证书已生成</div>
               <div style="font-size:12px;color:#059669;margin-top:3px">证书编号：{{ detail.certificateNo }}</div>
             </div>
-            <a-button type="primary" ghost :href="detail.certificateUrl" target="_blank">查看证书</a-button>
+            <a-button type="primary" ghost :href="fileUrl(detail.certificateUrl)" target="_blank">查看证书</a-button>
           </div>
 
           <div style="font-size:14px;font-weight:600;margin-bottom:10px">审批记录</div>
@@ -110,6 +110,7 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { message, type TablePaginationConfig } from 'ant-design-vue'
 import { graduateApi, projectApi } from '../../api'
+import { fileUrl } from '../../api/http'
 import type { GraduateApplyRow, ProjectRow } from '../../types'
 
 const loading = ref(false)

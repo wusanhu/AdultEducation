@@ -20,6 +20,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.awt.Color;
@@ -28,8 +29,10 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -37,6 +40,7 @@ import java.time.format.DateTimeFormatter;
 public class CertificateService {
     private final GraduateFileMapper fileMapper;
     private final SysConfigMapper configMapper;
+    private final StringRedisTemplate redis;
 
     @Value("${app.upload.dir:./data/uploads}")
     private String uploadDir;
@@ -53,14 +57,15 @@ public class CertificateService {
             return exists;
         }
         String certNo = nextCertificateNo(project.getId());
-        String relative = "certificate/" + LocalDateTime.now().format(YEAR) + "/" + certNo + ".pdf";
+        String relative = "certificate/" + LocalDateTime.now().format(YEAR) + "/" + certNo + "-"
+                + UUID.randomUUID().toString().replace("-", "").substring(0, 12) + ".pdf";
         Path target = Paths.get(uploadDir, relative);
         try {
             Files.createDirectories(target.getParent());
             renderPdf(target, certNo, user, project, apply);
         } catch (Exception e) {
             log.error("生成毕业证书失败: applyId={}", apply.getId(), e);
-            throw new com.adultedu.common.BusinessException("毕业证书生成失败：" + e.getMessage());
+            throw new com.adultedu.common.BusinessException("毕业证书生成失败，请联系管理员");
         }
         GraduateFile file = new GraduateFile();
         file.setApplyId(apply.getId());
@@ -77,9 +82,22 @@ public class CertificateService {
     private String nextCertificateNo(Long projectId) {
         String year = LocalDateTime.now().format(YEAR);
         String prefix = noPrefix + "-" + year + "-" + projectId + "-";
-        long count = fileMapper.selectCount(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<GraduateFile>()
-                .likeRight(GraduateFile::getCertificateNo, prefix));
-        for (long i = count + 1; i < count + 10000; i++) {
+        long start = 1;
+        try {
+            Long seq = redis.opsForValue().increment("cert:seq:" + prefix);
+            if (seq != null && seq > 0) {
+                redis.expire("cert:seq:" + prefix, Duration.ofDays(400));
+                start = seq;
+            }
+        } catch (Exception e) {
+            log.warn("证书编号 Redis 序号不可用，回退到数据库计数: {}", e.getMessage());
+        }
+        if (start == 1) {
+            long count = fileMapper.selectCount(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<GraduateFile>()
+                    .likeRight(GraduateFile::getCertificateNo, prefix));
+            start = count + 1;
+        }
+        for (long i = start; i < start + 10000; i++) {
             String no = prefix + String.format("%06d", i);
             if (fileMapper.selectCount(new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<GraduateFile>()
                     .eq(GraduateFile::getCertificateNo, no)) == 0) {

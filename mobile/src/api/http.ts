@@ -55,6 +55,17 @@ export function get<T = any>(url: string, params?: any): Promise<T> {
   return http.get(url, { params }) as any
 }
 
+/**
+ * 私有附件（证书、核验抓拍）需要登录态，img/a 标签无法携带请求头，改用 token 查询参数。
+ */
+export function fileUrl(url?: string | null): string {
+  if (!url) return ''
+  if (/^(https?:|data:|blob:)/i.test(url)) return url
+  const token = localStorage.getItem('mobile_token')
+  if (!token) return url
+  return `${url}${url.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`
+}
+
 export function post<T = any>(url: string, data?: any): Promise<T> {
   return http.post(url, data) as any
 }

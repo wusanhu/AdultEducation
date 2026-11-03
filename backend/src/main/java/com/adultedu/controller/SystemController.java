@@ -99,21 +99,21 @@ public class SystemController {
     @GetMapping("/users/{id}")
     @PreAuthorize("hasAuthority('system:user')")
     public R<Map<String, Object>> userDetail(@PathVariable Long id) {
-        return R.ok(systemService.getUser(id));
+        return R.ok(systemService.getUser(id, SecurityUtils.current()));
     }
 
     @PostMapping("/users")
     @PreAuthorize("hasAuthority('system:user:add')")
     @OperLog(module = "账号管理", content = "新增账号")
     public R<Map<String, Object>> createUser(@Valid @RequestBody UserSaveRequest req) {
-        return R.ok(systemService.saveUser(req));
+        return R.ok(systemService.saveUser(SecurityUtils.current(), req));
     }
 
     @PutMapping("/users/{id}")
     @PreAuthorize("hasAuthority('system:user:edit')")
     @OperLog(module = "账号管理", content = "编辑账号")
     public R<Map<String, Object>> updateUser(@PathVariable Long id, @Valid @RequestBody UserSaveRequest req) {
-        return R.ok(systemService.saveUser(new UserSaveRequest(id, req.username(), req.realName(), req.phone(),
+        return R.ok(systemService.saveUser(SecurityUtils.current(), new UserSaveRequest(id, req.username(), req.realName(), req.phone(),
                 req.idCard(), req.orgId(), req.deptId(), req.roleId(), req.userType(), req.status(), req.remark())));
     }
 
@@ -121,14 +121,14 @@ public class SystemController {
     @PreAuthorize("hasAuthority('system:user:reset')")
     @OperLog(module = "账号管理", content = "重置密码")
     public R<Map<String, String>> resetPassword(@PathVariable Long id) {
-        return R.ok(Map.of("password", systemService.resetPassword(id)));
+        return R.ok(Map.of("password", systemService.resetPassword(id, SecurityUtils.current())));
     }
 
     @PutMapping("/users/{id}/status")
     @PreAuthorize("hasAuthority('system:user:edit')")
     @OperLog(module = "账号管理", content = "启停账号")
     public R<Void> userStatus(@PathVariable Long id, @RequestBody StatusRequest req) {
-        systemService.updateUserStatus(id, req.status());
+        systemService.updateUserStatus(id, req.status(), SecurityUtils.current());
         return R.ok();
     }
 

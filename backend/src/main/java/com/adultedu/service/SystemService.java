@@ -230,15 +230,27 @@ public class SystemService {
         return PageResult.of(records, result.getTotal(), pageNum, pageSize);
     }
 
-    public Map<String, Object> getUser(Long id) {
+    public Map<String, Object> getUser(Long id, LoginUser current) {
         SysUser user = userMapper.selectById(id);
         if (user == null) {
             throw new BusinessException("账号不存在");
         }
+        assertUserAccessible(current, user);
         return userMap(user);
     }
 
-    public Map<String, Object> userMap(SysUser user) {        Map<String, Object> map = new LinkedHashMap<>();
+    private void assertUserAccessible(LoginUser current, SysUser user) {
+        if (current == null || current.isSuperAdmin()) {
+            return;
+        }
+        Long orgId = user.getOrgId() == null ? user.getDeptId() : user.getOrgId();
+        if (!dataScopeService.canAccessOrg(current, orgId)) {
+            throw new BusinessException(403, "无权操作该账号");
+        }
+    }
+
+    public Map<String, Object> userMap(SysUser user) {
+        Map<String, Object> map = new LinkedHashMap<>();
         map.put("id", user.getId());
         map.put("username", user.getUsername());
         map.put("realName", user.getRealName());
@@ -270,10 +282,13 @@ public class SystemService {
     }
 
     @Transactional
-    public Map<String, Object> saveUser(UserSaveRequest req) {
+    public Map<String, Object> saveUser(LoginUser current, UserSaveRequest req) {
         SysRole role = roleMapper.selectById(req.roleId());
         if (role == null) {
             throw new BusinessException("角色不存在");
+        }
+        if (!current.isSuperAdmin() && "super_admin".equals(role.getRoleCode())) {
+            throw new BusinessException(403, "无权分配超级管理员角色");
         }
         SysUser same = userMapper.selectOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, req.username()));
         if (same != null && !same.getId().equals(req.id())) {
@@ -287,6 +302,10 @@ public class SystemService {
         }
         Map<String, Object> result = new LinkedHashMap<>();
         if (req.id() == null) {
+            if (!current.isSuperAdmin()
+                    && !dataScopeService.canAccessOrg(current, req.orgId() == null ? req.deptId() : req.orgId())) {
+                throw new BusinessException(403, "无权在目标组织下创建账号");
+            }
             SysUser user = new SysUser();
             user.setUsername(req.username());
             user.setRealName(req.realName());
@@ -315,6 +334,11 @@ public class SystemService {
         if (user == null) {
             throw new BusinessException("账号不存在");
         }
+        assertUserAccessible(current, user);
+        if (!current.isSuperAdmin()
+                && !dataScopeService.canAccessOrg(current, req.orgId() == null ? req.deptId() : req.orgId())) {
+            throw new BusinessException(403, "无权将账号调整到目标组织");
+        }
         user.setUsername(req.username());
         user.setRealName(req.realName());
         user.setPhone(req.phone());
@@ -331,11 +355,12 @@ public class SystemService {
     }
 
     @Transactional
-    public String resetPassword(Long id) {
+    public String resetPassword(Long id, LoginUser current) {
         SysUser user = userMapper.selectById(id);
         if (user == null) {
             throw new BusinessException("账号不存在");
         }
+        assertUserAccessible(current, user);
         String password = RandomUtil.randomString("ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz", 4) + RandomUtil.randomNumbers(4);
         user.setPassword(passwordEncoder.encode(password));
         user.setMustChangePwd(1);
@@ -347,11 +372,12 @@ public class SystemService {
     }
 
     @Transactional
-    public void updateUserStatus(Long id, Integer status) {
+    public void updateUserStatus(Long id, Integer status, LoginUser current) {
         SysUser user = userMapper.selectById(id);
         if (user == null) {
             throw new BusinessException("账号不存在");
         }
+        assertUserAccessible(current, user);
         if (id == 1L && status == 0) {
             throw new BusinessException("内置超级管理员不可停用");
         }
@@ -367,6 +393,11 @@ public class SystemService {
         if (id.equals(current.getId())) {
             throw new BusinessException("不能删除当前登录账号");
         }
+        SysUser target = userMapper.selectById(id);
+        if (target == null) {
+            throw new BusinessException("账号不存在");
+        }
+        assertUserAccessible(current, target);
         long studies = studyRecordMapper.selectCount(new LambdaQueryWrapper<StudyRecord>().eq(StudyRecord::getUserId, id));
         long credits = creditRecordMapper.selectCount(new LambdaQueryWrapper<CreditRecord>().eq(CreditRecord::getUserId, id));
         long applies = graduateApplyMapper.selectCount(new LambdaQueryWrapper<GraduateApply>().eq(GraduateApply::getUserId, id));

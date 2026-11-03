@@ -60,6 +60,17 @@ export function get<T>(url: string, params?: Record<string, unknown>): Promise<T
   return http.get(url, { params }) as unknown as Promise<T>
 }
 
+/**
+ * 私有附件（证书、核验抓拍）需要登录态，img/a 标签无法携带请求头，改用 token 查询参数。
+ */
+export function fileUrl(url?: string | null): string {
+  if (!url) return ''
+  if (/^(https?:|data:|blob:)/i.test(url)) return url
+  const token = localStorage.getItem('admin_token')
+  if (!token) return url
+  return `${url}${url.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`
+}
+
 export function post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> {
   return http.post(url, data, config) as unknown as Promise<T>
 }

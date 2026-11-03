@@ -57,18 +57,19 @@
     <!-- Result Dialog -->
     <van-dialog
       v-model:show="showResult"
-      :title="result?.isPass ? '恭喜通过' : '未通过'"
+      :title="passedResult ? '恭喜通过' : '未通过'"
       :show-confirm-button="false"
     >
       <div class="result-content">
         <van-icon
-          :name="result?.isPass ? 'passed' : 'close'"
-          :color="result?.isPass ? '#07c160' : '#ee0a24'"
+          :name="passedResult ? 'passed' : 'close'"
+          :color="passedResult ? '#07c160' : '#ee0a24'"
           size="60"
         />
-        <p class="result-score">得分：{{ result?.score }} / {{ result?.totalScore }}</p>
-        <p v-if="result?.isPass" class="result-hint">恭喜您通过了考试！</p>
+        <p class="result-score">得分：{{ result?.score }} / {{ result?.totalScore ?? 100 }}</p>
+        <p v-if="passedResult" class="result-hint">恭喜您通过了考试！</p>
         <p v-else class="result-hint">很遗憾未通过，请复习后重新考试</p>
+        <p class="result-hint">及格线：{{ result?.passScore }} 分</p>
         <van-button type="primary" block round size="small" class="mt-16" @click="onResultClose">
           确定
         </van-button>
@@ -104,6 +105,7 @@ let countdownTimer: ReturnType<typeof setInterval> | null = null
 
 const showResult = ref(false)
 const result = ref<any>(null)
+const passedResult = computed(() => Boolean(result.value?.passed ?? result.value?.isPass))
 
 function typeLabel(t: number) {
   switch (t) {

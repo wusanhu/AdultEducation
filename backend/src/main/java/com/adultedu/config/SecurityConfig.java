@@ -39,6 +39,7 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/sms/**", "/api/open/**").permitAll()
+                        .requestMatchers("/uploads/certificate/**", "/uploads/verify/**").authenticated()
                         .requestMatchers("/uploads/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/doc.html", "/webjars/**").permitAll()
                         .requestMatchers("/", "/index.html", "/admin/**", "/m/**", "/assets/**", "/favicon.ico", "/error").permitAll()
                         .anyRequest().authenticated())

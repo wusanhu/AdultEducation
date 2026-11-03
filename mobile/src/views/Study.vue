@@ -107,7 +107,7 @@
             </div>
           </van-checkbox-group>
         </div>
-        <van-button type="primary" block round size="small" @click="submitPopup" :disabled="popupTimeout <= 0">
+        <van-button type="primary" block round size="small" @click="submitPopup" :disabled="popupTimeout <= 0 || !popupAnswered">
           确认
         </van-button>
       </div>
@@ -122,8 +122,17 @@
     >
       <div class="popup-content">
         <p>需要进行身份核验以继续学习</p>
-        <van-button type="primary" block round size="small" class="mt-12" @click="doFaceVerify">
-          人脸核验（模拟）
+        <p v-if="verifyRemaining > 0" class="verify-countdown">剩余 {{ verifyRemaining }} 秒</p>
+        <input
+          ref="faceInput"
+          type="file"
+          accept="image/*"
+          capture="user"
+          class="face-input"
+          @change="onFaceFileChange"
+        />
+        <van-button type="primary" block round size="small" class="mt-12" :loading="verifying" @click="doFaceVerify">
+          人脸核验
         </van-button>
         <van-button plain type="default" block round size="small" class="mt-8" @click="doSmsVerify">
           短信验证码核验
@@ -139,7 +148,8 @@
       @confirm="submitSmsCode"
     >
       <div class="popup-content">
-        <p class="mb-8">验证码已发送至 {{ userStore.user?.phone }}</p>
+        <p class="mb-8">验证码已发送至 {{ smsPhone || userStore.user?.phone }}</p>
+        <p v-if="smsMockCode" class="mock-code">演示验证码：{{ smsMockCode }}</p>
         <van-field v-model="smsCode" placeholder="请输入6位验证码" maxlength="6" type="digit" />
       </div>
     </van-dialog>
@@ -208,6 +218,17 @@ const showVerify = ref(false)
 const showSmsDialog = ref(false)
 const smsCode = ref('')
 const verifyLogId = ref(0)
+const faceInput = ref<HTMLInputElement | null>(null)
+const verifying = ref(false)
+const verifyRemaining = ref(0)
+const smsPhone = ref('')
+const smsMockCode = ref('')
+let verifyTimer: ReturnType<typeof setInterval> | null = null
+
+// Heartbeat
+const heartbeatInFlight = ref(false)
+const pendingScreenSwitch = ref(0)
+const pendingScreenSwitchDuration = ref(0)
 
 // Warning
 const showWarning = ref(false)
@@ -228,6 +249,18 @@ const parsedOptions = computed(() => {
   } catch {
     return []
   }
+})
+
+const popupAnswered = computed(() => {
+  const q = popupQuestion.value
+  if (!q) return false
+  const selected = q.questionType === 2
+    ? [...popupAnswerMulti.value].sort().join(',')
+    : popupAnswer.value
+  if (!selected) return false
+  if (!q.answer) return true
+  const expected = String(q.answer).toUpperCase().split(/[,，\s]+/).filter(Boolean).sort().join(',')
+  return selected.toUpperCase() === expected
 })
 
 function formatTime(sec: number) {
@@ -397,7 +430,8 @@ function stopHeartbeat() {
 }
 
 async function sendHeartbeat() {
-  if (!sessionId.value) return
+  if (!sessionId.value || heartbeatInFlight.value) return
+  heartbeatInFlight.value = true
   const now = Date.now()
   const delta = Math.floor((now - lastHeartbeatTime.value) / 1000)
   lastHeartbeatTime.value = now
@@ -405,19 +439,63 @@ async function sendHeartbeat() {
     effectiveSeconds.value += delta
   }
 
+  const switchCount = pendingScreenSwitch.value
+  const switchDuration = pendingScreenSwitchDuration.value
+  pendingScreenSwitch.value = 0
+  pendingScreenSwitchDuration.value = 0
+
   try {
-    await study.heartbeat({
+    const res = await study.heartbeat({
       courseId: courseId.value,
       sessionId: sessionId.value,
       deltaSeconds: delta,
       progress: duration.value > 0 ? (currentTime.value / duration.value) * 100 : 0,
       position: Math.floor(currentTime.value),
       inForeground: document.hidden ? 0 : 1,
-      screenSwitch: screenSwitchCount.value,
-      screenSwitchDuration: screenSwitchAccum.value,
+      screenSwitch: switchCount > 0 ? 1 : 0,
+      screenSwitchDuration: switchDuration,
     })
+    applyHeartbeatState(res)
   } catch {
     // ignore heartbeat errors
+  } finally {
+    heartbeatInFlight.value = false
+  }
+}
+
+function applyHeartbeatState(res: any) {
+  if (!res) return
+  if (res.sessionId) sessionId.value = res.sessionId
+  if (res.validDuration != null) effectiveSeconds.value = Number(res.validDuration)
+  if (res.progress != null) progressPercent.value = Math.min(100, Math.round(Number(res.progress)))
+  if (res.screenSwitchCount != null) screenSwitchCount.value = Number(res.screenSwitchCount)
+
+  if (res.locked) {
+    videoRef.value?.pause()
+    stopHeartbeat()
+    showWarningMsg(res.abnormalReason || res.pauseReason || '学习记录已标记异常，请联系教员复核')
+    return
+  }
+  if (res.completed) {
+    isCompleted.value = true
+    isPlaying.value = false
+    videoRef.value?.pause()
+    stopHeartbeat()
+    showToast('学习完成')
+    return
+  }
+  if (res.popup && !showPopup.value) {
+    presentPopup(Number(res.popupRemaining || res.popupTimeout || 60))
+  }
+  if (res.needVerify && res.verify?.logId) {
+    openVerify(Number(res.verify.logId), Number(res.verify.remainingSeconds || 60))
+  }
+  if (res.paused && res.pauseReason) {
+    videoRef.value?.pause()
+    isPlaying.value = false
+    if (!showVerify.value && !showPopup.value && String(res.pauseReason).indexOf('完成') < 0) {
+      showWarningMsg(res.pauseReason)
+    }
   }
 }
 
@@ -441,29 +519,37 @@ async function triggerPopup() {
     if (state?.popupQuestion) {
       popupQuestion.value = state.popupQuestion
     } else {
-      // Generate a mock question
-      popupQuestion.value = {
-        id: 0,
-        questionType: 3,
-        content: '请确认您正在认真学习本课程',
-        optionsJson: JSON.stringify({ A: '是，我正在学习', B: '否' }),
-        answer: 'A',
-      }
+      popupQuestion.value = mockPopupQuestion()
     }
   } catch {
-    popupQuestion.value = {
-      id: 0,
-      questionType: 3,
-      content: '请确认您正在认真学习本课程',
-      optionsJson: JSON.stringify({ A: '是，我正在学习', B: '否' }),
-      answer: 'A',
-    }
+    popupQuestion.value = mockPopupQuestion()
   }
+  presentPopup(60)
+}
 
+function mockPopupQuestion() {
+  return {
+    id: 0,
+    questionType: 3,
+    content: '请确认您正在认真学习本课程',
+    optionsJson: JSON.stringify({ A: '是，我正在学习', B: '否' }),
+    answer: 'A',
+  }
+}
+
+function presentPopup(seconds: number) {
+  if (!popupQuestion.value) {
+    popupQuestion.value = mockPopupQuestion()
+  }
+  if (popupTimer) {
+    clearInterval(popupTimer)
+    popupTimer = null
+  }
   popupAnswer.value = ''
   popupAnswerMulti.value = []
-  popupTimeout.value = 60
+  popupTimeout.value = Math.max(1, Math.floor(seconds))
   showPopup.value = true
+  if (videoRef.value) videoRef.value.pause()
 
   popupTimer = setInterval(() => {
     popupTimeout.value--
@@ -476,6 +562,10 @@ async function triggerPopup() {
 }
 
 async function submitPopup() {
+  if (!popupAnswered.value) {
+    showToast('请选择正确答案后再确认')
+    return
+  }
   if (popupTimer) {
     clearInterval(popupTimer)
     popupTimer = null
@@ -509,26 +599,134 @@ function onPopupTimeout() {
 }
 
 // Identity verification
+function openVerify(logId: number, remainingSeconds = 60) {
+  if (!logId) return
+  verifyLogId.value = logId
+  verifyRemaining.value = Math.max(1, Math.floor(remainingSeconds))
+  showVerify.value = true
+  if (verifyTimer) clearInterval(verifyTimer)
+  verifyTimer = setInterval(() => {
+    verifyRemaining.value--
+    if (verifyRemaining.value <= 0) {
+      clearInterval(verifyTimer!)
+      verifyTimer = null
+      showVerify.value = false
+      showWarningMsg('身份核验超时，学习计时已暂停')
+      videoRef.value?.pause()
+      sendHeartbeat()
+    }
+  }, 1000)
+}
+
+function closeVerify() {
+  showVerify.value = false
+  if (verifyTimer) {
+    clearInterval(verifyTimer)
+    verifyTimer = null
+  }
+  verifyRemaining.value = 0
+}
+
 async function doFaceVerify() {
+  if (!verifyLogId.value) {
+    try {
+      const res = await study.verifyStart(courseId.value, 'manual')
+      verifyLogId.value = Number(res?.logId || 0)
+      if (res?.remainingSeconds) verifyRemaining.value = Number(res.remainingSeconds)
+      showVerify.value = true
+    } catch {
+      showToast('无法开始身份核验')
+      return
+    }
+  }
+  faceInput.value?.click()
+}
+
+async function onFaceFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file || !verifyLogId.value) return
+  verifying.value = true
   try {
-    const res = await study.verifyStart(courseId.value, 'face')
-    verifyLogId.value = res?.logId || res?.id || 0
-    await study.verifyFace(verifyLogId.value, 'mock_base64')
-    showVerify.value = false
-    showToast('人脸核验通过')
-    if (videoRef.value) videoRef.value.play()
+    const base64 = await compressImage(file)
+    const res = await study.verifyFace(verifyLogId.value, base64)
+    handleVerifyResult(res)
   } catch {
-    showToast('核验失败，请重试')
+    showToast('人脸核验失败，请重试')
+  } finally {
+    verifying.value = false
+  }
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result || ''))
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
+}
+
+async function compressImage(file: File): Promise<string> {
+  const raw = await readFileAsDataUrl(file)
+  const img = new Image()
+  await new Promise<void>((resolve, reject) => {
+    img.onload = () => resolve()
+    img.onerror = () => reject(new Error('图片读取失败'))
+    img.src = raw
+  })
+  const maxSide = 640
+  const scale = Math.min(1, maxSide / Math.max(img.width, img.height))
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.max(1, Math.round(img.width * scale))
+  canvas.height = Math.max(1, Math.round(img.height * scale))
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return raw
+  ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+  return canvas.toDataURL('image/jpeg', 0.82)
+}
+
+function handleVerifyResult(res: any) {
+  if (res?.passed) {
+    closeVerify()
+    showToast('身份核验通过')
+    if (videoRef.value) videoRef.value.play()
+    return
+  }
+  showToast(res?.message || '核验未通过，请重试')
+  if (res?.locked) {
+    closeVerify()
+    showWarningMsg('核验失败次数过多，学习记录已标记异常')
+    videoRef.value?.pause()
+    stopHeartbeat()
+    return
+  }
+  if (res?.timeout) {
+    closeVerify()
+    showWarningMsg('身份核验已超时')
   }
 }
 
 async function doSmsVerify() {
   try {
-    const res = await study.verifyStart(courseId.value, 'sms')
-    verifyLogId.value = res?.logId || res?.id || 0
-    await study.verifySmsSend(verifyLogId.value)
+    if (!verifyLogId.value) {
+      const startRes = await study.verifyStart(courseId.value, 'manual')
+      verifyLogId.value = Number(startRes?.logId || 0)
+    }
+    if (!verifyLogId.value) {
+      showToast('无法开始身份核验')
+      return
+    }
+    const res = await study.verifySmsSend(verifyLogId.value)
+    smsPhone.value = res?.phone || userStore.user?.phone || ''
+    smsMockCode.value = res?.mockCode || ''
+    if (res?.mockCode) {
+      smsCode.value = res.mockCode
+    }
     showVerify.value = false
     showSmsDialog.value = true
+    showToast(res?.mockCode ? `演示验证码：${res.mockCode}` : '验证码已发送')
   } catch {
     showToast('发送验证码失败')
   }
@@ -536,11 +734,13 @@ async function doSmsVerify() {
 
 async function submitSmsCode() {
   try {
-    await study.verifySmsSubmit(verifyLogId.value, smsCode.value)
-    showSmsDialog.value = false
-    smsCode.value = ''
-    showToast('短信核验通过')
-    if (videoRef.value) videoRef.value.play()
+    const res = await study.verifySmsSubmit(verifyLogId.value, smsCode.value)
+    handleVerifyResult(res)
+    if (res?.passed) {
+      showSmsDialog.value = false
+      smsCode.value = ''
+      smsMockCode.value = ''
+    }
   } catch {
     showToast('验证码错误')
   }
@@ -572,12 +772,17 @@ function onVisibilityChange() {
       videoRef.value?.pause()
     }
     screenSwitchCount.value++
+    pendingScreenSwitch.value++
     sendHeartbeat()
   } else {
     if (hiddenSince) {
       const elapsed = Math.floor((Date.now() - hiddenSince) / 1000)
       screenSwitchAccum.value += elapsed
+      pendingScreenSwitchDuration.value += elapsed
       hiddenSince = null
+      // 后台停留时间不计入有效学时，回到前台立即回传切屏时长
+      lastHeartbeatTime.value = Date.now()
+      sendHeartbeat()
     }
   }
 }
@@ -606,6 +811,15 @@ async function initStudy() {
     resumePosition.value = res?.lastPosition || res?.position || 0
     if (videoRef.value && resumePosition.value > 0 && videoRef.value.readyState >= 1) {
       applyPosition(resumePosition.value)
+    }
+    if (res?.status === 2) {
+      isCompleted.value = true
+    }
+    if (res?.resumeVerifyId) {
+      // 异常解锁后重新进入，必须先完成一次核验
+      openVerify(Number(res.resumeVerifyId), 60)
+    } else if (res?.locked) {
+      showWarningMsg(res.abnormalReason || '学习记录已标记异常，请联系教员复核')
     }
   } catch (e: any) {
     if (!e?.response) {
@@ -644,6 +858,7 @@ watch(courseId, async (id, oldId) => {
 onBeforeUnmount(() => {
   stopHeartbeat()
   if (popupTimer) clearInterval(popupTimer)
+  if (verifyTimer) clearInterval(verifyTimer)
   if (sessionId.value) {
     pauseStudy(courseId.value).catch(() => {})
   }
@@ -795,6 +1010,20 @@ onBeforeUnmount(() => {
 }
 .popup-option {
   padding: 8px 0;
+}
+.verify-countdown {
+  text-align: center;
+  color: #ee0a24;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.face-input {
+  display: none;
+}
+.mock-code {
+  color: #1989fa;
+  font-size: 13px;
+  margin-bottom: 8px;
 }
 .warning-overlay {
   position: fixed;

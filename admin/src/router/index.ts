@@ -73,6 +73,9 @@ router.beforeEach(async (to) => {
       return { path: '/login', query: { redirect: to.fullPath } }
     }
   }
+  if (auth.mustChangePwd && to.path !== '/profile') {
+    return '/profile'
+  }
   const required = to.meta.perms || []
   if (required.length && !required.some((perm) => auth.hasPerm(perm))) {
     return '/403'

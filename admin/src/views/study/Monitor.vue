@@ -89,7 +89,7 @@
                     <a-tag :color="record.verifyResult === 1 ? 'green' : record.verifyResult === 2 ? 'orange' : 'red'">{{ record.verifyResultLabel }}</a-tag>
                   </template>
                   <template v-else-if="column.key === 'image'">
-                    <a-image v-if="record.imgUrl" :src="record.imgUrl" :width="48" :height="36" style="object-fit:cover;border-radius:4px" />
+                    <a-image v-if="record.imgUrl" :src="fileUrl(record.imgUrl)" :width="48" :height="36" style="object-fit:cover;border-radius:4px" />
                     <span v-else class="muted">无</span>
                   </template>
                 </template>
@@ -119,6 +119,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { message, Modal, type TablePaginationConfig } from 'ant-design-vue'
 import { courseApi, projectApi, studyApi } from '../../api'
+import { fileUrl } from '../../api/http'
 import type { CourseRow, CreditRow, ProjectRow, StudyRecordRow, VerifyLogRow } from '../../types'
 
 interface HeartbeatRow { id: number; reportTime: string; deltaSeconds: number; progress: number; inForeground: number; screenSwitch: number; ip?: string }

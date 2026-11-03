@@ -21,15 +21,16 @@ export const useUserStore = defineStore('user', () => {
       ? JSON.parse(localStorage.getItem('mobile_user')!)
       : null
   )
-  const mustChangePwd = ref(false)
+  const mustChangePwd = ref(localStorage.getItem('mobile_must_change') === '1')
 
   const isLoggedIn = computed(() => !!token.value)
-  const isTeacher = computed(() => ['teacher', 'leader', 'admin'].includes(user.value?.roleCode || ''))
-  const isLeader = computed(() => ['leader', 'admin'].includes(user.value?.roleCode || ''))
+  const isTeacher = computed(() => ['teacher', 'leader', 'admin', 'super_admin'].includes(user.value?.roleCode || ''))
+  const isLeader = computed(() => ['leader', 'admin', 'super_admin'].includes(user.value?.roleCode || ''))
 
   function setLogin(data: any) {
     token.value = data.token
     mustChangePwd.value = !!data.mustChangePwd
+    localStorage.setItem('mobile_must_change', mustChangePwd.value ? '1' : '0')
     user.value = {
       id: data.user?.id,
       username: data.user?.username,
@@ -51,6 +52,7 @@ export const useUserStore = defineStore('user', () => {
     mustChangePwd.value = false
     localStorage.removeItem('mobile_token')
     localStorage.removeItem('mobile_user')
+    localStorage.removeItem('mobile_must_change')
   }
 
   async function refreshMe() {
@@ -70,6 +72,10 @@ export const useUserStore = defineStore('user', () => {
           orgName: data.user.orgName,
         }
         localStorage.setItem('mobile_user', JSON.stringify(user.value))
+      }
+      if (data?.mustChangePwd !== undefined) {
+        mustChangePwd.value = !!data.mustChangePwd
+        localStorage.setItem('mobile_must_change', mustChangePwd.value ? '1' : '0')
       }
     } catch {
       // ignore
