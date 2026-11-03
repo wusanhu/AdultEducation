@@ -186,7 +186,8 @@ onMounted(async () => {
 
     startCountdown()
   } catch {
-    showToast('加载试卷失败')
+    // 具体原因已由 http 拦截器 toast（如"请先完成课程视频学习后再参加测验"），这里不再重复提示
+    setTimeout(() => router.back(), 900)
   } finally {
     loading.value = false
   }
