@@ -1,23 +1,25 @@
 <template>
   <a-layout style="min-height:100vh">
-    <a-layout-sider v-model:collapsed="collapsed" :width="232" :collapsed-width="68" style="background:#0b1728" collapsible :trigger="null">
-      <div style="height:64px;display:flex;align-items:center;gap:10px;padding:0 18px;border-bottom:1px solid rgba(255,255,255,.06);overflow:hidden">
+    <a-layout-sider v-model:collapsed="collapsed" :width="232" :collapsed-width="68" class="admin-sider" style="background:#0b1728" collapsible :trigger="null">
+      <div class="sider-logo">
         <div style="min-width:34px;height:34px;border-radius:9px;background:#2563eb;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700">继</div>
         <div v-if="!collapsed" style="white-space:nowrap">
           <div style="color:#fff;font-size:14px;font-weight:600">继续教育平台</div>
           <div style="color:#64748b;font-size:10px;letter-spacing:.5px">ADMIN CONSOLE</div>
         </div>
       </div>
-      <a-menu
-        v-model:openKeys="openKeys"
-        :selected-keys="[route.path]"
-        :items="menuItems"
-        theme="dark"
-        mode="inline"
-        :inline-collapsed="collapsed"
-        style="background:transparent;border-inline-end:none;padding:10px 8px"
-        @click="onMenuClick"
-      />
+      <div class="sider-menu">
+        <a-menu
+          v-model:openKeys="openKeys"
+          :selected-keys="[route.path]"
+          :items="menuItems"
+          theme="dark"
+          mode="inline"
+          :inline-collapsed="collapsed"
+          style="background:transparent;border-inline-end:none;padding:10px 8px"
+          @click="onMenuClick"
+        />
+      </div>
       <template #trigger>
         <div />
       </template>
@@ -256,6 +258,38 @@ onMounted(loadUnread)
 </script>
 
 <style scoped>
+.admin-sider {
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+}
+.admin-sider :deep(.ant-layout-sider-children) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.sider-logo {
+  flex: none;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  overflow: hidden;
+}
+.sider-menu {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148,163,184,.35) transparent;
+}
+.sider-menu::-webkit-scrollbar { width: 6px; }
+.sider-menu::-webkit-scrollbar-thumb { background: rgba(148,163,184,.3); border-radius: 3px; }
+.sider-menu::-webkit-scrollbar-track { background: transparent; }
 .fade-enter-active, .fade-leave-active { transition: opacity .16s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 :deep(.ant-menu-dark .ant-menu-item-selected) { background: #1d4ed8 !important; border-radius: 8px; }
