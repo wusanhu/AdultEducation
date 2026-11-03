@@ -135,7 +135,7 @@ onMounted(async () => {
   left: 0;
   right: 0;
   background: #fff;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+  border-top: 1px solid #ebedf0;
 }
 .loading-center {
   display: flex;

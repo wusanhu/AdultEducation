@@ -1,6 +1,6 @@
 <template>
   <div class="login-bg" style="display:flex;align-items:center;justify-content:center;padding:24px">
-    <div style="width:1080px;max-width:100%;display:grid;grid-template-columns:1.15fr .85fr;gap:0;border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.35);background:#fff">
+    <div style="width:1080px;max-width:100%;display:grid;grid-template-columns:1.15fr .85fr;gap:0;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.16);background:#fff">
       <div style="padding:58px 54px;background:linear-gradient(150deg,#0d1b2e,#143f6b 60%,#0e7490);color:#fff;position:relative;overflow:hidden">
         <div style="position:absolute;right:-90px;top:-90px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.07)"></div>
         <div style="position:absolute;right:40px;bottom:-120px;width:260px;height:260px;border-radius:50%;background:rgba(56,189,248,.12)"></div>

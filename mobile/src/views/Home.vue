@@ -308,7 +308,7 @@ onMounted(async () => {
   padding: 14px 16px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 8px 24px rgba(31, 95, 190, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   cursor: pointer;
 }
 .hero-credit-main {
@@ -339,7 +339,7 @@ onMounted(async () => {
   margin: 16px 16px 14px;
   border-radius: 14px;
   padding: 16px 4px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #ebedf0;
 }
 .stat-item {
   flex: 1;

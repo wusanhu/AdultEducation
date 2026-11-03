@@ -103,7 +103,7 @@ async function onSubmit() {
   background: #fff;
   border-radius: 12px;
   padding: 24px 0 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 .login-btn-wrap {
   padding: 24px 16px 8px;

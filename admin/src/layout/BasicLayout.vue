@@ -496,7 +496,6 @@ onMounted(loadUnread)
   height: 34px;
   border-radius: 10px;
   background: linear-gradient(135deg, #2563eb, #6d5efc);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, .3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -817,7 +816,7 @@ onMounted(loadUnread)
   background: linear-gradient(135deg, #2563eb, #6d5efc) !important;
   font-size: 15px;
   font-weight: 600;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, .22);
+  border: 1px solid rgba(255, 255, 255, .6);
 }
 .footer-user-name {
   margin-top: 8px;
@@ -841,11 +840,12 @@ onMounted(loadUnread)
 }
 .online-dot {
   flex: none;
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #22c55e;
-  box-shadow: 0 0 0 2px #dcfce7;
+  border: 2px solid #dcfce7;
+  box-sizing: border-box;
 }
 .app-sider.collapsed .nav-panel { padding: 12px 8px 16px; }
 .app-sider.collapsed .root-item {
@@ -881,7 +881,6 @@ onMounted(loadUnread)
   background: #eff4fb;
   border: 1px solid #e6edf7;
   border-radius: 18px;
-  box-shadow: 0 6px 24px rgba(15, 23, 42, .035);
 }
 .nav-forward-enter-active,
 .nav-forward-leave-active,
