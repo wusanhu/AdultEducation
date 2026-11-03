@@ -397,6 +397,14 @@ function syncNavToRoute() {
 
 watch([() => route.path, navGroups], syncNavToRoute, { immediate: true })
 
+// 内容区独立滚动后，路由切换需手动回到顶部
+watch(() => route.path, () => {
+  requestAnimationFrame(() => {
+    const content = document.querySelector('.admin-content')
+    if (content) content.scrollTop = 0
+  })
+})
+
 async function loadUnread() {
   try { unread.value = await notificationApi.unread() } catch { unread.value = 0 }
 }
@@ -463,12 +471,15 @@ onMounted(loadUnread)
 
 <style scoped>
 .admin-shell {
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--admin-shell-bg, #fafcff);
 }
 .app-topbar {
-  position: sticky;
-  top: 0;
+  flex: none;
+  position: relative;
   z-index: 40;
   height: 64px;
   display: flex;
@@ -594,16 +605,17 @@ onMounted(loadUnread)
 .topbar-icon-btn:hover { background: #f1f5f9; color: #1d4ed8; }
 
 .admin-body {
+  flex: 1;
+  min-height: 0;
   display: flex;
   align-items: stretch;
-  min-height: calc(100vh - 64px);
+  overflow: hidden;
 }
 .app-sider {
   flex: none;
   width: 240px;
-  height: calc(100vh - 64px);
-  position: sticky;
-  top: 64px;
+  height: 100%;
+  position: relative;
   display: flex;
   flex-direction: column;
   background: var(--admin-shell-bg, #fafcff);
@@ -891,7 +903,10 @@ onMounted(loadUnread)
 .admin-content {
   flex: 1;
   min-width: 0;
-  min-height: calc(100vh - 80px);
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
   margin: 0 16px 16px 12px;
   padding: 20px 20px 24px;
   background: var(--admin-canvas-bg, #fff);

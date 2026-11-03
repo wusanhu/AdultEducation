@@ -1,12 +1,15 @@
 package com.adultedu.service;
 
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.adultedu.common.BusinessException;
 import com.adultedu.common.PageResult;
 import com.adultedu.dto.BizDtos.AttachmentDto;
 import com.adultedu.dto.BizDtos.CourseSaveRequest;
 import com.adultedu.dto.BizDtos.QuestionDto;
 import com.adultedu.dto.BizDtos.VerifyGearSaveRequest;
+import com.adultedu.dto.QuestionImportRow;
+import com.alibaba.excel.EasyExcel;
 import com.adultedu.entity.Course;
 import com.adultedu.entity.CourseAttachment;
 import com.adultedu.entity.ExamRecord;
@@ -34,18 +37,25 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CourseService {
+    private static final List<String> OPTION_KEYS = List.of("A", "B", "C", "D", "E", "F");
+
     private final CourseMapper courseMapper;
     private final CourseAttachmentMapper attachmentMapper;
     private final QuestionMapper questionMapper;
@@ -334,6 +344,189 @@ public class CourseService {
             questionMapper.insert(q);
             sort++;
         }
+    }
+
+    /**
+     * 从 Excel 导入课后题库，校验通过后直接写入 question 表（追加到现有题目之后）。
+     */
+    @Transactional
+    public Map<String, Object> importQuestions(Long courseId, MultipartFile file, LoginUser current) {
+        Course course = courseMapper.selectById(courseId);
+        if (course == null) {
+            throw new BusinessException("课程不存在");
+        }
+        if (!canManage(course, current)) {
+            throw new BusinessException(403, "无权编辑该课程题库");
+        }
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("请选择要导入的题库文件");
+        }
+        String filename = file.getOriginalFilename() == null ? "" : file.getOriginalFilename().toLowerCase(Locale.ROOT);
+        if (!filename.endsWith(".xlsx") && !filename.endsWith(".xls")) {
+            throw new BusinessException("仅支持 .xlsx 或 .xls 格式的 Excel 文件");
+        }
+        List<QuestionImportRow> rows;
+        try (InputStream in = file.getInputStream()) {
+            rows = EasyExcel.read(in).head(QuestionImportRow.class).sheet().doReadSync();
+        } catch (Exception e) {
+            throw new BusinessException("Excel 解析失败，请下载系统模板填写后重新导入");
+        }
+        if (rows == null || rows.isEmpty()) {
+            throw new BusinessException("文件中没有可导入的题目");
+        }
+        Question last = questionMapper.selectOne(new LambdaQueryWrapper<Question>()
+                .eq(Question::getCourseId, courseId).orderByDesc(Question::getSort).last("limit 1"));
+        int sort = last == null || last.getSort() == null ? 1 : last.getSort() + 1;
+        int imported = 0;
+        for (int i = 0; i < rows.size(); i++) {
+            QuestionImportRow row = rows.get(i);
+            if (isBlankQuestionRow(row)) {
+                continue;
+            }
+            int line = i + 2;
+            ParsedQuestion parsed;
+            try {
+                parsed = parseImportQuestion(row);
+            } catch (BusinessException e) {
+                throw new BusinessException("第 " + line + " 行：" + e.getMessage());
+            }
+            Question q = new Question();
+            q.setCourseId(courseId);
+            q.setQuestionType(parsed.type());
+            q.setContent(parsed.content());
+            q.setOptionsJson(parsed.optionsJson());
+            q.setAnswer(parsed.answer());
+            q.setScore(parsed.score());
+            q.setSort(sort++);
+            questionMapper.insert(q);
+            imported++;
+        }
+        if (imported == 0) {
+            throw new BusinessException("文件中没有可导入的题目");
+        }
+        List<Question> questions = questionMapper.selectList(new LambdaQueryWrapper<Question>()
+                .eq(Question::getCourseId, courseId)
+                .orderByAsc(Question::getSort).orderByAsc(Question::getId));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("imported", imported);
+        result.put("questions", questions);
+        return result;
+    }
+
+    private boolean isBlankQuestionRow(QuestionImportRow row) {
+        return StrUtil.isBlank(row.getQuestionType()) && StrUtil.isBlank(row.getContent())
+                && StrUtil.isBlank(row.getOptionA()) && StrUtil.isBlank(row.getOptionB())
+                && StrUtil.isBlank(row.getOptionC()) && StrUtil.isBlank(row.getOptionD())
+                && StrUtil.isBlank(row.getOptionE()) && StrUtil.isBlank(row.getOptionF())
+                && StrUtil.isBlank(row.getAnswer()) && StrUtil.isBlank(row.getScore());
+    }
+
+    private ParsedQuestion parseImportQuestion(QuestionImportRow row) {
+        String content = StrUtil.trimToEmpty(row.getContent());
+        if (content.isEmpty()) {
+            throw new BusinessException("题目内容不能为空");
+        }
+        int type = parseQuestionType(row.getQuestionType());
+        String answerRaw = StrUtil.trimToEmpty(row.getAnswer());
+        if (answerRaw.isEmpty()) {
+            throw new BusinessException("正确答案不能为空");
+        }
+        List<Map<String, Object>> options = new ArrayList<>();
+        String[] optionTexts = {row.getOptionA(), row.getOptionB(), row.getOptionC(),
+                row.getOptionD(), row.getOptionE(), row.getOptionF()};
+        for (int i = 0; i < optionTexts.length; i++) {
+            String text = StrUtil.trimToEmpty(optionTexts[i]);
+            if (!text.isEmpty()) {
+                Map<String, Object> opt = new LinkedHashMap<>();
+                opt.put("key", OPTION_KEYS.get(i));
+                opt.put("text", text);
+                options.add(opt);
+            }
+        }
+        String answer;
+        if (type == 3) {
+            options.clear();
+            options.add(trueFalseOption("true", "正确"));
+            options.add(trueFalseOption("false", "错误"));
+            String normalized = answerRaw.replace(" ", "").replace("\u3000", "");
+            if (matchesAny(normalized, "正确", "对", "√", "T", "TRUE", "A", "1")) {
+                answer = "true";
+            } else if (matchesAny(normalized, "错误", "错", "×", "X", "F", "FALSE", "B", "0")) {
+                answer = "false";
+            } else {
+                throw new BusinessException("判断题答案请填写“正确”或“错误”");
+            }
+        } else {
+            if (options.size() < 2) {
+                throw new BusinessException("至少填写两个选项");
+            }
+            List<String> answerKeys = Arrays.stream(answerRaw.split("[,，、;；/\\s]+"))
+                    .filter(StrUtil::isNotBlank)
+                    .map(s -> s.trim().toUpperCase(Locale.ROOT))
+                    .distinct().toList();
+            Set<String> validKeys = options.stream().map(o -> String.valueOf(o.get("key"))).collect(Collectors.toSet());
+            for (String key : answerKeys) {
+                if (!validKeys.contains(key)) {
+                    throw new BusinessException("答案 " + key + " 不在选项范围内");
+                }
+            }
+            if (type == 1 && answerKeys.size() != 1) {
+                throw new BusinessException("单选题只能填写一个答案");
+            }
+            if (type == 2 && answerKeys.size() < 2) {
+                throw new BusinessException("多选题至少填写两个答案");
+            }
+            answer = answerKeys.stream().sorted().collect(Collectors.joining(","));
+        }
+        BigDecimal score = BigDecimal.TEN;
+        if (StrUtil.isNotBlank(row.getScore())) {
+            try {
+                score = new BigDecimal(row.getScore().trim());
+            } catch (NumberFormatException e) {
+                throw new BusinessException("分值格式不正确");
+            }
+            if (score.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BusinessException("分值必须大于 0");
+            }
+        }
+        return new ParsedQuestion(type, content, JSONUtil.toJsonStr(options), answer, score);
+    }
+
+    private Map<String, Object> trueFalseOption(String key, String text) {
+        Map<String, Object> opt = new LinkedHashMap<>();
+        opt.put("key", key);
+        opt.put("text", text);
+        return opt;
+    }
+
+    private boolean matchesAny(String value, String... candidates) {
+        for (String candidate : candidates) {
+            if (candidate.equalsIgnoreCase(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int parseQuestionType(String raw) {
+        String value = StrUtil.trimToEmpty(raw);
+        if (value.isEmpty() || isNumberValue(value, 1) || value.contains("单选") || value.contains("单项")) {
+            return 1;
+        }
+        if (isNumberValue(value, 2) || value.contains("多选") || value.contains("多项")) {
+            return 2;
+        }
+        if (isNumberValue(value, 3) || value.contains("判断")) {
+            return 3;
+        }
+        throw new BusinessException("题目类型仅支持单选题、多选题、判断题");
+    }
+
+    private boolean isNumberValue(String value, int expected) {
+        return String.valueOf(expected).equals(value) || (expected + ".0").equals(value);
+    }
+
+    private record ParsedQuestion(int type, String content, String optionsJson, String answer, BigDecimal score) {
     }
 
     private void notifyPublish(Course course, LoginUser current, boolean isNew) {

@@ -1,7 +1,7 @@
 * { box-sizing: border-box; }
 /* 平面化设计：全局禁用阴影，改用描边与底色区分层级 */
 *, *::before, *::after { box-shadow: none !important; }
-html, body, #app { height: 100%; margin: 0; }
+html, body, #app { height: 100%; margin: 0; overflow: hidden; }
 body {
   background: var(--admin-shell-bg, #fafcff);
   color: #1e293b;

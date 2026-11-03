@@ -8,6 +8,8 @@ import com.adultedu.dto.BizDtos.VerifyGearSaveRequest;
 import com.adultedu.entity.VerifyGear;
 import com.adultedu.security.SecurityUtils;
 import com.adultedu.service.CourseService;
+import com.alibaba.excel.EasyExcel;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,7 +22,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -64,6 +70,26 @@ public class CourseController {
     public R<Void> deleteGear(@PathVariable Long id) {
         courseService.deleteGear(id);
         return R.ok();
+    }
+
+    @GetMapping("/questions/template")
+    public void questionTemplate(HttpServletResponse response) throws IOException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setCharacterEncoding("utf-8");
+        String fileName = URLEncoder.encode("课后题库导入模板.xlsx", StandardCharsets.UTF_8).replace("+", "%20");
+        response.setHeader("Content-Disposition", "attachment; filename*=UTF-8''" + fileName);
+        List<List<String>> head = List.of(List.of("题目类型"), List.of("题目内容"),
+                List.of("选项A"), List.of("选项B"), List.of("选项C"), List.of("选项D"),
+                List.of("选项E"), List.of("选项F"), List.of("正确答案"), List.of("分值"));
+        EasyExcel.write(response.getOutputStream()).head(head).sheet("课后题库").doWrite(List.of());
+    }
+
+    @PostMapping("/{id}/questions/import")
+    @PreAuthorize("hasAuthority('course:add') or hasAuthority('course:edit')")
+    @OperLog(module = "课程管理", content = "导入课后题库")
+    public R<Map<String, Object>> importQuestions(@PathVariable Long id,
+                                                  @RequestParam("file") MultipartFile file) {
+        return R.ok(courseService.importQuestions(id, file, SecurityUtils.current()));
     }
 
     @GetMapping("/{id}")

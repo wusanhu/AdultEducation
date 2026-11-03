@@ -50,7 +50,10 @@ export const courseApi = {
   remove: (id: number) => del<void>(`/courses/${id}`),
   status: (id: number, status: number) => put<void>(`/courses/${id}/status?status=${status}`),
   saveGear: (data: Record<string, unknown>) => post<number>('/courses/gears', data),
-  removeGear: (id: number) => del<void>(`/courses/gears/${id}`)
+  removeGear: (id: number) => del<void>(`/courses/gears/${id}`),
+  importQuestions: (id: number, file: File) =>
+    upload<{ imported: number; questions: CourseDetail['questions'] }>(`/courses/${id}/questions/import`, file),
+  downloadQuestionTemplate: () => download('/courses/questions/template', undefined, '课后题库导入模板.xlsx')
 }
 
 export const studyApi = {

@@ -152,31 +152,42 @@ INSERT IGNORE INTO course (id,project_id,course_name,cover,credit,study_hour,is_
  (6,2,'院感防控实务','/uploads/seed/cover2.jpg',3.00,6.00,1,1,60,0,'/uploads/seed/sample.mp4',180,'围绕手卫生、消毒隔离、职业暴露处置等院感防控重点，结合场景演示规范操作。',3,1,1,'{"gearCode":1,"triggerPoints":[50],"intervalMinute":0,"timeoutSecond":60,"maxFailCount":3,"failStrategy":1}',1,2),
  (7,3,'公需科目：数字经济','/uploads/seed/cover3.jpg',4.00,8.00,1,0,60,0,'/uploads/seed/sample.mp4',180,'介绍数字经济的发展趋势、产业应用与数据要素基础制度。',7,1,0,'{"gearCode":0,"triggerPoints":[],"intervalMinute":0,"timeoutSecond":60,"maxFailCount":3,"failStrategy":1}',0,1);
 
-INSERT IGNORE INTO course_attachment (course_id,file_name,file_url,file_type,file_size) VALUES
- (1,'继续教育政策文件汇编.pdf','/uploads/seed/policy.pdf','pdf',1024),
- (2,'数字素养学习手册.pdf','/uploads/seed/digital.pdf','pdf',1024),
- (3,'职业道德案例集.pdf','/uploads/seed/ethics.pdf','pdf',1024);
+INSERT INTO course_attachment (course_id,file_name,file_url,file_type,file_size)
+SELECT 1,'继续教育政策文件汇编.pdf','/uploads/seed/policy.pdf','pdf',1024 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM course_attachment a WHERE a.course_id=1 AND a.file_url='/uploads/seed/policy.pdf');
+INSERT INTO course_attachment (course_id,file_name,file_url,file_type,file_size)
+SELECT 2,'数字素养学习手册.pdf','/uploads/seed/digital.pdf','pdf',1024 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM course_attachment a WHERE a.course_id=2 AND a.file_url='/uploads/seed/digital.pdf');
+INSERT INTO course_attachment (course_id,file_name,file_url,file_type,file_size)
+SELECT 3,'职业道德案例集.pdf','/uploads/seed/ethics.pdf','pdf',1024 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM course_attachment a WHERE a.course_id=3 AND a.file_url='/uploads/seed/ethics.pdf');
 
-INSERT IGNORE INTO question (course_id,question_type,content,options_json,answer,score,sort) VALUES
- (2,1,'人工智能训练所依赖的数据应当优先保证什么？','[{"key":"A","text":"数量越多越好"},{"key":"B","text":"质量与合规"},{"key":"C","text":"全部公开"},{"key":"D","text":"仅需图片"}]','B',20,1),
- (2,1,'下列哪项属于良好的数字安全习惯？','[{"key":"A","text":"多个平台使用同一简单密码"},{"key":"B","text":"定期更新密码并开启二次验证"},{"key":"C","text":"随意连接陌生Wi-Fi处理敏感数据"},{"key":"D","text":"将密码写在便签上"}]','B',20,2),
- (2,2,'使用人工智能生成内容时，应当注意哪些事项？','[{"key":"A","text":"核验事实准确性"},{"key":"B","text":"尊重知识产权"},{"key":"C","text":"保护个人与业务敏感信息"},{"key":"D","text":"直接用于正式发布无需审核"}]','A,B,C',20,3),
- (2,3,'只要人工智能给出的结论看起来合理，就不需要人工复核。','[{"key":"true","text":"正确"},{"key":"false","text":"错误"}]','false',20,4),
- (2,1,'个人信息处理应遵循的原则不包括？','[{"key":"A","text":"合法正当必要"},{"key":"B","text":"最小必要"},{"key":"C","text":"随意共享"},{"key":"D","text":"公开透明"}]','C',20,5),
- (3,1,'职业活动中遇到利益冲突时，最恰当的做法是？','[{"key":"A","text":"隐瞒冲突继续处理"},{"key":"B","text":"主动报告并按规定回避"},{"key":"C","text":"交给同事私下处理"},{"key":"D","text":"视金额大小决定"}]','B',25,1),
- (3,2,'诚信履职要求做到哪些？','[{"key":"A","text":"如实报告工作"},{"key":"B","text":"保守职业秘密"},{"key":"C","text":"伪造数据美化结果"},{"key":"D","text":"遵守承诺"}]','A,B,D',25,2),
- (3,3,'为按时完成任务，适度篡改数据是可以接受的。','[{"key":"true","text":"正确"},{"key":"false","text":"错误"}]','false',25,3),
- (3,1,'发现同事存在违规行为时，首先应当？','[{"key":"A","text":"公开传播"},{"key":"B","text":"按渠道如实反映"},{"key":"C","text":"视而不见"},{"key":"D","text":"私下勒索"}]','B',25,4),
- (5,1,'护理不良事件管理的核心目的是？','[{"key":"A","text":"追究个人责任"},{"key":"B","text":"发现系统问题并持续改进"},{"key":"C","text":"减少上报数量"},{"key":"D","text":"隐瞒事件"}]','B',20,1),
- (5,2,'护理质量持续改进常用方法包括？','[{"key":"A","text":"PDCA循环"},{"key":"B","text":"根因分析"},{"key":"C","text":"随意调整流程"},{"key":"D","text":"质量指标监测"}]','A,B,D',20,2),
- (5,3,'发生不良事件后应第一时间隐瞒以避免影响科室考核。','[{"key":"true","text":"正确"},{"key":"false","text":"错误"}]','false',20,3),
- (5,1,'给药前核对患者身份至少应使用几种标识？','[{"key":"A","text":"1种"},{"key":"B","text":"2种"},{"key":"C","text":"无需核对"},{"key":"D","text":"只看床号"}]','B',20,4),
- (5,1,'护理交接班时最应重点关注？','[{"key":"A","text":"个人排班"},{"key":"B","text":"患者病情与风险要点"},{"key":"C","text":"办公用品"},{"key":"D","text":"考勤"}]','B',20,5),
- (6,1,'手卫生的“两前三后”中，接触患者前应？','[{"key":"A","text":"无需洗手"},{"key":"B","text":"执行手卫生"},{"key":"C","text":"戴手套代替"},{"key":"D","text":"仅用清水冲洗"}]','B',20,1),
- (6,2,'标准预防的措施包括？','[{"key":"A","text":"手卫生"},{"key":"B","text":"合理使用防护用品"},{"key":"C","text":"安全注射"},{"key":"D","text":"共用个人防护用品"}]','A,B,C',20,2),
- (6,3,'锐器使用后应立即回套针帽。','[{"key":"true","text":"正确"},{"key":"false","text":"错误"}]','false',20,3),
- (6,1,'发生职业暴露后，首要处理是？','[{"key":"A","text":"立即局部处理并上报"},{"key":"B","text":"等待观察"},{"key":"C","text":"自行服药"},{"key":"D","text":"隐瞒不报"}]','A',20,4),
- (6,1,'医疗废物应如何处置？','[{"key":"A","text":"与生活垃圾混放"},{"key":"B","text":"按类别分类收集并规范交接"},{"key":"C","text":"随意丢弃"},{"key":"D","text":"自行出售"}]','B',20,5);
+INSERT INTO question (course_id,question_type,content,options_json,answer,score,sort)
+SELECT v.course_id,v.question_type,v.content,v.options_json,v.answer,v.score,v.sort
+FROM (
+  SELECT 2 AS course_id, 1 AS question_type, '人工智能训练所依赖的数据应当优先保证什么？' AS content, '[{"key":"A","text":"数量越多越好"},{"key":"B","text":"质量与合规"},{"key":"C","text":"全部公开"},{"key":"D","text":"仅需图片"}]' AS options_json, 'B' AS answer, 20 AS score, 1 AS sort
+  UNION ALL SELECT 2 AS course_id, 1 AS question_type, '下列哪项属于良好的数字安全习惯？' AS content, '[{"key":"A","text":"多个平台使用同一简单密码"},{"key":"B","text":"定期更新密码并开启二次验证"},{"key":"C","text":"随意连接陌生Wi-Fi处理敏感数据"},{"key":"D","text":"将密码写在便签上"}]' AS options_json, 'B' AS answer, 20 AS score, 2 AS sort
+  UNION ALL SELECT 2 AS course_id, 2 AS question_type, '使用人工智能生成内容时，应当注意哪些事项？' AS content, '[{"key":"A","text":"核验事实准确性"},{"key":"B","text":"尊重知识产权"},{"key":"C","text":"保护个人与业务敏感信息"},{"key":"D","text":"直接用于正式发布无需审核"}]' AS options_json, 'A,B,C' AS answer, 20 AS score, 3 AS sort
+  UNION ALL SELECT 2 AS course_id, 3 AS question_type, '只要人工智能给出的结论看起来合理，就不需要人工复核。' AS content, '[{"key":"true","text":"正确"},{"key":"false","text":"错误"}]' AS options_json, 'false' AS answer, 20 AS score, 4 AS sort
+  UNION ALL SELECT 2 AS course_id, 1 AS question_type, '个人信息处理应遵循的原则不包括？' AS content, '[{"key":"A","text":"合法正当必要"},{"key":"B","text":"最小必要"},{"key":"C","text":"随意共享"},{"key":"D","text":"公开透明"}]' AS options_json, 'C' AS answer, 20 AS score, 5 AS sort
+  UNION ALL SELECT 3 AS course_id, 1 AS question_type, '职业活动中遇到利益冲突时，最恰当的做法是？' AS content, '[{"key":"A","text":"隐瞒冲突继续处理"},{"key":"B","text":"主动报告并按规定回避"},{"key":"C","text":"交给同事私下处理"},{"key":"D","text":"视金额大小决定"}]' AS options_json, 'B' AS answer, 25 AS score, 1 AS sort
+  UNION ALL SELECT 3 AS course_id, 2 AS question_type, '诚信履职要求做到哪些？' AS content, '[{"key":"A","text":"如实报告工作"},{"key":"B","text":"保守职业秘密"},{"key":"C","text":"伪造数据美化结果"},{"key":"D","text":"遵守承诺"}]' AS options_json, 'A,B,D' AS answer, 25 AS score, 2 AS sort
+  UNION ALL SELECT 3 AS course_id, 3 AS question_type, '为按时完成任务，适度篡改数据是可以接受的。' AS content, '[{"key":"true","text":"正确"},{"key":"false","text":"错误"}]' AS options_json, 'false' AS answer, 25 AS score, 3 AS sort
+  UNION ALL SELECT 3 AS course_id, 1 AS question_type, '发现同事存在违规行为时，首先应当？' AS content, '[{"key":"A","text":"公开传播"},{"key":"B","text":"按渠道如实反映"},{"key":"C","text":"视而不见"},{"key":"D","text":"私下勒索"}]' AS options_json, 'B' AS answer, 25 AS score, 4 AS sort
+  UNION ALL SELECT 5 AS course_id, 1 AS question_type, '护理不良事件管理的核心目的是？' AS content, '[{"key":"A","text":"追究个人责任"},{"key":"B","text":"发现系统问题并持续改进"},{"key":"C","text":"减少上报数量"},{"key":"D","text":"隐瞒事件"}]' AS options_json, 'B' AS answer, 20 AS score, 1 AS sort
+  UNION ALL SELECT 5 AS course_id, 2 AS question_type, '护理质量持续改进常用方法包括？' AS content, '[{"key":"A","text":"PDCA循环"},{"key":"B","text":"根因分析"},{"key":"C","text":"随意调整流程"},{"key":"D","text":"质量指标监测"}]' AS options_json, 'A,B,D' AS answer, 20 AS score, 2 AS sort
+  UNION ALL SELECT 5 AS course_id, 3 AS question_type, '发生不良事件后应第一时间隐瞒以避免影响科室考核。' AS content, '[{"key":"true","text":"正确"},{"key":"false","text":"错误"}]' AS options_json, 'false' AS answer, 20 AS score, 3 AS sort
+  UNION ALL SELECT 5 AS course_id, 1 AS question_type, '给药前核对患者身份至少应使用几种标识？' AS content, '[{"key":"A","text":"1种"},{"key":"B","text":"2种"},{"key":"C","text":"无需核对"},{"key":"D","text":"只看床号"}]' AS options_json, 'B' AS answer, 20 AS score, 4 AS sort
+  UNION ALL SELECT 5 AS course_id, 1 AS question_type, '护理交接班时最应重点关注？' AS content, '[{"key":"A","text":"个人排班"},{"key":"B","text":"患者病情与风险要点"},{"key":"C","text":"办公用品"},{"key":"D","text":"考勤"}]' AS options_json, 'B' AS answer, 20 AS score, 5 AS sort
+  UNION ALL SELECT 6 AS course_id, 1 AS question_type, '手卫生的“两前三后”中，接触患者前应？' AS content, '[{"key":"A","text":"无需洗手"},{"key":"B","text":"执行手卫生"},{"key":"C","text":"戴手套代替"},{"key":"D","text":"仅用清水冲洗"}]' AS options_json, 'B' AS answer, 20 AS score, 1 AS sort
+  UNION ALL SELECT 6 AS course_id, 2 AS question_type, '标准预防的措施包括？' AS content, '[{"key":"A","text":"手卫生"},{"key":"B","text":"合理使用防护用品"},{"key":"C","text":"安全注射"},{"key":"D","text":"共用个人防护用品"}]' AS options_json, 'A,B,C' AS answer, 20 AS score, 2 AS sort
+  UNION ALL SELECT 6 AS course_id, 3 AS question_type, '锐器使用后应立即回套针帽。' AS content, '[{"key":"true","text":"正确"},{"key":"false","text":"错误"}]' AS options_json, 'false' AS answer, 20 AS score, 3 AS sort
+  UNION ALL SELECT 6 AS course_id, 1 AS question_type, '发生职业暴露后，首要处理是？' AS content, '[{"key":"A","text":"立即局部处理并上报"},{"key":"B","text":"等待观察"},{"key":"C","text":"自行服药"},{"key":"D","text":"隐瞒不报"}]' AS options_json, 'A' AS answer, 20 AS score, 4 AS sort
+  UNION ALL SELECT 6 AS course_id, 1 AS question_type, '医疗废物应如何处置？' AS content, '[{"key":"A","text":"与生活垃圾混放"},{"key":"B","text":"按类别分类收集并规范交接"},{"key":"C","text":"随意丢弃"},{"key":"D","text":"自行出售"}]' AS options_json, 'B' AS answer, 20 AS score, 5 AS sort
+) v
+WHERE NOT EXISTS (
+  SELECT 1 FROM question q WHERE q.course_id=v.course_id AND q.sort=v.sort AND q.content=v.content
+);
 
 INSERT IGNORE INTO study_record (id,user_id,course_id,project_id,start_time,end_time,valid_duration,verify_count,screen_switch_count,device,ip,is_abnormal,progress,verify_total,verify_success,verify_fail,status,last_position) VALUES
  (1,4,1,1,'2026-03-02 09:00:00','2026-03-02 10:30:00',21600,2,0,'iPhone / iOS','127.0.0.1',0,100.00,0,0,0,2,180),
@@ -185,12 +196,16 @@ INSERT IGNORE INTO study_record (id,user_id,course_id,project_id,start_time,end_
  (4,5,3,1,'2026-03-04 15:00:00',NULL,1200,0,1,'Android','127.0.0.1',0,30.00,0,0,0,1,54),
  (5,6,1,1,'2026-03-05 08:30:00',NULL,600,0,0,'Chrome / Windows','127.0.0.1',0,10.00,0,0,0,1,18);
 
-INSERT IGNORE INTO study_heartbeat_log (study_record_id,user_id,course_id,report_time,delta_seconds,progress,in_foreground,screen_switch,ip) VALUES
- (2,4,2,'2026-03-03 14:10:00',30,35.00,1,0,'127.0.0.1'),
- (2,4,2,'2026-03-03 14:20:00',30,45.00,1,0,'127.0.0.1');
+INSERT INTO study_heartbeat_log (study_record_id,user_id,course_id,report_time,delta_seconds,progress,in_foreground,screen_switch,ip)
+SELECT 2,4,2,'2026-03-03 14:10:00',30,35.00,1,0,'127.0.0.1' FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM study_heartbeat_log h WHERE h.study_record_id=2 AND h.user_id=4 AND h.report_time='2026-03-03 14:10:00');
+INSERT INTO study_heartbeat_log (study_record_id,user_id,course_id,report_time,delta_seconds,progress,in_foreground,screen_switch,ip)
+SELECT 2,4,2,'2026-03-03 14:20:00',30,45.00,1,0,'127.0.0.1' FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM study_heartbeat_log h WHERE h.study_record_id=2 AND h.user_id=4 AND h.report_time='2026-03-03 14:20:00');
 
-INSERT IGNORE INTO exam_record (user_id,course_id,project_id,score,is_pass,answer_content,attempt_no,submit_time) VALUES
- (4,2,1,80.00,1,'演示数据',1,'2026-03-03 15:00:00');
+INSERT INTO exam_record (user_id,course_id,project_id,score,is_pass,answer_content,attempt_no,submit_time)
+SELECT 4,2,1,80.00,1,'演示数据',1,'2026-03-03 15:00:00' FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM exam_record e WHERE e.user_id=4 AND e.course_id=2 AND e.attempt_no=1 AND e.submit_time='2026-03-03 15:00:00');
 
 INSERT IGNORE INTO credit_record (id,user_id,project_id,course_id,credit_value,source_type,audit_status,audit_user_id,audit_time,apply_user_id,remark) VALUES
  (1,4,1,1,3.00,1,2,NULL,'2026-03-02 10:30:00',NULL,'完成课程《继续教育政策与法规》自动发放'),
@@ -198,18 +213,29 @@ INSERT IGNORE INTO credit_record (id,user_id,project_id,course_id,credit_value,s
  (3,5,1,NULL,7.00,2,2,1,'2026-02-20 09:00:00',3,'参加线下专题培训，补录 7 学分'),
  (4,6,3,7,4.00,1,2,NULL,'2025-12-20 16:00:00',NULL,'完成课程《公需科目：数字经济》自动发放');
 
-INSERT IGNORE INTO user_verify_log (user_id,course_id,project_id,study_record_id,trigger_point,verify_time,verify_type,img_url,verify_result,status,similarity,fail_reason,remark) VALUES
- (4,2,1,2,'pct:50','2026-03-03 14:16:00',1,NULL,1,1,0.9312,NULL,'演示：核验通过'),
- (4,2,1,2,'pct:50','2026-03-03 14:18:00',1,NULL,0,2,0.4123,'人脸相似度低于阈值','演示：核验失败'),
- (5,3,1,4,'pct:30','2026-03-04 15:05:00',2,NULL,2,3,NULL,'核验超时','演示：短信核验超时');
+INSERT INTO user_verify_log (user_id,course_id,project_id,study_record_id,trigger_point,verify_time,verify_type,img_url,verify_result,status,similarity,fail_reason,remark)
+SELECT 4,2,1,2,'pct:50','2026-03-03 14:16:00',1,NULL,1,1,0.9312,NULL,'演示：核验通过' FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM user_verify_log v WHERE v.user_id=4 AND v.course_id=2 AND v.verify_time='2026-03-03 14:16:00');
+INSERT INTO user_verify_log (user_id,course_id,project_id,study_record_id,trigger_point,verify_time,verify_type,img_url,verify_result,status,similarity,fail_reason,remark)
+SELECT 4,2,1,2,'pct:50','2026-03-03 14:18:00',1,NULL,0,2,0.4123,'人脸相似度低于阈值','演示：核验失败' FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM user_verify_log v WHERE v.user_id=4 AND v.course_id=2 AND v.verify_time='2026-03-03 14:18:00');
+INSERT INTO user_verify_log (user_id,course_id,project_id,study_record_id,trigger_point,verify_time,verify_type,img_url,verify_result,status,similarity,fail_reason,remark)
+SELECT 5,3,1,4,'pct:30','2026-03-04 15:05:00',2,NULL,2,3,NULL,'核验超时','演示：短信核验超时' FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM user_verify_log v WHERE v.user_id=5 AND v.course_id=3 AND v.verify_time='2026-03-04 15:05:00');
 
 INSERT IGNORE INTO graduate_apply (id,user_id,project_id,apply_time,current_node,audit_status,credit_snapshot,study_hour_snapshot) VALUES
  (1,5,1,'2026-03-06 09:30:00','TEACHER',0,10.00,12.00);
 
-INSERT IGNORE INTO approval_log (biz_type,biz_id,node,auditor_id,auditor_name,action,opinion) VALUES
- ('GRADUATE',1,'TEACHER',5,'赵晨','SUBMIT','已满足项目学分要求，申请毕业');
+INSERT INTO approval_log (biz_type,biz_id,node,auditor_id,auditor_name,action,opinion)
+SELECT 'GRADUATE',1,'TEACHER',5,'赵晨','SUBMIT','已满足项目学分要求，申请毕业' FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM approval_log a WHERE a.biz_type='GRADUATE' AND a.biz_id=1 AND a.node='TEACHER' AND a.auditor_id=5 AND a.action='SUBMIT');
 
-INSERT IGNORE INTO notification (user_id,title,content,type,biz_id,is_read) VALUES
- (3,'新的毕业申请待初审','学员赵晨提交了《2026年度专业技术人员继续教育》毕业申请，请及时初审。','APPROVAL',1,0),
- (4,'课程学习提醒','您有一门课程学习进度为 45%，请合理安排时间继续学习。','WARNING',NULL,0),
- (5,'毕业申请已提交','您的毕业申请已提交，当前审批节点：教员初审。','GRADUATE',1,0);
+INSERT INTO notification (user_id,title,content,type,biz_id,is_read)
+SELECT 3,'新的毕业申请待初审','学员赵晨提交了《2026年度专业技术人员继续教育》毕业申请，请及时初审。','APPROVAL',1,0 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM notification n WHERE n.user_id=3 AND n.title='新的毕业申请待初审' AND n.type='APPROVAL' AND IFNULL(n.biz_id,0)=1);
+INSERT INTO notification (user_id,title,content,type,biz_id,is_read)
+SELECT 4,'课程学习提醒','您有一门课程学习进度为 45%，请合理安排时间继续学习。','WARNING',NULL,0 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM notification n WHERE n.user_id=4 AND n.title='课程学习提醒' AND n.type='WARNING' AND n.biz_id IS NULL);
+INSERT INTO notification (user_id,title,content,type,biz_id,is_read)
+SELECT 5,'毕业申请已提交','您的毕业申请已提交，当前审批节点：教员初审。','GRADUATE',1,0 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM notification n WHERE n.user_id=5 AND n.title='毕业申请已提交' AND n.type='GRADUATE' AND IFNULL(n.biz_id,0)=1);
