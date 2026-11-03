@@ -1,14 +1,7 @@
 <template>
-  <a-layout style="min-height:100vh">
-    <a-layout-sider
-      v-model:collapsed="collapsed"
-      :width="236"
-      :collapsed-width="72"
-      collapsible
-      :trigger="null"
-      class="admin-sider"
-    >
-      <div class="sider-brand" :class="{ collapsed }">
+  <div class="admin-shell">
+    <header class="app-topbar">
+      <div class="topbar-brand" :class="{ collapsed }">
         <div class="brand-logo">继</div>
         <div v-if="!collapsed" class="brand-text">
           <div class="brand-line">
@@ -19,95 +12,141 @@
         </div>
       </div>
 
-      <nav class="sider-nav">
-        <div v-for="(group, index) in navGroups" :key="`${group.title}-${index}`" class="nav-group">
-          <div v-if="!collapsed" class="nav-group-title">{{ group.title }}</div>
-          <div v-else-if="index > 0" class="nav-group-line" />
-          <a-tooltip
-            v-for="item in group.items"
-            :key="item.key"
-            placement="right"
-            :title="collapsed ? item.label : ''"
-          >
-            <div class="nav-item" :class="{ 'is-active': activeKey === item.key }" @click="go(item.key)">
-              <component :is="item.icon" class="nav-icon" />
-              <span v-if="!collapsed" class="nav-label">{{ item.label }}</span>
-              <span v-if="!collapsed && activeKey === item.key" class="nav-dot" />
-            </div>
-          </a-tooltip>
-        </div>
-      </nav>
-
-      <div class="sider-footer">
-        <div class="quick-links" :class="{ collapsed }">
-          <a-tooltip v-for="link in quickLinks" :key="link.key" placement="right" :title="collapsed ? link.label : ''">
-            <button type="button" class="quick-link" @click="link.action()">
-              <component :is="link.icon" />
-              <span v-if="!collapsed">{{ link.label }}</span>
-            </button>
-          </a-tooltip>
-        </div>
-        <a-tooltip placement="right" :title="collapsed ? auth.displayName + ' · ' + (auth.roleName || '用户') : ''">
-          <div class="user-card" :class="{ collapsed }">
-            <a-avatar :src="auth.user?.avatar || undefined" :size="34" class="user-avatar">{{ initial }}</a-avatar>
-            <div v-if="!collapsed" class="user-meta">
-              <div class="user-name">{{ auth.displayName }}</div>
-              <div class="user-role">{{ auth.roleName || '用户' }}</div>
-            </div>
-            <span v-if="!collapsed" class="online-dot" title="在线" />
-          </div>
-        </a-tooltip>
-      </div>
-    </a-layout-sider>
-
-    <a-layout>
-      <a-layout-header class="admin-header">
-        <a-button type="text" class="collapse-btn" @click="toggleCollapsed">
+      <a-tooltip :title="collapsed ? '展开菜单' : '收起菜单'">
+        <button type="button" class="topbar-toggle" @click="toggleCollapsed">
           <MenuUnfoldOutlined v-if="collapsed" />
           <MenuFoldOutlined v-else />
-        </a-button>
-        <div class="header-divider" />
-        <div class="header-title-box">
-          <div class="header-title">{{ route.meta.title || '工作台' }}</div>
-          <div class="header-crumb">继续教育学分管理平台</div>
+        </button>
+      </a-tooltip>
+      <div class="topbar-divider" />
+
+      <div class="topbar-titles">
+        <div class="topbar-title">{{ route.meta.title || '工作台' }}</div>
+        <div class="topbar-breadcrumb">
+          <span>管理控制台</span>
+          <template v-if="routeGroup">
+            <span class="sep">/</span>
+            <span>{{ routeGroup.title }}</span>
+          </template>
+          <span class="sep">/</span>
+          <span class="current">{{ route.meta.title || '工作台' }}</span>
         </div>
-        <div style="flex:1" />
-        <a-popover v-model:open="notifyOpen" placement="bottomRight" :arrow="false" :overlay-style="{ width: '380px' }">
-          <template #content>
-            <div style="padding:4px 4px 0;display:flex;align-items:center;justify-content:space-between">
-              <b style="font-size:14px">消息通知</b>
-              <a-button type="link" size="small" @click="readAll">全部已读</a-button>
-            </div>
-            <a-spin :spinning="notifyLoading">
-              <div style="max-height:360px;overflow:auto;margin-top:4px">
-                <div v-if="notifications.length === 0" style="padding:36px 0;text-align:center;color:#94a3b8">暂无通知</div>
-                <div v-for="item in notifications" :key="Number(item.id)" style="padding:12px 8px;border-bottom:1px solid #f1f5f9;cursor:pointer" @click="readOne(item)">
-                  <div style="display:flex;gap:8px;align-items:flex-start">
-                    <span :style="{ width: '7px', height: '7px', borderRadius: '50%', marginTop: '7px', background: item.isRead === 0 ? '#2563eb' : '#cbd5e1', flex: 'none' }"></span>
-                    <div style="min-width:0">
-                      <div style="font-size:13px;font-weight:600;color:#1e293b">{{ item.title }}</div>
-                      <div style="font-size:12px;color:#64748b;line-height:1.6;margin-top:3px">{{ item.content }}</div>
-                      <div style="font-size:11px;color:#94a3b8;margin-top:4px">{{ item.createTime }}</div>
-                    </div>
+      </div>
+
+      <div class="topbar-spacer" />
+
+      <a-popover v-model:open="notifyOpen" placement="bottomRight" :arrow="false" :overlay-style="{ width: '380px' }">
+        <template #content>
+          <div style="padding:4px 4px 0;display:flex;align-items:center;justify-content:space-between">
+            <b style="font-size:14px">消息通知</b>
+            <a-button type="link" size="small" @click="readAll">全部已读</a-button>
+          </div>
+          <a-spin :spinning="notifyLoading">
+            <div style="max-height:360px;overflow:auto;margin-top:4px">
+              <div v-if="notifications.length === 0" style="padding:36px 0;text-align:center;color:#94a3b8">暂无通知</div>
+              <div v-for="item in notifications" :key="Number(item.id)" style="padding:12px 8px;border-bottom:1px solid #f1f5f9;cursor:pointer" @click="readOne(item)">
+                <div style="display:flex;gap:8px;align-items:flex-start">
+                  <span :style="{ width: '7px', height: '7px', borderRadius: '50%', marginTop: '7px', background: item.isRead === 0 ? '#2563eb' : '#cbd5e1', flex: 'none' }"></span>
+                  <div style="min-width:0">
+                    <div style="font-size:13px;font-weight:600;color:#1e293b">{{ item.title }}</div>
+                    <div style="font-size:12px;color:#64748b;line-height:1.6;margin-top:3px">{{ item.content }}</div>
+                    <div style="font-size:11px;color:#94a3b8;margin-top:4px">{{ item.createTime }}</div>
                   </div>
                 </div>
               </div>
-            </a-spin>
-          </template>
-          <a-badge :count="unread" :offset="[-4, 6]" size="small">
-            <a-button type="text" shape="circle" class="header-icon-btn"><BellOutlined /></a-button>
-          </a-badge>
-        </a-popover>
-      </a-layout-header>
+            </div>
+          </a-spin>
+        </template>
+        <a-badge :count="unread" :offset="[-4, 6]" size="small">
+          <button type="button" class="topbar-icon-btn"><BellOutlined /></button>
+        </a-badge>
+      </a-popover>
+    </header>
 
-      <a-layout-content style="padding:20px 22px 30px">
+    <div class="admin-body">
+      <aside class="app-sider" :class="{ collapsed }">
+        <div class="nav-stage">
+          <transition :name="transitionName">
+            <div v-if="navLevel === 0" key="root" class="nav-panel">
+              <div v-if="!collapsed" class="panel-head">
+                <div class="panel-title">全部功能</div>
+                <div class="panel-sub">共 {{ rootEntries.length }} 个入口</div>
+              </div>
+              <div class="root-list">
+                <a-tooltip v-for="entry in rootEntries" :key="entry.key" placement="right" :title="collapsed ? entry.label : ''">
+                  <div
+                    class="root-item"
+                    :class="{ 'is-active': isRootActive(entry), 'is-group': Boolean(entry.group) }"
+                    @click="onRootClick(entry)"
+                  >
+                    <span class="root-icon"><component :is="entry.icon" /></span>
+                    <span v-if="!collapsed" class="root-text">
+                      <span class="root-label">{{ entry.label }}</span>
+                      <span class="root-desc">{{ entry.description }}</span>
+                    </span>
+                    <span v-if="!collapsed && isRootActive(entry)" class="nav-dot" />
+                    <RightOutlined v-if="!collapsed && entry.group" class="root-chev" />
+                  </div>
+                </a-tooltip>
+              </div>
+            </div>
+
+            <div v-else-if="activeGroup" key="group" class="nav-panel">
+              <div class="group-head">
+                <a-tooltip title="返回全部功能" placement="right">
+                  <button type="button" class="back-btn" @click="backToRoot">
+                    <ArrowLeftOutlined />
+                  </button>
+                </a-tooltip>
+                <div v-if="!collapsed" class="group-head-text">
+                  <div class="group-head-title">{{ activeGroup.title }}</div>
+                  <div class="group-head-sub">{{ activeGroup.items.length }} 个功能</div>
+                </div>
+              </div>
+              <div class="child-list">
+                <a-tooltip v-for="item in activeGroup.items" :key="item.key" placement="right" :title="collapsed ? item.label : ''">
+                  <div class="child-item" :class="{ 'is-active': activeKey === item.key }" @click="go(item.key)">
+                    <component :is="item.icon" class="child-icon" />
+                    <span v-if="!collapsed" class="child-label">{{ item.label }}</span>
+                    <span v-if="!collapsed && activeKey === item.key" class="nav-dot" />
+                  </div>
+                </a-tooltip>
+              </div>
+            </div>
+          </transition>
+        </div>
+
+        <div class="sider-footer">
+          <div class="footer-links">
+            <a-tooltip v-for="link in quickLinks" :key="link.key" placement="right" :title="collapsed ? link.label : ''">
+              <button type="button" class="footer-link" :class="{ danger: link.key === 'logout' }" @click="link.action()">
+                <component :is="link.icon" class="footer-link-icon" />
+                <span v-if="!collapsed" class="footer-link-label">{{ link.label }}</span>
+                <RightOutlined v-if="!collapsed" class="footer-link-arrow" />
+              </button>
+            </a-tooltip>
+          </div>
+
+          <div class="footer-user">
+            <a-tooltip placement="right" :title="collapsed ? auth.displayName + ' · ' + (auth.roleName || '用户') : ''">
+              <a-avatar :src="auth.user?.avatar || undefined" :size="38" class="user-avatar">{{ initial }}</a-avatar>
+            </a-tooltip>
+            <div v-if="!collapsed" class="footer-user-name">{{ auth.displayName }}</div>
+            <div v-if="!collapsed" class="footer-user-role">
+              <span class="online-dot" />{{ auth.roleName || '用户' }} · 在线
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="admin-content">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
             <component :is="Component" />
           </transition>
         </router-view>
-      </a-layout-content>
-    </a-layout>
+      </main>
+    </div>
 
     <a-modal v-model:open="pwdOpen" title="修改登录密码" :width="420" :confirm-loading="pwdLoading" @ok="submitPwd">
       <a-form layout="vertical" style="margin-top:16px">
@@ -116,7 +155,7 @@
         <a-form-item label="确认新密码" required><a-input-password v-model:value="pwd.confirm" /></a-form-item>
       </a-form>
     </a-modal>
-  </a-layout>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -125,12 +164,14 @@ import type { Component } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 import {
-  ApartmentOutlined, AppstoreOutlined, AreaChartOutlined, AuditOutlined, BarChartOutlined, BellOutlined,
-  BookOutlined, CameraOutlined, ControlOutlined, CreditCardOutlined, DashboardOutlined,
-  FileDoneOutlined, FileTextOutlined, FolderOpenOutlined, KeyOutlined, LineChartOutlined, LockOutlined,
-  LoginOutlined, LogoutOutlined, MenuFoldOutlined, MenuOutlined, MenuUnfoldOutlined, MonitorOutlined,
-  PieChartOutlined, PlusSquareOutlined, ProfileOutlined, ReadOutlined, SafetyCertificateOutlined,
-  SettingOutlined, TeamOutlined, UserOutlined, VideoCameraOutlined, WarningOutlined
+  ApartmentOutlined, AppstoreOutlined, AreaChartOutlined, ArrowLeftOutlined, AuditOutlined,
+  BarChartOutlined, BellOutlined, BookOutlined, CameraOutlined,
+  ControlOutlined, CreditCardOutlined, DashboardOutlined, FileDoneOutlined, FileTextOutlined,
+  FolderOpenOutlined, KeyOutlined, LineChartOutlined, LockOutlined, LoginOutlined,
+  LogoutOutlined, MenuFoldOutlined, MenuOutlined, MenuUnfoldOutlined, MonitorOutlined,
+  PieChartOutlined, PlusSquareOutlined, ProfileOutlined, ReadOutlined, RightOutlined,
+  SafetyCertificateOutlined, SettingOutlined, TeamOutlined, UserOutlined, VideoCameraOutlined,
+  WarningOutlined
 } from '@ant-design/icons-vue'
 import { authApi, notificationApi } from '../api'
 import { useAuthStore } from '../store/auth'
@@ -152,14 +193,27 @@ interface NavItem {
 }
 
 interface NavGroup {
+  key: string
   title: string
+  icon: Component
   items: NavItem[]
+}
+
+interface RootEntry {
+  key: string
+  label: string
+  description: string
+  icon: Component
+  group: NavGroup | null
 }
 
 const auth = useAuthStore()
 const route = useRoute()
 const router = useRouter()
 const collapsed = ref(localStorage.getItem('admin_sider_collapsed') === '1')
+const navLevel = ref(0)
+const activeGroupKey = ref('')
+const transitionName = ref<'nav-forward' | 'nav-back'>('nav-forward')
 const notifyOpen = ref(false)
 const notifyLoading = ref(false)
 const notifications = ref<NotifyRow[]>([])
@@ -180,33 +234,81 @@ function resolveIcon(name?: string): Component {
   return (name && iconMap[name]) || AppstoreOutlined
 }
 
-function toNavGroups(nodes: MenuNode[]): NavGroup[] {
+const MODULE_DESCRIPTIONS: Record<string, string> = {
+  '工作台': '数据总览 · 待办提醒 · 学习趋势',
+  '培训管理': '培训班 · 课程 · 学习监控',
+  '学分管理': '学分台账 · 补录 · 审批',
+  '毕业审核': '毕业申请 · 审核 · 电子档案',
+  '统计报表': '单位 · 学分 · 课程报表',
+  '系统管理': '组织 · 账号 · 权限与配置'
+}
+
+function moduleDescription(title: string, items: NavItem[]): string {
+  return MODULE_DESCRIPTIONS[title] || items.slice(0, 3).map((item) => item.label).join(' · ')
+}
+
+function buildNav(nodes: MenuNode[]): { entries: RootEntry[]; groups: NavGroup[] } {
+  const entries: RootEntry[] = []
   const groups: NavGroup[] = []
   for (const node of nodes) {
     if (node.hidden === 1 || node.menuType === 3) continue
     if (node.menuType === 2 && node.path) {
-      let group = groups.find((g) => g.title === '概览')
-      if (!group) {
-        group = { title: '概览', items: [] }
-        groups.push(group)
-      }
-      group.items.push({ key: node.path, label: node.menuName, icon: resolveIcon(node.icon) })
+      entries.push({
+        key: node.path,
+        label: node.menuName,
+        description: MODULE_DESCRIPTIONS[node.menuName] || '',
+        icon: resolveIcon(node.icon),
+        group: null
+      })
       continue
     }
     if (node.menuType === 1) {
       const items = (node.children || [])
         .filter((child) => child.menuType === 2 && child.hidden !== 1 && child.path)
         .map((child) => ({ key: child.path as string, label: child.menuName, icon: resolveIcon(child.icon) }))
-      if (items.length) groups.push({ title: node.menuName, items })
+      if (!items.length) continue
+      const group: NavGroup = {
+        key: `group-${node.id}`,
+        title: node.menuName,
+        icon: resolveIcon(node.icon),
+        items
+      }
+      groups.push(group)
+      entries.push({
+        key: group.key,
+        label: group.title,
+        description: moduleDescription(group.title, items),
+        icon: group.icon,
+        group
+      })
     }
   }
-  return groups
+  return { entries, groups }
 }
 
-const navGroups = computed(() => toNavGroups(auth.menus || []))
+const navData = computed(() => buildNav(auth.menus || []))
+const rootEntries = computed(() => navData.value.entries)
+const navGroups = computed(() => navData.value.groups)
+
+function pathSegment(path: string): string {
+  return path.split('/')[1] || ''
+}
+
+function groupForPath(path: string): NavGroup | null {
+  for (const group of navGroups.value) {
+    if (group.items.some((item) => path === item.key || path.startsWith(`${item.key}/`))) return group
+  }
+  const segment = pathSegment(path)
+  if (!segment) return null
+  for (const group of navGroups.value) {
+    if (group.items.some((item) => pathSegment(item.key) === segment)) return group
+  }
+  return null
+}
+
 const activeKey = computed(() => {
   const path = route.path
-  let matched = path
+  let matched = ''
   let matchedLength = 0
   for (const group of navGroups.value) {
     for (const item of group.items) {
@@ -216,8 +318,17 @@ const activeKey = computed(() => {
       }
     }
   }
-  return matched
+  if (matched) return matched
+  const segment = pathSegment(path)
+  for (const group of navGroups.value) {
+    const fallback = group.items.find((item) => pathSegment(item.key) === segment)
+    if (fallback) return fallback.key
+  }
+  return path
 })
+
+const routeGroup = computed(() => groupForPath(route.path))
+const activeGroup = computed(() => navGroups.value.find((group) => group.key === activeGroupKey.value) || null)
 const initial = computed(() => auth.displayName.slice(0, 1))
 
 const quickLinks: { key: string; label: string; icon: Component; action: () => void }[] = [
@@ -226,14 +337,63 @@ const quickLinks: { key: string; label: string; icon: Component; action: () => v
   { key: 'logout', label: '退出登录', icon: LogoutOutlined, action: () => { void doLogout() } }
 ]
 
+function isRootActive(entry: RootEntry): boolean {
+  if (entry.group) return routeGroup.value?.key === entry.group.key
+  return activeKey.value === entry.key
+}
+
+function onRootClick(entry: RootEntry) {
+  if (entry.group) {
+    enterGroup(entry.group)
+    return
+  }
+  go(entry.key)
+}
+
+function enterGroup(group: NavGroup) {
+  if (collapsed.value) setCollapsed(false)
+  transitionName.value = 'nav-forward'
+  activeGroupKey.value = group.key
+  navLevel.value = 1
+}
+
+function backToRoot() {
+  transitionName.value = 'nav-back'
+  navLevel.value = 0
+  activeGroupKey.value = ''
+}
+
 function go(path: string) {
   if (path.startsWith('/')) router.push(path)
 }
 
-function toggleCollapsed() {
-  collapsed.value = !collapsed.value
-  localStorage.setItem('admin_sider_collapsed', collapsed.value ? '1' : '0')
+function setCollapsed(value: boolean) {
+  collapsed.value = value
+  localStorage.setItem('admin_sider_collapsed', value ? '1' : '0')
 }
+
+function toggleCollapsed() {
+  setCollapsed(!collapsed.value)
+}
+
+function syncNavToRoute() {
+  const group = groupForPath(route.path)
+  if (group) {
+    if (navLevel.value !== 1 || activeGroupKey.value !== group.key) {
+      transitionName.value = 'nav-forward'
+      activeGroupKey.value = group.key
+      navLevel.value = 1
+    }
+    return
+  }
+  if (navLevel.value !== 0) {
+    transitionName.value = 'nav-back'
+    navLevel.value = 0
+    activeGroupKey.value = ''
+  }
+}
+
+watch([() => route.path, navGroups], syncNavToRoute, { immediate: true })
 
 async function loadUnread() {
   try { unread.value = await notificationApi.unread() } catch { unread.value = 0 }
@@ -300,31 +460,37 @@ onMounted(loadUnread)
 </script>
 
 <style scoped>
-.admin-sider {
-  height: 100vh;
+.admin-shell {
+  min-height: 100vh;
+  background: #f3f6fb;
+}
+.app-topbar {
   position: sticky;
   top: 0;
-  overflow: hidden;
-  background: #f7f9fc !important;
-  border-right: 1px solid #e8eef7;
-}
-.admin-sider :deep(.ant-layout-sider-children) {
+  z-index: 40;
+  height: 64px;
   display: flex;
-  flex-direction: column;
-  height: 100%;
+  align-items: center;
+  padding-right: 22px;
+  background: rgba(255, 255, 255, .96);
+  border-bottom: 1px solid #e9eef6;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, .02), 0 6px 20px rgba(15, 23, 42, .03);
+  backdrop-filter: blur(10px);
 }
-.sider-brand {
+.topbar-brand {
   flex: none;
-  height: 66px;
+  width: 240px;
+  height: 64px;
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 0 16px;
-  background: #fff;
-  border-bottom: 1px solid #e8eef7;
+  padding: 0 18px;
+  border-right: 1px solid #e9eef6;
   overflow: hidden;
+  transition: width .25s cubic-bezier(.4, 0, .2, 1), padding .25s ease;
 }
-.sider-brand.collapsed {
+.topbar-brand.collapsed {
+  width: 76px;
   justify-content: center;
   padding: 0;
 }
@@ -334,7 +500,7 @@ onMounted(loadUnread)
   height: 34px;
   border-radius: 10px;
   background: linear-gradient(135deg, #2563eb, #6d5efc);
-  box-shadow: 0 4px 10px rgba(37, 99, 235, .28);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, .3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -355,12 +521,12 @@ onMounted(loadUnread)
   flex: none;
   font-size: 10px;
   font-weight: 600;
+  line-height: 16px;
+  padding: 0 5px;
   color: #4f46e5;
   background: #eef2ff;
   border: 1px solid #e0e7ff;
   border-radius: 6px;
-  padding: 0 5px;
-  line-height: 16px;
 }
 .brand-sub {
   margin-top: 3px;
@@ -370,38 +536,232 @@ onMounted(loadUnread)
   color: #94a3b8;
   white-space: nowrap;
 }
-.sider-nav {
+.topbar-toggle {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  margin-left: 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #475569;
+  font-size: 17px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s ease, color .15s ease;
+}
+.topbar-toggle:hover { background: #f1f5f9; color: #1d4ed8; }
+.topbar-divider {
+  flex: none;
+  width: 1px;
+  height: 24px;
+  margin: 0 16px 0 12px;
+  background: #e9eef6;
+}
+.topbar-titles { min-width: 0; }
+.topbar-title {
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.25;
+  color: #0f172a;
+  white-space: nowrap;
+}
+.topbar-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  font-size: 11px;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+.topbar-breadcrumb .sep { color: #cbd5e1; }
+.topbar-breadcrumb .current { color: #64748b; }
+.topbar-spacer { flex: 1; }
+.topbar-icon-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: #475569;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s ease, color .15s ease;
+}
+.topbar-icon-btn:hover { background: #f1f5f9; color: #1d4ed8; }
+
+.admin-body {
+  display: flex;
+  align-items: stretch;
+  min-height: calc(100vh - 64px);
+}
+.app-sider {
+  flex: none;
+  width: 240px;
+  height: calc(100vh - 64px);
+  position: sticky;
+  top: 64px;
+  display: flex;
+  flex-direction: column;
+  background: #fbfcfe;
+  border-right: 1px solid #e9eef6;
+  transition: width .25s cubic-bezier(.4, 0, .2, 1);
+  overflow: hidden;
+}
+.app-sider.collapsed { width: 76px; }
+.nav-stage {
   flex: 1;
   min-height: 0;
+  position: relative;
+  overflow: hidden;
+}
+.nav-panel {
+  position: absolute;
+  inset: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 12px 10px 16px;
+  padding: 14px 10px 18px;
   scrollbar-width: thin;
-  scrollbar-color: rgba(148, 163, 184, .35) transparent;
+  scrollbar-color: rgba(148, 163, 184, .3) transparent;
 }
-.sider-nav::-webkit-scrollbar { width: 5px; }
-.sider-nav::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, .32); border-radius: 3px; }
-.sider-nav::-webkit-scrollbar-track { background: transparent; }
-.nav-group + .nav-group { margin-top: 15px; }
-.nav-group-title {
-  padding: 0 10px 7px;
-  font-size: 11px;
-  font-weight: 500;
+.nav-panel::-webkit-scrollbar { width: 5px; }
+.nav-panel::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, .3); border-radius: 3px; }
+.nav-panel::-webkit-scrollbar-track { background: transparent; }
+.panel-head { padding: 2px 10px 12px; }
+.panel-title {
+  font-size: 15px;
+  font-weight: 650;
+  color: #0f172a;
+  line-height: 1.3;
+}
+.panel-sub {
+  margin-top: 3px;
+  font-size: 10.5px;
   color: #94a3b8;
-  letter-spacing: .05em;
+  letter-spacing: .02em;
 }
-.nav-group-line {
-  height: 1px;
-  margin: 8px 10px 10px;
-  background: #e8eef7;
-}
-.nav-item {
+.root-list { display: flex; flex-direction: column; gap: 4px; }
+.root-item {
   position: relative;
-  height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  height: 60px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: #334155;
+  font-size: 13.5px;
+  cursor: pointer;
+  user-select: none;
+  transition: background .16s ease, color .16s ease;
+}
+.root-item:hover { background: #f1f5f9; color: #0f172a; }
+.root-item.is-active { background: #e8f1ff; color: #1d4ed8; font-weight: 600; }
+.root-icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .16s ease, color .16s ease;
+}
+.root-item:hover .root-icon { background: #e2e8f0; color: #334155; }
+.root-item.is-active .root-icon { background: #dbeafe; color: #2563eb; }
+.root-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.root-label {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.root-desc {
+  min-width: 0;
+  font-size: 10.5px;
+  font-weight: 400;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.root-item.is-active .root-desc { color: #60a5fa; }
+.root-chev {
+  flex: none;
+  font-size: 10px;
+  color: #cbd5e1;
+  transition: color .15s ease, transform .15s ease;
+}
+.root-item:hover .root-chev { color: #94a3b8; transform: translateX(2px); }
+.root-item.is-active .root-chev { color: #60a5fa; }
+.nav-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2563eb;
+}
+.group-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 2px 2px 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #eef2f7;
+}
+.back-btn {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e5ebf3;
+  border-radius: 8px;
+  background: #fff;
+  color: #475569;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s ease;
+}
+.back-btn:hover {
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+.group-head-text { min-width: 0; }
+.group-head-title {
+  font-size: 14px;
+  font-weight: 650;
+  color: #0f172a;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.group-head-sub { margin-top: 2px; font-size: 10.5px; color: #94a3b8; }
+.child-list { display: flex; flex-direction: column; gap: 2px; }
+.child-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 2px;
+  height: 40px;
   padding: 0 10px;
   border-radius: 8px;
   color: #475569;
@@ -410,163 +770,129 @@ onMounted(loadUnread)
   user-select: none;
   transition: background .15s ease, color .15s ease;
 }
-.nav-item:hover { background: #eef2f7; color: #0f172a; }
-.nav-item:hover .nav-icon { color: #334155; }
-.nav-item.is-active {
-  background: #e8f1ff;
-  color: #1d4ed8;
-  font-weight: 600;
-}
-.nav-item.is-active .nav-icon { color: #2563eb; }
-.nav-icon {
-  flex: none;
-  font-size: 16px;
-  color: #64748b;
-  transition: color .15s ease;
-}
-.nav-label {
+.child-item:hover { background: #eef2f7; color: #0f172a; }
+.child-item:hover .child-icon { color: #334155; }
+.child-item.is-active { background: #e8f1ff; color: #1d4ed8; font-weight: 600; }
+.child-item.is-active .child-icon { color: #2563eb; }
+.child-icon { flex: none; font-size: 15px; color: #64748b; transition: color .15s ease; }
+.child-label {
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.nav-dot {
-  flex: none;
-  width: 6px;
-  height: 6px;
-  margin-left: auto;
-  border-radius: 50%;
-  background: #2563eb;
-}
 .sider-footer {
   flex: none;
-  padding: 9px 10px 10px;
+  padding: 10px 12px 14px;
   background: #fff;
-  border-top: 1px solid #e8eef7;
+  border-top: 1px solid #eef2f7;
 }
-.quick-links {
+.footer-links { display: flex; flex-direction: column; gap: 2px; }
+.footer-link {
+  width: 100%;
+  height: 34px;
   display: flex;
-  gap: 4px;
-  margin-bottom: 8px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 9px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #64748b;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
 }
-.quick-links.collapsed {
+.footer-link:hover { background: #f1f5f9; color: #1d4ed8; }
+.footer-link.danger:hover { background: #fef2f2; color: #dc2626; }
+.footer-link-icon { flex: none; font-size: 14px; }
+.footer-link-label { flex: 1; min-width: 0; white-space: nowrap; }
+.footer-link-arrow { flex: none; font-size: 9px; color: #cbd5e1; }
+.footer-user {
+  margin-top: 10px;
+  padding-top: 14px;
+  border-top: 1px dashed #eef2f7;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  text-align: center;
 }
-.quick-link {
-  flex: 1;
-  min-width: 0;
+.user-avatar {
+  background: linear-gradient(135deg, #2563eb, #6d5efc) !important;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, .22);
+}
+.footer-user-name {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.35;
+  color: #0f172a;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.footer-user-role {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 5px;
-  padding: 6px 2px;
-  border: none;
-  border-radius: 7px;
-  background: transparent;
-  color: #64748b;
-  font-size: 11px;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background .15s ease, color .15s ease;
-}
-.quick-link:hover { background: #eef2f7; color: #1d4ed8; }
-.quick-link :deep(.anticon) { font-size: 14px; }
-.quick-links.collapsed .quick-link {
-  flex: none;
-  width: 40px;
-  height: 32px;
-}
-.user-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  padding: 8px 9px;
-  border: 1px solid #e8eef7;
-  border-radius: 10px;
-  background: #f7f9fc;
-}
-.user-card.collapsed {
-  justify-content: center;
-  padding: 6px;
-  border-color: transparent;
-  background: transparent;
-}
-.user-avatar {
-  flex: none;
-  background: linear-gradient(135deg, #2563eb, #6d5efc) !important;
-  font-size: 14px;
-  font-weight: 600;
-}
-.user-meta { flex: 1; min-width: 0; }
-.user-name {
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 1.35;
-  color: #0f172a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.user-role {
-  font-size: 11px;
-  line-height: 1.4;
+  margin-top: 3px;
+  font-size: 10.5px;
   color: #94a3b8;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .online-dot {
   flex: none;
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #22c55e;
   box-shadow: 0 0 0 2px #dcfce7;
 }
-.admin-sider :deep(.ant-layout-sider-collapsed) .nav-item,
-.admin-sider.ant-layout-sider-collapsed .nav-item {
+.app-sider.collapsed .nav-panel { padding: 12px 8px 16px; }
+.app-sider.collapsed .root-item {
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+  height: 44px;
+}
+.app-sider.collapsed .child-item {
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+  height: 40px;
+}
+.app-sider.collapsed .group-head {
+  justify-content: center;
+  gap: 0;
+  padding: 2px 0 10px;
+}
+.app-sider.collapsed .sider-footer { padding: 10px 8px 12px; }
+.app-sider.collapsed .footer-link {
   justify-content: center;
   padding: 0;
-}
-.admin-header {
-  height: 64px;
-  line-height: normal;
-  padding: 0 20px;
-  display: flex;
-  align-items: center;
-  background: #fff;
-  border-bottom: 1px solid #e8eef7;
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
-.collapse-btn {
-  width: 34px;
   height: 34px;
-  border-radius: 8px;
-  color: #475569;
-  font-size: 17px;
 }
-.collapse-btn:hover { background: #f1f5f9 !important; }
-.header-divider {
-  width: 1px;
-  height: 24px;
-  margin: 0 14px 0 10px;
-  background: #e8eef7;
+.app-sider.collapsed .footer-user { padding-top: 12px; }
+.admin-content {
+  flex: 1;
+  min-width: 0;
+  padding: 20px 24px 32px;
+  background: #f3f6fb;
 }
-.header-title { font-size: 16px; font-weight: 650; line-height: 1.25; color: #0f172a; }
-.header-crumb { margin-top: 2px; font-size: 11px; color: #94a3b8; }
-.header-icon-btn {
-  color: #475569;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.nav-forward-enter-active,
+.nav-forward-leave-active,
+.nav-back-enter-active,
+.nav-back-leave-active {
+  transition: transform .26s cubic-bezier(.4, 0, .2, 1), opacity .2s ease;
 }
-.header-icon-btn:hover { background: #f1f5f9 !important; }
+.nav-forward-enter-from { transform: translateX(34px); opacity: 0; }
+.nav-forward-leave-to { transform: translateX(-22px); opacity: 0; }
+.nav-back-enter-from { transform: translateX(-34px); opacity: 0; }
+.nav-back-leave-to { transform: translateX(22px); opacity: 0; }
 .fade-enter-active, .fade-leave-active { transition: opacity .16s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>
