@@ -23,13 +23,14 @@
     </div>
 
     <div class="page-card">
+      <a-alert v-if="archived" type="warning" show-icon message="该培训班已归档，所有关联内容仅可查看，不能新增、编辑或删除。" style="margin-bottom:16px" />
       <a-tabs v-model:activeKey="tab">
         <a-tab-pane key="members" tab="培训班学员">
           <div class="toolbar">
             <a-input v-model:value="memberQuery.keyword" placeholder="姓名 / 账号 / 手机号" allow-clear style="width:220px" @press-enter="loadMembers(true)" />
             <a-button type="primary" @click="loadMembers(true)">查询</a-button>
             <div class="spacer" />
-            <a-button v-if="auth.hasPerm('project:member')" type="primary" @click="openAddMembers"><PlusOutlined /> 添加学员</a-button>
+            <a-button v-if="auth.hasPerm('project:member') && !archived" type="primary" @click="openAddMembers"><PlusOutlined /> 添加学员</a-button>
           </div>
           <a-table :data-source="members" :columns="memberColumns" :loading="memberLoading" :pagination="memberPagination" row-key="userId" @change="onMemberPage">
             <template #bodyCell="{ column, record }">
@@ -48,7 +49,7 @@
                 <span v-else class="muted">未申请</span>
               </template>
               <template v-else-if="column.key === 'action'">
-                <a-popconfirm v-if="auth.hasPerm('project:member')" title="确定将该学员移出培训班？" @confirm="removeMember(record.userId)">
+                <a-popconfirm v-if="auth.hasPerm('project:member') && !archived" title="确定将该学员移出培训班？" @confirm="removeMember(record.userId)">
                   <a style="color:#dc2626">移除</a>
                 </a-popconfirm>
                 <span v-else class="muted">-</span>
@@ -61,7 +62,7 @@
           <div class="toolbar">
             <span class="muted">教员只能查看并管理自己创建的课程</span>
             <div class="spacer" />
-            <a-button v-if="auth.hasPerm('project:teacher')" type="primary" @click="openAssignTeachers"><TeamOutlined /> 分配教员</a-button>
+            <a-button v-if="auth.hasPerm('project:teacher') && !archived" type="primary" @click="openAssignTeachers"><TeamOutlined /> 分配教员</a-button>
           </div>
           <a-table :data-source="teachers" :columns="teacherColumns" row-key="id" :pagination="false">
             <template #bodyCell="{ column, record }">
@@ -116,6 +117,7 @@ const auth = useAuthStore()
 const route = useRoute()
 const projectId = Number(route.params.id)
 const project = ref<ProjectDetail>({} as ProjectDetail)
+const archived = computed(() => project.value.status === 3)
 const tab = ref('members')
 const members = ref<ProjectMemberRow[]>([])
 const teachers = ref<{ id: number; realName: string; phone?: string; orgName?: string; courseCount?: number }[]>([])

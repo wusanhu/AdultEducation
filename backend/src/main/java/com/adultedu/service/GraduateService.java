@@ -68,6 +68,7 @@ public class GraduateService {
     private final CertificateService certificateService;
     private final NotificationService notificationService;
     private final DataScopeService dataScopeService;
+    private final ProjectService projectService;
     private final StringRedisTemplate redis;
 
     // ---------------- 学员端 ----------------
@@ -346,6 +347,7 @@ public class GraduateService {
         if (project == null) {
             throw new BusinessException("培训班不存在");
         }
+        projectService.assertProjectEditable(project);
         String node = apply.getCurrentNode();
         if (!canAudit(current, apply, node)) {
             throw new BusinessException(403, "当前节点无权审批该申请");
@@ -541,6 +543,7 @@ public class GraduateService {
         m.put("orgName", student == null ? null : orgName(student.getOrgId() == null ? student.getDeptId() : student.getOrgId()));
         m.put("projectId", apply.getProjectId());
         m.put("projectName", project == null ? null : project.getProjectName());
+        m.put("projectArchived", project != null && project.getStatus() != null && project.getStatus() == 3);
         m.put("needCredit", project == null ? null : project.getNeedCredit());
         m.put("applyTime", apply.getApplyTime());
         m.put("currentNode", apply.getCurrentNode());

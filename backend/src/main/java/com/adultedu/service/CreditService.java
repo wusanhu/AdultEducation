@@ -61,6 +61,7 @@ public class CreditService {
     private final ApprovalLogMapper approvalLogMapper;
     private final DataScopeService dataScopeService;
     private final NotificationService notificationService;
+    private final ProjectService projectService;
     private final StringRedisTemplate redis;
 
     public PageResult<Map<String, Object>> ledgerPage(LoginUser current, long pageNum, long pageSize,
@@ -127,6 +128,9 @@ public class CreditService {
                 .collect(Collectors.toMap(SysUser::getId, u -> u, (a, b) -> a));
         Map<Long, String> projectNames = projectIds.isEmpty() ? new HashMap<>() : projectMapper.selectBatchIds(projectIds).stream()
                 .collect(Collectors.toMap(TrainingProject::getId, TrainingProject::getProjectName, (a, b) -> a));
+        Map<Long, Integer> projectStatuses = projectIds.isEmpty() ? new HashMap<>() : projectMapper.selectBatchIds(projectIds).stream()
+                .filter(p -> p.getStatus() != null)
+                .collect(Collectors.toMap(TrainingProject::getId, TrainingProject::getStatus, (a, b) -> a));
         Map<Long, String> courseNames = courseIds.isEmpty() ? new HashMap<>() : courseMapper.selectBatchIds(courseIds).stream()
                 .collect(Collectors.toMap(Course::getId, Course::getCourseName, (a, b) -> a));
         Map<Long, String> names = auditIds.isEmpty() ? new HashMap<>() : userMapper.selectBatchIds(auditIds).stream()
@@ -142,6 +146,7 @@ public class CreditService {
             m.put("orgName", u == null ? null : orgName(u.getOrgId() == null ? u.getDeptId() : u.getOrgId()));
             m.put("projectId", r.getProjectId());
             m.put("projectName", projectNames.get(r.getProjectId()));
+            m.put("projectArchived", projectStatuses.get(r.getProjectId()) != null && projectStatuses.get(r.getProjectId()) == 3);
             m.put("courseId", r.getCourseId());
             m.put("courseName", courseNames.get(r.getCourseId()));
             m.put("creditValue", r.getCreditValue());
@@ -341,6 +346,7 @@ public class CreditService {
         if (project == null) {
             throw new BusinessException("培训班不存在");
         }
+        projectService.assertProjectEditable(project);
         if (memberMapper.selectCount(new LambdaQueryWrapper<ProjectMember>()
                 .eq(ProjectMember::getProjectId, req.projectId()).eq(ProjectMember::getUserId, req.userId())
                 .eq(ProjectMember::getStatus, 1)) == 0) {
@@ -417,6 +423,9 @@ public class CreditService {
                 throw new BusinessException(403, "无权审批其他单位学员的申请");
             }
         }
+        if (record.getProjectId() != null) {
+            projectService.assertProjectEditable(record.getProjectId());
+        }
         String node = StrUtil.blankToDefault(record.getAuditNode(), "ADMIN");
         if (!approve) {
             record.setAuditStatus(3);
@@ -462,6 +471,9 @@ public class CreditService {
         }
         if (!current.isSuperAdmin()) {
             throw new BusinessException(403, "仅管理员可撤销学分");
+        }
+        if (record.getProjectId() != null) {
+            projectService.assertProjectEditable(record.getProjectId());
         }
         record.setAuditStatus(4);
         record.setRevokeReason(reason);

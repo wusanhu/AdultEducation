@@ -293,6 +293,9 @@ public class VerifyService {
                 .collect(Collectors.toMap(Course::getId, Course::getCourseName, (a, b) -> a));
         Map<Long, String> projects = projectIds.isEmpty() ? Map.of() : projectMapper.selectBatchIds(projectIds).stream()
                 .collect(Collectors.toMap(TrainingProject::getId, TrainingProject::getProjectName, (a, b) -> a));
+        Map<Long, Integer> projectStatuses = projectIds.isEmpty() ? Map.of() : projectMapper.selectBatchIds(projectIds).stream()
+                .filter(p -> p.getStatus() != null)
+                .collect(Collectors.toMap(TrainingProject::getId, TrainingProject::getStatus, (a, b) -> a));
         LocalDateTime onlineLine = LocalDateTime.now().minusSeconds(120);
         List<Map<String, Object>> list = new ArrayList<>(records.size());
         for (StudyRecord r : records) {
@@ -307,6 +310,7 @@ public class VerifyService {
             m.put("courseName", courses.get(r.getCourseId()));
             m.put("projectId", r.getProjectId());
             m.put("projectName", projects.get(r.getProjectId()));
+            m.put("projectArchived", projectStatuses.get(r.getProjectId()) != null && projectStatuses.get(r.getProjectId()) == 3);
             m.put("startTime", r.getStartTime());
             m.put("endTime", r.getEndTime());
             m.put("validDuration", r.getValidDuration());
@@ -434,6 +438,10 @@ public class VerifyService {
         if (!admin && !("teacher".equals(current.getRoleCode()) && course != null
                 && current.getId().equals(course.getCreateUserId()))) {
             throw new BusinessException(403, "仅管理员或该课程教员可复核核验记录");
+        }
+        TrainingProject project = course == null ? null : projectMapper.selectById(course.getProjectId());
+        if (project != null && project.getStatus() != null && project.getStatus() == 3) {
+            throw new BusinessException(403, "培训班《" + project.getProjectName() + "》已归档，仅可查看，不能复核核验记录");
         }
         String action = req.action() == null ? "" : req.action().trim().toLowerCase();
         if (!List.of("allow", "invalidate", "violate").contains(action)) {

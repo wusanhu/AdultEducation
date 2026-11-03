@@ -40,7 +40,8 @@
         </template>
         <template v-else-if="column.key === 'action'">
           <a-space size="small">
-            <a @click="openReview(record)">复核处理</a>
+            <a v-if="!record.projectArchived" @click="openReview(record)">复核处理</a>
+            <span v-else class="muted" style="font-size:12px">已归档</span>
             <a v-if="record.latestVerify && auth.hasPerm('study:monitor')" @click="openDetail(record)">学习明细</a>
           </a-space>
         </template>

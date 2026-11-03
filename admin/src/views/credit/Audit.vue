@@ -23,7 +23,7 @@
               <a-tag v-else color="blue">管理员终审</a-tag>
             </div>
             <div style="font-size:13px;color:#475569;margin-top:8px">
-              《{{ item.projectName }}》 · <b style="color:#16a34a">+{{ item.creditValue }} 学分</b>
+              《{{ item.projectName }}》 <a-tag v-if="item.projectArchived" color="purple">已归档</a-tag> · <b style="color:#16a34a">+{{ item.creditValue }} 学分</b>
             </div>
             <div style="font-size:12px;color:#64748b;margin-top:6px;background:#f8fafc;border-radius:7px;padding:9px 12px;line-height:1.7">
               <span class="muted">补录原因：</span>{{ item.remark || '-' }}
@@ -31,8 +31,11 @@
             <div style="font-size:12px;color:#94a3b8;margin-top:8px">申请人：{{ item.applyUserName || '-' }} · 提交时间：{{ item.createTime }}</div>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;min-width:130px">
-            <a-button type="primary" @click="openAction(item, true)">通过</a-button>
-            <a-button danger @click="openAction(item, false)">驳回</a-button>
+            <template v-if="!item.projectArchived">
+              <a-button type="primary" @click="openAction(item, true)">通过</a-button>
+              <a-button danger @click="openAction(item, false)">驳回</a-button>
+            </template>
+            <span v-else class="muted" style="font-size:12px">培训班已归档，仅可查看</span>
           </div>
         </div>
       </div>

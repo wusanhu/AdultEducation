@@ -24,7 +24,10 @@
           <div style="font-weight:500">{{ record.userName }}</div>
           <div style="font-size:12px;color:#94a3b8">{{ record.orgName || record.username }}</div>
         </template>
-        <template v-else-if="column.key === 'project'">{{ record.projectName }}</template>
+        <template v-else-if="column.key === 'project'">
+          {{ record.projectName }}
+          <a-tag v-if="record.projectArchived" color="purple" style="margin-left:4px">已归档</a-tag>
+        </template>
         <template v-else-if="column.key === 'credit'">
           <span style="font-weight:600">{{ record.creditSnapshot }}</span> <span class="muted">/ {{ record.needCredit }} 学分</span>
           <div style="font-size:12px;color:#94a3b8">学时 {{ record.studyHourSnapshot }} 小时</div>
@@ -42,7 +45,8 @@
         <template v-else-if="column.key === 'action'">
           <a-space size="small">
             <a @click="openDetail(record)">详情</a>
-            <a v-if="record.auditStatus === 0" @click="openAudit(record, true)">审批</a>
+            <a v-if="record.auditStatus === 0 && !record.projectArchived" @click="openAudit(record, true)">审批</a>
+            <span v-else-if="record.auditStatus === 0 && record.projectArchived" class="muted" style="font-size:12px">已归档</span>
           </a-space>
         </template>
       </template>
@@ -96,10 +100,11 @@
             </a-timeline-item>
           </a-timeline>
 
-          <div v-if="detail.auditStatus === 0" style="margin-top:20px;text-align:right">
+          <div v-if="detail.auditStatus === 0 && !detail.projectArchived" style="margin-top:20px;text-align:right">
             <a-button type="primary" style="margin-right:8px" @click="openAudit(detail, true)">通过</a-button>
             <a-button danger @click="openAudit(detail, false)">驳回</a-button>
           </div>
+          <a-alert v-else-if="detail.auditStatus === 0 && detail.projectArchived" type="warning" show-icon message="该培训班已归档，毕业申请仅可查看，不能审批。" style="margin-top:20px" />
         </template>
       </a-spin>
     </a-drawer>

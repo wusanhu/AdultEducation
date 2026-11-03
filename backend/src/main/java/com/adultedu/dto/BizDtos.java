@@ -33,6 +33,9 @@ public final class BizDtos {
     public record MemberRequest(List<Long> userIds) {
     }
 
+    public record ProjectStatusRequest(LocalDateTime startTime, LocalDateTime endTime) {
+    }
+
     public record AttachmentDto(String fileName, String fileUrl, String fileType, Long fileSize) {
     }
 

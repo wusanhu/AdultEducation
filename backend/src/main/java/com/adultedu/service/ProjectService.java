@@ -140,6 +140,7 @@ public class ProjectService {
         map.put("needTeacherAudit", p.getNeedTeacherAudit());
         map.put("needLeaderAudit", p.getNeedLeaderAudit());
         map.put("needAdminAudit", p.getNeedAdminAudit());
+        map.put("editable", !isArchived(p));
         map.put("createUserId", p.getCreateUserId());
         map.put("createTime", p.getCreateTime());
         map.put("memberCount", memberMapper.selectCount(new LambdaQueryWrapper<ProjectMember>()
@@ -204,6 +205,27 @@ public class ProjectService {
         }
     }
 
+    public boolean isArchived(TrainingProject project) {
+        return project != null && project.getStatus() != null && project.getStatus() == 3;
+    }
+
+    /**
+     * 已归档培训班下的所有内容仅可查看，禁止任何新增、编辑、删除操作。
+     */
+    public void assertProjectEditable(Long projectId) {
+        TrainingProject project = projectId == null ? null : projectMapper.selectById(projectId);
+        if (project == null) {
+            throw new BusinessException("培训班不存在");
+        }
+        assertProjectEditable(project);
+    }
+
+    public void assertProjectEditable(TrainingProject project) {
+        if (isArchived(project)) {
+            throw new BusinessException(403, "培训班《" + project.getProjectName() + "》已归档，仅可查看，不能新增、编辑或删除");
+        }
+    }
+
     @Transactional
     public Long saveProject(ProjectSaveRequest req, LoginUser current) {
         if (!current.isSuperAdmin() && !"admin".equals(current.getRoleCode())) {
@@ -223,6 +245,12 @@ public class ProjectService {
         }
         if (req.id() != null) {
             assertCanViewProject(project, current);
+            assertProjectEditable(project);
+            boolean reopening = req.status() != null && req.status() == 1
+                    && (project.getStatus() == null || project.getStatus() != 1);
+            if (reopening && !req.endTime().isAfter(LocalDateTime.now())) {
+                throw new BusinessException("培训班启用周期已过期，重新启用需设置晚于当前时间的结束时间");
+            }
         }
         project.setProjectName(req.projectName());
         project.setProjectCode(code);
@@ -253,6 +281,7 @@ public class ProjectService {
             throw new BusinessException("培训班不存在");
         }
         assertCanViewProject(project, current);
+        assertProjectEditable(project);
         long courses = courseMapper.selectCount(new LambdaQueryWrapper<Course>().eq(Course::getProjectId, id));
         long members = memberMapper.selectCount(new LambdaQueryWrapper<ProjectMember>().eq(ProjectMember::getProjectId, id));
         if (courses > 0 || members > 0) {
@@ -263,7 +292,8 @@ public class ProjectService {
     }
 
     @Transactional
-    public void updateProjectStatus(Long id, Integer status, LoginUser current) {
+    public void updateProjectStatus(Long id, Integer status, LocalDateTime startTime, LocalDateTime endTime,
+                                    LoginUser current) {
         TrainingProject project = projectMapper.selectById(id);
         if (project == null) {
             throw new BusinessException("培训班不存在");
@@ -271,6 +301,25 @@ public class ProjectService {
         assertCanViewProject(project, current);
         if (status == null || status < 0 || status > 3) {
             throw new BusinessException("培训班状态不合法");
+        }
+        if (isArchived(project)) {
+            throw new BusinessException(403, "培训班《" + project.getProjectName() + "》已归档，仅可查看，不能变更状态");
+        }
+        boolean reopening = status == 1 && (project.getStatus() == null || project.getStatus() != 1);
+        boolean needNewPeriod = reopening && (project.getStatus() != null && project.getStatus() == 2
+                || project.getEndTime() == null || project.getEndTime().isBefore(LocalDateTime.now()));
+        if (needNewPeriod) {
+            if (startTime == null || endTime == null) {
+                throw new BusinessException("培训班已过期，重新启用需设置新的启用周期");
+            }
+            if (!startTime.isBefore(endTime)) {
+                throw new BusinessException("启用开始时间不能晚于结束时间");
+            }
+            if (!endTime.isAfter(LocalDateTime.now())) {
+                throw new BusinessException("启用结束时间必须晚于当前时间");
+            }
+            project.setStartTime(startTime);
+            project.setEndTime(endTime);
         }
         project.setStatus(status);
         projectMapper.updateById(project);
@@ -347,6 +396,7 @@ public class ProjectService {
             throw new BusinessException("培训班不存在");
         }
         assertCanViewProject(project, current);
+        assertProjectEditable(project);
         if (userIds == null || userIds.isEmpty()) {
             throw new BusinessException("请选择学员");
         }
@@ -392,6 +442,7 @@ public class ProjectService {
             throw new BusinessException("培训班不存在");
         }
         assertCanViewProject(project, current);
+        assertProjectEditable(project);
         ProjectMember member = memberMapper.selectOne(new LambdaQueryWrapper<ProjectMember>()
                 .eq(ProjectMember::getProjectId, projectId).eq(ProjectMember::getUserId, userId));
         if (member == null) {
@@ -427,6 +478,7 @@ public class ProjectService {
         if (project == null) {
             throw new BusinessException("培训班不存在");
         }
+        assertProjectEditable(project);
         teacherMapper.delete(new LambdaQueryWrapper<ProjectTeacher>().eq(ProjectTeacher::getProjectId, projectId));
         if (userIds == null) {
             return;

@@ -32,7 +32,8 @@ export const projectApi = {
   save: (data: Record<string, unknown>) => post<number>('/projects', data),
   update: (id: number, data: Record<string, unknown>) => put<number>(`/projects/${id}`, data),
   remove: (id: number) => del<void>(`/projects/${id}`),
-  status: (id: number, status: number) => put<void>(`/projects/${id}/status?status=${status}`),
+  status: (id: number, status: number, period?: { startTime: string; endTime: string }) =>
+    put<void>(`/projects/${id}/status?status=${status}`, period),
   members: (id: number, params: Record<string, unknown>) => get<PageResult<ProjectMemberRow>>(`/projects/${id}/members`, params),
   addMembers: (id: number, userIds: number[]) => post<{ added: number }>(`/projects/${id}/members`, { userIds }),
   removeMember: (id: number, userId: number) => del<void>(`/projects/${id}/members/${userId}`),

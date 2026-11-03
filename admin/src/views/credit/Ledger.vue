@@ -28,7 +28,10 @@
           <div style="font-size:12px;color:#94a3b8">{{ record.orgName || record.username }}</div>
         </template>
         <template v-else-if="column.key === 'project'">
-          <div style="font-size:13px">{{ record.projectName }}</div>
+          <div style="font-size:13px">
+            {{ record.projectName }}
+            <a-tag v-if="record.projectArchived" color="purple" style="margin-left:4px">已归档</a-tag>
+          </div>
           <div style="font-size:12px;color:#94a3b8">{{ record.courseName || '线下/补录' }}</div>
         </template>
         <template v-else-if="column.key === 'credit'">
@@ -53,7 +56,8 @@
           </a-tooltip>
         </template>
         <template v-else-if="column.key === 'action'">
-          <a v-if="auth.hasPerm('credit:revoke') && record.auditStatus === 2" style="color:#dc2626" @click="openRevoke(record)">撤销</a>
+          <a v-if="auth.hasPerm('credit:revoke') && record.auditStatus === 2 && !record.projectArchived" style="color:#dc2626" @click="openRevoke(record)">撤销</a>
+          <span v-else-if="record.projectArchived && record.auditStatus === 2" class="muted" style="font-size:12px">已归档</span>
           <span v-else class="muted">-</span>
         </template>
       </template>

@@ -39,8 +39,8 @@
         <template v-else-if="column.key === 'action'">
           <a-space size="small">
             <a @click="$router.push(`/project/${record.id}`)">学员</a>
-            <a v-if="auth.hasPerm('project:edit')" @click="openEdit(record)">编辑</a>
-            <a-dropdown v-if="auth.hasPerm('project:edit') || auth.hasPerm('project:delete')">
+            <a v-if="auth.hasPerm('project:edit') && record.status !== 3" @click="openEdit(record)">编辑</a>
+            <a-dropdown v-if="(auth.hasPerm('project:edit') || auth.hasPerm('project:delete')) && record.status !== 3">
               <a>更多 <DownOutlined /></a>
               <template #overlay>
                 <a-menu @click="(info: any) => onAction(String(info.key), record)">
@@ -53,6 +53,7 @@
                 </a-menu>
               </template>
             </a-dropdown>
+            <span v-if="record.status === 3" class="muted" style="font-size:12px">仅可查看</span>
           </a-space>
         </template>
       </template>
@@ -116,6 +117,15 @@
         </div>
       </template>
     </a-drawer>
+
+    <a-modal v-model:open="periodOpen" title="设置启用周期" :confirm-loading="periodSaving" :width="480" @ok="submitPeriod">
+      <a-alert type="warning" show-icon :message="`《${periodTarget?.projectName || ''}》已过期，重新启用需设置新的启用周期。`" style="margin-bottom:16px" />
+      <a-form layout="vertical">
+        <a-form-item label="启用周期" required>
+          <a-range-picker v-model:value="periodRange" show-time style="width:100%" :placeholder="['启用开始时间', '启用结束时间']" />
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
@@ -151,6 +161,10 @@ const saving = ref(false)
 const rows = ref<ProjectRow[]>([])
 const total = ref(0)
 const drawerOpen = ref(false)
+const periodOpen = ref(false)
+const periodSaving = ref(false)
+const periodRange = ref<[Dayjs, Dayjs] | null>(null)
+const periodTarget = ref<ProjectRow | null>(null)
 const formRef = ref<FormInstance>()
 const query = reactive<{ pageNum: number; pageSize: number; keyword: string; status?: number }>({ pageNum: 1, pageSize: 10, keyword: '' })
 const form = reactive<ProjectForm>(emptyForm())
@@ -278,6 +292,13 @@ function onAction(key: string, row: ProjectRow) {
   }
   const statusMap: Record<string, number> = { start: 1, end: 2, archive: 3, restart: 1 }
   const labelMap: Record<string, string> = { start: '开始培训', end: '结束培训', archive: '归档项目', restart: '重新开放' }
+  const expired = row.endTime ? dayjs(row.endTime).isBefore(dayjs()) : true
+  if (key === 'restart' || (key === 'start' && expired)) {
+    periodTarget.value = row
+    periodRange.value = [dayjs(), dayjs().add(30, 'day')]
+    periodOpen.value = true
+    return
+  }
   Modal.confirm({
     title: labelMap[key], content: `确定对《${row.projectName}》执行该操作吗？`,
     onOk: async () => {
@@ -286,6 +307,27 @@ function onAction(key: string, row: ProjectRow) {
       await load()
     }
   })
+}
+
+async function submitPeriod() {
+  if (!periodTarget.value || !periodRange.value) {
+    message.warning('请设置启用周期')
+    return
+  }
+  periodSaving.value = true
+  try {
+    await projectApi.status(periodTarget.value.id, 1, {
+      startTime: periodRange.value[0].format('YYYY-MM-DDTHH:mm:ss'),
+      endTime: periodRange.value[1].format('YYYY-MM-DDTHH:mm:ss')
+    })
+    message.success('已重新启用')
+    periodOpen.value = false
+    await load()
+  } catch (e) {
+    message.error((e as Error).message)
+  } finally {
+    periodSaving.value = false
+  }
 }
 
 onMounted(load)

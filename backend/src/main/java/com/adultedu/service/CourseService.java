@@ -68,6 +68,7 @@ public class CourseService {
     private final VerifyGearMapper gearMapper;
     private final DataScopeService dataScopeService;
     private final NotificationService notificationService;
+    private final ProjectService projectService;
 
     public PageResult<Map<String, Object>> coursePage(LoginUser current, long pageNum, long pageSize,
                                                       String keyword, Long projectId, Integer status, Integer verifyGearCode) {
@@ -130,6 +131,9 @@ public class CourseService {
         List<Long> userIds = courses.stream().map(Course::getCreateUserId).filter(java.util.Objects::nonNull).distinct().toList();
         Map<Long, String> projectNames = projectIds.isEmpty() ? Map.of() : projectMapper.selectBatchIds(projectIds).stream()
                 .collect(Collectors.toMap(TrainingProject::getId, TrainingProject::getProjectName, (a, b) -> a));
+        Map<Long, Integer> projectStatuses = projectIds.isEmpty() ? Map.of() : projectMapper.selectBatchIds(projectIds).stream()
+                .filter(p -> p.getStatus() != null)
+                .collect(Collectors.toMap(TrainingProject::getId, TrainingProject::getStatus, (a, b) -> a));
         Map<Long, String> userNames = userIds.isEmpty() ? Map.of() : userMapper.selectBatchIds(userIds).stream()
                 .collect(Collectors.toMap(SysUser::getId, SysUser::getRealName, (a, b) -> a));
         Map<Integer, String> gearNames = gearMapper.selectList(new LambdaQueryWrapper<>()).stream()
@@ -155,6 +159,8 @@ public class CourseService {
             m.put("id", c.getId());
             m.put("projectId", c.getProjectId());
             m.put("projectName", projectNames.get(c.getProjectId()));
+            m.put("projectStatus", projectStatuses.get(c.getProjectId()));
+            m.put("projectArchived", projectStatuses.get(c.getProjectId()) != null && projectStatuses.get(c.getProjectId()) == 3);
             m.put("courseName", c.getCourseName());
             m.put("cover", c.getCover());
             m.put("credit", c.getCredit());
@@ -196,6 +202,8 @@ public class CourseService {
         m.put("projectId", c.getProjectId());
         TrainingProject p = projectMapper.selectById(c.getProjectId());
         m.put("projectName", p == null ? null : p.getProjectName());
+        m.put("projectStatus", p == null ? null : p.getStatus());
+        m.put("projectArchived", p != null && p.getStatus() != null && p.getStatus() == 3);
         m.put("courseName", c.getCourseName());
         m.put("cover", c.getCover());
         m.put("credit", c.getCredit());
@@ -239,6 +247,7 @@ public class CourseService {
         if (project == null) {
             throw new BusinessException("培训班不存在");
         }
+        projectService.assertProjectEditable(project);
         Course entity;
         if (req.id() != null) {
             entity = courseMapper.selectById(req.id());
@@ -248,6 +257,7 @@ public class CourseService {
             if (!canManage(entity, current)) {
                 throw new BusinessException(403, "无权编辑该课程");
             }
+            projectService.assertProjectEditable(entity.getProjectId());
         } else {
             if (!current.isSuperAdmin() && !isProjectTeacher(current.getId(), req.projectId())) {
                 throw new BusinessException(403, "仅管理员或被指派教员可创建课程");
@@ -358,6 +368,7 @@ public class CourseService {
         if (!canManage(course, current)) {
             throw new BusinessException(403, "无权编辑该课程题库");
         }
+        projectService.assertProjectEditable(course.getProjectId());
         if (file == null || file.isEmpty()) {
             throw new BusinessException("请选择要导入的题库文件");
         }
@@ -551,6 +562,7 @@ public class CourseService {
         if (!canManage(course, current)) {
             throw new BusinessException(403, "无权删除该课程");
         }
+        projectService.assertProjectEditable(course.getProjectId());
         long studied = studyRecordMapper.selectCount(new LambdaQueryWrapper<StudyRecord>().eq(StudyRecord::getCourseId, id));
         if (studied > 0) {
             throw new BusinessException("该课程已有学习记录，不能删除，可改为下架");
@@ -568,6 +580,7 @@ public class CourseService {
         if (!canManage(course, current)) {
             throw new BusinessException(403, "无权操作该课程");
         }
+        projectService.assertProjectEditable(course.getProjectId());
         if (status != null && status == 1) {
             validatePublish(course, null);
         }

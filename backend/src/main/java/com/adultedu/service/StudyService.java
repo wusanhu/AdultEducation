@@ -186,6 +186,7 @@ public class StudyService {
     @Transactional
     public Map<String, Object> heartbeat(LoginUser current, HeartbeatRequest req) {
         Course course = requireCourse(req.courseId(), true);
+        ensureProjectWritable(course.getProjectId());
         StudyRecord record = studyMapper.selectOne(new LambdaQueryWrapper<StudyRecord>()
                 .eq(StudyRecord::getUserId, current.getId()).eq(StudyRecord::getCourseId, req.courseId()));
         if (record == null) {
@@ -399,6 +400,7 @@ public class StudyService {
         if (record == null) {
             return Map.of();
         }
+        ensureProjectWritable(record.getProjectId());
         record.setLastHeartbeat(LocalDateTime.now());
         studyMapper.updateById(record);
         redis.delete(sessionKey(current.getId(), courseId));
@@ -459,6 +461,7 @@ public class StudyService {
 
     public Map<String, Object> confirmPopup(LoginUser current, Long courseId, String sessionId) {
         StudyRecord record = requireActiveSession(current, courseId, sessionId);
+        ensureProjectWritable(record.getProjectId());
         String pendingKey = "study:popup:pending:" + record.getId();
         String pending = redis.opsForValue().get(pendingKey);
         if (pending == null) {
@@ -480,6 +483,7 @@ public class StudyService {
     @Transactional
     public Map<String, Object> startVerify(LoginUser current, VerifyStartRequest req) {
         Course course = requireCourse(req.courseId(), true);
+        ensureProjectWritable(course.getProjectId());
         StudyRecord record = findRecord(current.getId(), req.courseId());
         if (record == null) {
             throw new BusinessException("请先开始学习");
@@ -508,6 +512,7 @@ public class StudyService {
             throw new BusinessException("该核验记录已处理");
         }
         Course course = courseMapper.selectById(log.getCourseId());
+        ensureProjectWritable(course == null ? null : course.getProjectId());
         GearConfig gear = gearOf(course);
         StudyRecord record = studyMapper.selectById(log.getStudyRecordId());
         if (timedOut(log, gear)) {
@@ -594,6 +599,7 @@ public class StudyService {
             throw new BusinessException("该核验记录已处理");
         }
         Course course = courseMapper.selectById(log.getCourseId());
+        ensureProjectWritable(course == null ? null : course.getProjectId());
         GearConfig gear = gearOf(course);
         StudyRecord record = studyMapper.selectById(log.getStudyRecordId());
         if (timedOut(log, gear)) {
@@ -954,6 +960,16 @@ public class StudyService {
         }
     }
 
+    private void ensureProjectWritable(Long projectId) {
+        if (projectId == null) {
+            return;
+        }
+        TrainingProject project = projectMapper.selectById(projectId);
+        if (project != null && project.getStatus() != null && project.getStatus() == 3) {
+            throw new BusinessException("培训班已归档，仅可查看");
+        }
+    }
+
     private StudyRecord findRecord(Long userId, Long courseId) {
         return studyMapper.selectOne(new LambdaQueryWrapper<StudyRecord>()
                 .eq(StudyRecord::getUserId, userId).eq(StudyRecord::getCourseId, courseId));
@@ -1026,6 +1042,7 @@ public class StudyService {
         if (!admin && !owner) {
             throw new BusinessException(403, "仅管理员或该课程教员可解除学习限制");
         }
+        ensureProjectWritable(record.getProjectId());
         unlock(recordId, clearAbnormal);
         log.info("解除学习限制: recordId={}, operator={}, remark={}", recordId, current.getUsername(), remark);
     }

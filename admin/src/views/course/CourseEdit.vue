@@ -8,10 +8,12 @@
       </div>
       <div style="flex:1" />
       <a-button @click="$router.push('/course/list')">取消</a-button>
-      <a-button type="primary" :loading="saving" @click="save">保存课程</a-button>
+      <a-button v-if="!readonly" type="primary" :loading="saving" @click="save">保存课程</a-button>
     </div>
 
-    <a-form ref="formRef" :model="form" :rules="rules" layout="vertical">
+    <a-alert v-if="readonly" type="warning" show-icon message="该课程所属培训班已归档，课程内容仅可查看，不能编辑或保存。" style="margin-bottom:16px" />
+
+    <a-form ref="formRef" :model="form" :rules="rules" layout="vertical" :disabled="readonly">
       <a-row :gutter="16">
         <a-col :xs="24" :lg="17" :xl="18">
           <!-- 基本信息 -->
@@ -281,7 +283,7 @@
               <p style="margin:0 0 6px">· 核验超时或失败会暂停计时，不计入有效学时</p>
               <p style="margin:0">· 连续失败达到上限将标记学习异常并进入人工复核</p>
             </div>
-            <a-button type="primary" block style="margin-top:18px" :loading="saving" @click="save">保存课程</a-button>
+            <a-button v-if="!readonly" type="primary" block style="margin-top:18px" :loading="saving" @click="save">保存课程</a-button>
           </div>
         </a-col>
       </a-row>
@@ -371,6 +373,7 @@ const courseId = isNew ? 0 : Number(route.params.id)
 const canQuestion = computed(() => auth.hasPerm('course:question'))
 const formRef = ref<FormInstance>()
 const saving = ref(false)
+const readonly = ref(false)
 const videoUploading = ref(false)
 const importOpen = ref(false)
 const importing = ref(false)
@@ -384,7 +387,9 @@ const rules = {
   studyHour: [{ required: true, message: '请填写课程学时' }],
   videoUrl: [{ required: true, message: '请上传课程视频' }]
 }
-const projectOptions = computed(() => projects.value.map((p) => ({ value: p.id, label: p.projectName })))
+const projectOptions = computed(() => projects.value
+  .filter((p) => p.status !== 3 || p.id === form.projectId)
+  .map((p) => ({ value: p.id, label: p.projectName })))
 const projectName = computed(() => projects.value.find((p) => p.id === form.projectId)?.projectName || '未选择')
 const currentGear = computed(() => gears.value.find((g) => g.gearCode === form.verifyGearCode))
 const totalScore = computed(() => form.questions.reduce((sum, q) => sum + Number(q.score || 0), 0))
@@ -577,6 +582,7 @@ async function load() {
   gears.value = gearList
   if (!isNew) {
     const detail = await courseApi.detail(courseId)
+    readonly.value = Boolean(detail.projectArchived)
     Object.assign(form, {
       projectId: detail.projectId, courseName: detail.courseName, cover: detail.cover || '', credit: Number(detail.credit),
       studyHour: Number(detail.studyHour), isRequired: detail.isRequired, needExam: detail.needExam === 1,
@@ -592,6 +598,7 @@ async function load() {
 }
 
 async function save() {
+  if (readonly.value) { message.warning('该培训班已归档，课程内容仅可查看'); return }
   try { await formRef.value?.validate() } catch { return }
   if (form.needExam && form.questions.length === 0) { message.warning('需要课后测验的课程请至少配置一道题目'); return }
   for (let i = 0; i < form.questions.length; i++) {

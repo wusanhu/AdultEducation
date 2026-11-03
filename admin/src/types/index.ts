@@ -113,6 +113,7 @@ export interface ProjectRow {
   needTeacherAudit: number
   needLeaderAudit: number
   needAdminAudit: number
+  editable?: boolean
   createUserId?: number
   createUserName?: string
   createTime?: string
@@ -143,6 +144,8 @@ export interface CourseRow {
   id: number
   projectId: number
   projectName?: string
+  projectStatus?: number
+  projectArchived?: boolean
   courseName: string
   cover?: string
   credit: number
@@ -218,6 +221,7 @@ export interface StudyRecordRow {
   courseName?: string
   projectId: number
   projectName?: string
+  projectArchived?: boolean
   startTime?: string
   endTime?: string
   validDuration: number
@@ -276,6 +280,7 @@ export interface CreditRow {
   orgName?: string
   projectId: number
   projectName?: string
+  projectArchived?: boolean
   courseId?: number
   courseName?: string
   creditValue: number
@@ -303,6 +308,7 @@ export interface GraduateApplyRow {
   orgName?: string
   projectId: number
   projectName?: string
+  projectArchived?: boolean
   needCredit?: number
   applyTime?: string
   currentNode: string

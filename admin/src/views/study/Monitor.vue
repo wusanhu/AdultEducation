@@ -46,7 +46,8 @@
         <template v-else-if="column.key === 'action'">
           <a-space size="small">
             <a @click="openDetail(record.id)">学习明细</a>
-            <a v-if="record.isAbnormal === 1" style="color:#16a34a" @click="unlock(record)">解除限制</a>
+            <a v-if="record.isAbnormal === 1 && !record.projectArchived" style="color:#16a34a" @click="unlock(record)">解除限制</a>
+            <span v-else-if="record.isAbnormal === 1" class="muted" style="font-size:12px">已归档</span>
           </a-space>
         </template>
       </template>

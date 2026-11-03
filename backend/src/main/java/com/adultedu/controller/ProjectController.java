@@ -5,6 +5,7 @@ import com.adultedu.common.PageResult;
 import com.adultedu.common.R;
 import com.adultedu.dto.BizDtos.MemberRequest;
 import com.adultedu.dto.BizDtos.ProjectSaveRequest;
+import com.adultedu.dto.BizDtos.ProjectStatusRequest;
 import com.adultedu.security.SecurityUtils;
 import com.adultedu.service.ProjectService;
 import jakarta.validation.Valid;
@@ -99,8 +100,11 @@ public class ProjectController {
     @PutMapping("/{id}/status")
     @PreAuthorize("hasAuthority('project:edit')")
     @OperLog(module = "培训班管理", content = "变更培训班状态")
-    public R<Void> status(@PathVariable Long id, @RequestParam Integer status) {
-        projectService.updateProjectStatus(id, status, SecurityUtils.current());
+    public R<Void> status(@PathVariable Long id, @RequestParam Integer status,
+                          @RequestBody(required = false) ProjectStatusRequest req) {
+        projectService.updateProjectStatus(id, status,
+                req == null ? null : req.startTime(), req == null ? null : req.endTime(),
+                SecurityUtils.current());
         return R.ok();
     }
 

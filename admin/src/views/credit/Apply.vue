@@ -91,7 +91,7 @@ async function loadMeta() {
     projectApi.page({ pageNum: 1, pageSize: 200 })
   ])
   students.value = studentList
-  projects.value = projectPage.records
+  projects.value = projectPage.records.filter((p) => p.status !== 3)
 }
 async function loadRecent() {
   if (!canViewLedger.value) {

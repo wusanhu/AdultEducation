@@ -144,6 +144,10 @@ public class ExamService {
         if (course == null) {
             throw new BusinessException("课程不存在");
         }
+        TrainingProject project = projectMapper.selectById(course.getProjectId());
+        if (project != null && project.getStatus() != null && project.getStatus() == 3) {
+            throw new BusinessException("培训班已归档，仅可查看");
+        }
         if (course.getNeedExam() == null || course.getNeedExam() != 1) {
             throw new BusinessException("该课程不需要课后测验");
         }
