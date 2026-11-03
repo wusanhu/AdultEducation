@@ -34,7 +34,11 @@
               <a-col :span="6"><a-form-item label="排序"><a-input-number v-model:value="form.sort" :min="0" style="width:100%" /></a-form-item></a-col>
             </a-row>
             <a-row :gutter="16">
-              <a-col :span="8"><a-form-item label="允许拖拽进度"><a-switch v-model:checked="form.allowSeek" checked-children="允许" un-checked-children="禁止" /></a-form-item></a-col>
+              <a-col :span="8">
+                <a-form-item label="视频进度控制" tooltip="开启后学员可自由拖动视频进度；关闭后移动端将锁定进度，只能顺序观看">
+                  <a-switch v-model:checked="form.allowSeek" checked-children="可拖动" un-checked-children="不可拖动" />
+                </a-form-item>
+              </a-col>
               <a-col :span="8"><a-form-item label="需要课后测验"><a-switch v-model:checked="form.needExam" checked-children="需要" un-checked-children="不需要" /></a-form-item></a-col>
               <a-col :span="8"><a-form-item label="课程状态"><a-select v-model:value="form.status"><a-select-option :value="0">草稿</a-select-option><a-select-option :value="1">立即上架</a-select-option><a-select-option :value="2">下架</a-select-option></a-select></a-form-item></a-col>
             </a-row>
