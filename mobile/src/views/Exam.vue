@@ -203,7 +203,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: var(--ink-800);
+  color: var(--text-strong);
   font-weight: 500;
   justify-content: center;
   padding: 12px 16px;
@@ -211,12 +211,12 @@ onBeforeUnmount(() => {
 .countdown-bar .num {
   font-size: 17px;
   font-weight: 700;
-  color: var(--seal);
+  color: var(--primary);
   letter-spacing: 0.06em;
 }
 .countdown-bar.urgent {
-  border-color: rgba(194, 67, 46, 0.4);
-  background: var(--seal-soft);
+  border-color: rgba(220, 38, 38, 0.35);
+  background: rgba(220, 38, 38, 0.06);
 }
 .question-card {
   margin-bottom: 0;
@@ -231,8 +231,8 @@ onBeforeUnmount(() => {
   margin-bottom: 10px;
 }
 .q-num {
-  background: var(--ink-800);
-  color: #f5f2ea;
+  background: var(--primary);
+  color: #fff;
   width: 24px;
   height: 24px;
   border-radius: 6px;
@@ -248,7 +248,7 @@ onBeforeUnmount(() => {
 }
 .q-score {
   font-size: 12px;
-  color: var(--gold);
+  color: var(--warning);
   margin-left: auto;
 }
 .q-content {
@@ -268,7 +268,7 @@ onBeforeUnmount(() => {
   padding: 16px;
   position: sticky;
   bottom: 0;
-  background: var(--paper);
+  background: var(--bg-soft);
 }
 .result-content {
   padding: 28px 20px;
@@ -282,7 +282,7 @@ onBeforeUnmount(() => {
   border-width: 2.5px;
 }
 .stamp-ok {
-  color: var(--ok);
+  color: var(--success);
 }
 .stamp-fail {
   color: var(--danger);
@@ -303,7 +303,7 @@ onBeforeUnmount(() => {
   color: var(--text-sub);
 }
 .result-hint b {
-  color: var(--seal);
+  color: var(--primary);
 }
 .loading-center {
   display: flex;

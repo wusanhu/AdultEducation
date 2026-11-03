@@ -42,7 +42,7 @@ function onClickLeft() {
 
 <style scoped>
 .page-header :deep(.van-nav-bar__title) {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-weight: 700;
   letter-spacing: 0.1em;
 }

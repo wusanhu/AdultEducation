@@ -275,7 +275,7 @@ onMounted(loadData)
 .ledger-title {
   position: relative;
   z-index: 1;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.5em;
@@ -299,7 +299,7 @@ onMounted(loadData)
   line-height: 1.1;
 }
 .ledger-value--gold {
-  color: #d8b96c;
+  color: #1f6feb;
 }
 .ledger-label {
   font-size: 11px;
@@ -319,8 +319,8 @@ onMounted(loadData)
   padding: 14px 16px 0;
 }
 .apply-entry :deep(.van-button--plain) {
-  border-color: rgba(27, 42, 74, 0.4);
-  color: var(--ink-800);
+  border-color: rgba(31, 111, 235, 0.45);
+  color: var(--text-strong);
 }
 
 .credit-item {
@@ -352,7 +352,7 @@ onMounted(loadData)
 .source-chip {
   font-size: 11px;
   color: var(--text-sub);
-  background: var(--paper-dim);
+  background: var(--bg-soft);
   border: 1px solid var(--line);
   border-radius: 4px;
   padding: 3px 7px;
@@ -362,7 +362,7 @@ onMounted(loadData)
   flex: none;
   display: flex;
   align-items: baseline;
-  color: var(--seal);
+  color: var(--primary);
 }
 .amount-plus {
   font-size: 14px;
@@ -399,7 +399,7 @@ onMounted(loadData)
 }
 .apply-title {
   text-align: center;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.2em;

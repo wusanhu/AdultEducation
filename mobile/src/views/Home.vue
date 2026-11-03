@@ -27,7 +27,7 @@
           <span class="ticket-unit">学分</span>
         </div>
       </div>
-      <div class="ticket-seal seal seal--round">学分</div>
+      <div class="ticket-badge">学分</div>
       <span class="ticket-link">
         明细
         <van-icon name="arrow" size="11" />
@@ -253,24 +253,24 @@ onMounted(async () => {
 }
 .hello {
   font-size: 12px;
-  letter-spacing: 0.3em;
-  color: rgba(245, 242, 234, 0.6);
+  letter-spacing: 0.25em;
+  color: rgba(255, 255, 255, 0.6);
   margin-bottom: 6px;
 }
 .hero-name {
-  font-family: var(--font-display);
   font-size: 26px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #fff;
 }
 .org-name {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: rgba(245, 242, 234, 0.62);
+  color: rgba(255, 255, 255, 0.68);
   margin-top: 8px;
-  border: 1px solid rgba(245, 242, 234, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 99px;
   padding: 3px 10px;
 }
@@ -290,10 +290,10 @@ onMounted(async () => {
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: var(--paper-card);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  box-shadow: 0 6px 18px rgba(19, 31, 56, 0.12);
+  background: #fff;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  box-shadow: 0 6px 18px rgba(15, 40, 90, 0.1);
   cursor: pointer;
 }
 .ticket-left {
@@ -303,7 +303,7 @@ onMounted(async () => {
 .ticket-label {
   font-size: 11px;
   color: var(--text-sub);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
 }
 .ticket-value-row {
   display: flex;
@@ -315,17 +315,24 @@ onMounted(async () => {
   font-size: 34px;
   font-weight: 700;
   line-height: 1;
-  color: var(--ink-800);
+  color: var(--primary);
 }
 .ticket-unit {
   font-size: 12px;
   color: var(--text-sub);
 }
-.ticket-seal {
+.ticket-badge {
+  flex: none;
   width: 46px;
   height: 46px;
-  font-size: 14px;
-  flex: none;
+  border-radius: 12px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-left: auto;
 }
 .ticket-link {
@@ -340,9 +347,9 @@ onMounted(async () => {
 /* 统计条 */
 .stat-cards {
   display: flex;
-  background: var(--paper-card);
+  background: #fff;
   margin: 12px 16px 0;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 14px 4px;
   border: 1px solid var(--line);
 }
@@ -368,17 +375,17 @@ onMounted(async () => {
 .stat-value {
   font-size: 21px;
   font-weight: 700;
-  color: var(--ink-800);
+  color: var(--text-strong);
   line-height: 1.2;
 }
 .stat-value--seal {
-  color: var(--seal);
+  color: var(--warning);
 }
 .stat-label {
   font-size: 11px;
   color: var(--text-sub);
   margin-top: 3px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
 }
 
 /* 入口 */
@@ -406,19 +413,17 @@ onMounted(async () => {
 .entry-icon {
   width: 46px;
   height: 46px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--ink-800);
-  background: rgba(27, 42, 74, 0.06);
-  border: 1px solid rgba(27, 42, 74, 0.12);
+  color: var(--primary);
+  background: var(--primary-soft);
 }
 .more-link {
   margin-left: auto;
   font-size: 12px;
   color: var(--text-sub);
-  font-family: var(--font-body);
   font-weight: 400;
   cursor: pointer;
 }
@@ -439,9 +444,9 @@ onMounted(async () => {
   flex: none;
   width: 88px;
   height: 60px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  background: linear-gradient(150deg, var(--ink-700), var(--ink-900));
+  background: linear-gradient(150deg, #1f6feb, #0e7490);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -453,9 +458,8 @@ onMounted(async () => {
   object-fit: cover;
 }
 .cover-glyph {
-  font-family: var(--font-display);
   font-size: 20px;
-  color: rgba(245, 242, 234, 0.55);
+  color: rgba(255, 255, 255, 0.6);
   letter-spacing: 0.1em;
 }
 .course-body {
@@ -501,7 +505,7 @@ onMounted(async () => {
 .empty-action {
   display: inline-block;
   margin-top: 10px;
-  color: var(--seal);
+  color: var(--primary);
   font-size: 12px;
   cursor: pointer;
 }
@@ -521,7 +525,7 @@ onMounted(async () => {
   opacity: 0.7;
 }
 .notify-card.unread {
-  border-left: 3px solid var(--seal);
+  border-left: 3px solid var(--primary);
 }
 .notify-head {
   display: flex;
@@ -546,7 +550,7 @@ onMounted(async () => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--seal);
+  background: var(--danger);
 }
 .notify-time {
   flex: none;

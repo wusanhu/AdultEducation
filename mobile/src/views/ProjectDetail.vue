@@ -121,7 +121,7 @@ onMounted(async () => {
 
 <style scoped>
 .detail-name {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -150,7 +150,7 @@ onMounted(async () => {
   font-size: 12px;
 }
 .credit-value {
-  color: var(--seal);
+  color: var(--primary);
   font-weight: 700;
   font-size: 15px;
 }
@@ -168,8 +168,8 @@ onMounted(async () => {
 .course-index {
   flex: none;
   font-size: 11px;
-  color: var(--gold);
-  border: 1px solid rgba(176, 138, 62, 0.4);
+  color: var(--warning);
+  border: 1px solid rgba(217, 119, 6, 0.35);
   border-radius: 4px;
   padding: 2px 4px;
   letter-spacing: 0.05em;
@@ -186,8 +186,8 @@ onMounted(async () => {
   font-weight: 600;
 }
 .need-exam {
-  color: var(--warn);
-  border: 1px solid rgba(176, 138, 62, 0.35);
+  color: var(--warning);
+  border: 1px solid rgba(217, 119, 6, 0.3);
   border-radius: 4px;
   padding: 1px 6px;
   font-size: 11px;

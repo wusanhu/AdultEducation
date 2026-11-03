@@ -2,9 +2,9 @@
   <div class="login-page ink-hero">
     <span class="hero-watermark">学无止境</span>
 
-    <!-- 印信品牌 -->
+    <!-- 品牌标识 -->
     <div class="brand">
-      <div class="brand-seal seal seal--round seal--ghost">继教</div>
+      <div class="brand-mark">继</div>
       <h1 class="brand-title">继续教育学分管理</h1>
       <p class="brand-sub">学籍在册 · 笃学不倦</p>
     </div>
@@ -111,55 +111,59 @@ async function onSubmit() {
   text-align: center;
   padding: 68px 0 40px;
 }
-.brand-seal {
+.brand-mark {
   width: 64px;
   height: 64px;
-  font-size: 20px;
-  margin-bottom: 18px;
-  border-width: 2.5px;
+  margin: 0 auto 18px;
+  border-radius: 18px;
+  background: linear-gradient(150deg, #1f6feb, #0e7490);
+  color: #fff;
+  font-size: 28px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(14, 116, 144, 0.35);
 }
 .brand-title {
-  font-family: var(--font-display);
-  font-size: 25px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: #f5f2ea;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #fff;
 }
 .brand-sub {
   font-size: 12px;
-  color: rgba(245, 242, 234, 0.62);
-  letter-spacing: 0.5em;
+  color: rgba(255, 255, 255, 0.6);
+  letter-spacing: 0.4em;
   margin-top: 10px;
 }
 
 .dossier {
   position: relative;
   z-index: 1;
-  background: var(--paper-card);
-  border: 1px solid var(--line);
-  border-radius: 14px;
+  background: #fff;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 12px 32px rgba(5, 15, 40, 0.25);
 }
 .dossier-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px dashed var(--line-strong);
-  background: var(--paper-dim);
+  border-bottom: 1px solid #eef2f7;
+  background: #f6f9fd;
 }
 .dossier-tab {
-  font-family: var(--font-display);
   font-size: 13px;
-  font-weight: 700;
-  color: var(--ink-800);
-  letter-spacing: 0.2em;
+  font-weight: 600;
+  color: #0f172a;
+  letter-spacing: 0.15em;
 }
 .dossier-no {
   font-size: 11px;
-  color: var(--text-faint);
-  letter-spacing: 0.12em;
+  color: #94a3b8;
+  letter-spacing: 0.1em;
 }
 
 .login-form {
@@ -186,8 +190,8 @@ async function onSubmit() {
 }
 .demo-title {
   font-size: 11px;
-  color: rgba(245, 242, 234, 0.55);
-  letter-spacing: 0.4em;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.35em;
   margin-bottom: 12px;
 }
 .demo-chips {
@@ -198,14 +202,14 @@ async function onSubmit() {
 }
 .demo-chip {
   font-size: 11px;
-  color: rgba(245, 242, 234, 0.85);
-  border: 1px solid rgba(245, 242, 234, 0.28);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 99px;
   padding: 5px 12px;
   cursor: pointer;
   transition: background 0.15s;
 }
 .demo-chip:active {
-  background: rgba(245, 242, 234, 0.12);
+  background: rgba(255, 255, 255, 0.14);
 }
 </style>

@@ -177,29 +177,29 @@ async function onLogout() {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 26px;
   font-weight: 700;
-  color: #f5f2ea;
+  color: #fff;
 }
 .avatar-edit {
   position: absolute;
   bottom: 0;
   right: 0;
-  background: var(--paper-card);
+  background: var(--bg-card);
   border-radius: 50%;
   padding: 3px;
-  color: var(--ink-800);
+  color: var(--text-strong);
   font-size: 12px;
   border: 1px solid var(--line);
 }
 .profile-name {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 21px;
   font-weight: 700;
   letter-spacing: 0.1em;
   margin-top: 14px;
-  color: #f5f2ea;
+  color: #fff;
 }
 .profile-role {
   margin-top: 10px;
@@ -223,7 +223,7 @@ async function onLogout() {
 }
 .logout-wrap :deep(.van-button--danger) {
   color: var(--danger);
-  border-color: rgba(194, 67, 46, 0.45);
+  border-color: rgba(220, 38, 38, 0.4);
   background: transparent;
 }
 </style>

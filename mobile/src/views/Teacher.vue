@@ -58,7 +58,7 @@
             class="mt-8"
             :percentage="Math.min(100, Math.round(item.progress || 0))"
             :show-pivot="false"
-            color="#1989fa"
+            color="#1f6feb"
             stroke-width="4"
           />
         </div>
@@ -368,8 +368,8 @@ onMounted(() => {
 .audit-credit {
   font-size: 16px;
   font-weight: 700;
-  color: var(--seal);
-  font-family: var(--font-display);
+  color: var(--primary);
+  font-family: var(--font-body);
 }
 .audit-meta {
   font-size: 12px;
@@ -390,7 +390,7 @@ onMounted(() => {
 }
 .status-text {
   font-size: 12px;
-  color: var(--ink-700);
+  color: var(--text-main);
 }
 .section-title {
   margin: 4px 16px 0;
@@ -408,13 +408,13 @@ onMounted(() => {
 }
 .stat-item b {
   display: block;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 22px;
-  color: var(--ink-800);
+  color: var(--text-strong);
   font-variant-numeric: tabular-nums;
 }
 .stat-item b.orange {
-  color: var(--seal);
+  color: var(--primary);
 }
 .stat-item span {
   font-size: 11px;

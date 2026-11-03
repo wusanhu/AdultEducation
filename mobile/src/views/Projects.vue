@@ -105,11 +105,11 @@ onMounted(loadData)
   left: 16px;
   width: 34px;
   height: 5px;
-  background: var(--seal);
+  background: var(--primary);
   border-radius: 0 0 3px 3px;
 }
 .project-name {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -140,7 +140,7 @@ onMounted(loadData)
 .credit-num {
   font-size: 17px;
   font-weight: 700;
-  color: var(--seal);
+  color: var(--primary);
 }
 .credit-sep {
   color: var(--text-faint);

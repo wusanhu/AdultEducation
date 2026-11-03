@@ -128,10 +128,10 @@ async function onReadAll() {
   opacity: 0.75;
 }
 .notify-item.unread {
-  border-left: 3px solid var(--seal);
+  border-left: 3px solid var(--primary);
 }
 .notify-title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -163,8 +163,8 @@ async function onReadAll() {
   gap: 8px;
 }
 .notify-actions :deep(.van-tag) {
-  background: var(--seal-soft);
-  color: var(--seal);
-  border-color: rgba(194, 67, 46, 0.3);
+  background: var(--primary-soft);
+  color: var(--primary);
+  border-color: rgba(220, 38, 38, 0.25);
 }
 </style>

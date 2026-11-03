@@ -103,7 +103,7 @@ onMounted(async () => {
 /* 结果印章 */
 .verify-stamp {
   flex: none;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.15em;
@@ -113,13 +113,13 @@ onMounted(async () => {
   transform: rotate(-6deg);
 }
 .stamp-ok {
-  color: var(--ok);
+  color: var(--success);
 }
 .stamp-fail {
   color: var(--danger);
 }
 .stamp-pending {
-  color: var(--warn);
+  color: var(--warning);
 }
 .verify-meta {
   font-size: 12px;

@@ -53,7 +53,7 @@
         <van-progress
           :percentage="progressPercent"
           :show-pivot="false"
-          color="#d8b96c"
+          color="#1f6feb"
           stroke-width="4"
           track-color="#2b3854"
         />
@@ -876,14 +876,14 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: var(--ink-900);
-  color: #f5f2ea;
+  background: #0d1b2e;
+  color: #fff;
   z-index: 10;
   border-bottom: 1px solid rgba(245, 242, 234, 0.1);
 }
 .study-title {
   flex: 1;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -939,7 +939,7 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(245, 242, 234, 0.25);
   border-radius: 50%;
   background: rgba(245, 242, 234, 0.1);
-  color: #f5f2ea;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -951,7 +951,7 @@ onBeforeUnmount(() => {
 .cc-time {
   flex: none;
   font-size: 11px;
-  color: #f5f2ea;
+  color: #fff;
   font-variant-numeric: tabular-nums;
 }
 .cc-track {
@@ -964,13 +964,13 @@ onBeforeUnmount(() => {
 .cc-fill {
   height: 100%;
   border-radius: 4px;
-  background: #d8b96c;
+  background: #1f6feb;
   transition: width 0.2s linear;
 }
 .study-info {
   padding: 16px;
-  background: var(--ink-900);
-  color: #f5f2ea;
+  background: #0d1b2e;
+  color: #fff;
   flex: 1;
 }
 .seek-tip {
@@ -982,7 +982,7 @@ onBeforeUnmount(() => {
   color: #9fb4d8;
 }
 .seek-tip.locked {
-  color: #d8b96c;
+  color: #1f6feb;
 }
 .progress-bar-wrap {
   padding: 4px 0;
@@ -993,7 +993,7 @@ onBeforeUnmount(() => {
 }
 .study-bottom {
   padding: 16px;
-  background: var(--ink-900);
+  background: #0d1b2e;
   border-top: 1px solid rgba(245, 242, 234, 0.1);
 }
 .popup-content {
@@ -1001,10 +1001,10 @@ onBeforeUnmount(() => {
 }
 .popup-timer {
   text-align: center;
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 26px;
   font-weight: 700;
-  color: var(--seal);
+  color: var(--primary);
   margin-bottom: 12px;
 }
 .popup-question {
@@ -1025,7 +1025,7 @@ onBeforeUnmount(() => {
 }
 .verify-countdown {
   text-align: center;
-  color: var(--seal);
+  color: var(--primary);
   font-weight: 600;
   margin-bottom: 8px;
 }
@@ -1033,7 +1033,7 @@ onBeforeUnmount(() => {
   display: none;
 }
 .mock-code {
-  color: var(--ink-700);
+  color: var(--text-main);
   font-size: 13px;
   margin-bottom: 8px;
 }
@@ -1050,9 +1050,9 @@ onBeforeUnmount(() => {
   z-index: 999;
 }
 .warning-box {
-  background: var(--paper-card);
+  background: var(--bg-card);
   border: 1px solid var(--line);
-  border-top: 2px solid var(--seal);
+  border-top: 2px solid var(--primary);
   border-radius: 12px;
   padding: 32px 24px;
   text-align: center;

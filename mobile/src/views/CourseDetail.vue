@@ -32,7 +32,7 @@
       <div v-if="detail.attachments && detail.attachments.length > 0" class="card">
         <h4 class="block-title">附件资料</h4>
         <div v-for="(att, i) in detail.attachments" :key="i" class="att-item">
-          <van-icon name="description" color="#b08a3e" />
+          <van-icon name="description" color="#d97706" />
           <a :href="att.fileUrl" target="_blank">{{ att.fileName }}</a>
         </div>
       </div>
@@ -103,7 +103,7 @@ onMounted(async () => {
   object-fit: cover;
 }
 .course-title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 18px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -117,13 +117,13 @@ onMounted(async () => {
 .meta-chip {
   font-size: 12px;
   color: var(--text-sub);
-  background: var(--paper-dim);
+  background: var(--bg-soft);
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 4px 9px;
 }
 .meta-chip b {
-  color: var(--ink-800);
+  color: var(--text-strong);
   font-weight: 600;
   margin-left: 2px;
 }
@@ -135,7 +135,7 @@ onMounted(async () => {
   padding-top: 12px;
 }
 .block-title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 700;
   color: var(--text-strong);
@@ -151,14 +151,14 @@ onMounted(async () => {
   transform: translateY(-50%) rotate(45deg);
   width: 6px;
   height: 6px;
-  background: var(--seal);
+  background: var(--primary);
   border-radius: 1px;
 }
 .video-preview {
   width: 100%;
   border-radius: 8px;
   max-height: 220px;
-  background: var(--ink-900);
+  background: #0d1b2e;
 }
 .att-item {
   display: flex;
@@ -172,7 +172,7 @@ onMounted(async () => {
   border-bottom: none;
 }
 .att-item a {
-  color: var(--ink-700);
+  color: var(--text-main);
   text-decoration: none;
 }
 .bottom-action {
@@ -181,7 +181,7 @@ onMounted(async () => {
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--paper-card);
+  background: var(--bg-card);
   border-top: 1px solid var(--line);
   z-index: 5;
 }

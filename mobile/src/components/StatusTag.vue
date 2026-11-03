@@ -64,24 +64,24 @@ const label = computed(() => {
   letter-spacing: 0.02em;
 }
 .is-ink {
-  color: #1b2a4a;
-  background: rgba(27, 42, 74, 0.07);
-  border-color: rgba(27, 42, 74, 0.18);
+  color: #1f6feb;
+  background: rgba(31, 111, 235, 0.08);
+  border-color: rgba(31, 111, 235, 0.25);
 }
 .is-ok {
-  color: #2f6249;
-  background: rgba(62, 122, 94, 0.1);
-  border-color: rgba(62, 122, 94, 0.28);
+  color: #15803d;
+  background: rgba(22, 163, 74, 0.09);
+  border-color: rgba(22, 163, 74, 0.3);
 }
 .is-warn {
   color: #8a6a2c;
-  background: rgba(176, 138, 62, 0.12);
-  border-color: rgba(176, 138, 62, 0.35);
+  background: rgba(217, 119, 6, 0.1);
+  border-color: rgba(217, 119, 6, 0.3);
 }
 .is-danger {
-  color: #c2432e;
-  background: rgba(194, 67, 46, 0.08);
-  border-color: rgba(194, 67, 46, 0.3);
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.06);
+  border-color: rgba(220, 38, 38, 0.25);
 }
 .is-idle {
   color: #7a8194;
@@ -93,9 +93,9 @@ const label = computed(() => {
   height: 5px;
   border-radius: 50%;
 }
-.dot-ink { background: #1b2a4a; }
-.dot-ok { background: #3e7a5e; }
-.dot-warn { background: #b08a3e; }
-.dot-danger { background: #c2432e; }
+.dot-ink { background: #1f6feb; }
+.dot-ok { background: #16a34a; }
+.dot-warn { background: #d97706; }
+.dot-danger { background: #dc2626; }
 .dot-idle { background: #a8adba; }
 </style>

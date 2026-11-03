@@ -214,7 +214,7 @@ onMounted(async () => {
 
 <style scoped>
 .block-title {
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 700;
   color: var(--text-strong);
@@ -231,14 +231,14 @@ onMounted(async () => {
   transform: translateY(-50%) rotate(45deg);
   width: 6px;
   height: 6px;
-  background: var(--seal);
+  background: var(--primary);
   border-radius: 1px;
 }
 .cert-plate {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: var(--paper-dim);
+  background: var(--bg-soft);
   border: 1px dashed var(--line-strong);
   border-radius: 10px;
   padding: 16px;
@@ -283,7 +283,7 @@ onMounted(async () => {
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--paper-card);
+  background: var(--bg-card);
   border-top: 1px solid var(--line);
   z-index: 5;
 }
