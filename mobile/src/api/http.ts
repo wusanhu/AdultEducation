@@ -6,6 +6,16 @@ const http = axios.create({
   timeout: 30000,
 })
 
+function redirectToLogin() {
+  const onLoginPage = window.location.hash.startsWith('#/login')
+  localStorage.removeItem('mobile_token')
+  localStorage.removeItem('mobile_user')
+  if (!onLoginPage) {
+    window.location.replace(`${import.meta.env.BASE_URL}#/login`)
+    window.location.reload()
+  }
+}
+
 http.interceptors.request.use((config) => {
   const token = localStorage.getItem('mobile_token')
   if (token) {
@@ -21,9 +31,7 @@ http.interceptors.response.use(
       return res.data
     }
     if (res.code === 401) {
-      localStorage.removeItem('mobile_token')
-      localStorage.removeItem('mobile_user')
-      window.location.hash = '#/login'
+      redirectToLogin()
       return Promise.reject(new Error(res.msg || '登录已过期'))
     }
     showToast(res.msg || '请求失败')
@@ -31,9 +39,7 @@ http.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('mobile_token')
-      localStorage.removeItem('mobile_user')
-      window.location.hash = '#/login'
+      redirectToLogin()
     } else {
       showToast(error.response?.data?.msg || '网络异常')
     }

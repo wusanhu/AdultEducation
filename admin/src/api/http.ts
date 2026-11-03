@@ -8,6 +8,20 @@ interface ApiBody<T> {
 
 const http = axios.create({ baseURL: '/api', timeout: 30000 })
 
+const AUTH_KEYS = [
+  'admin_token', 'admin_user', 'admin_perms', 'admin_menus',
+  'admin_role_code', 'admin_role_name', 'admin_must_change'
+]
+
+function redirectToLogin() {
+  const onLoginPage = window.location.hash.startsWith('#/login')
+  AUTH_KEYS.forEach((key) => localStorage.removeItem(key))
+  if (!onLoginPage) {
+    window.location.replace(`${import.meta.env.BASE_URL}#/login`)
+    window.location.reload()
+  }
+}
+
 http.interceptors.request.use((config) => {
   const token = localStorage.getItem('admin_token')
   if (token) {
@@ -24,10 +38,7 @@ http.interceptors.response.use(
         return body.data as never
       }
       if (body.code === 401) {
-        localStorage.removeItem('admin_token')
-        if (!window.location.hash.includes('/login')) {
-          window.location.hash = '#/login'
-        }
+        redirectToLogin()
       }
       return Promise.reject(new Error(body.msg || '请求失败'))
     }
@@ -37,10 +48,7 @@ http.interceptors.response.use(
     const status = error.response?.status
     const msg = error.response?.data?.msg || (status === 403 ? '没有操作权限' : '网络异常，请稍后重试')
     if (status === 401) {
-      localStorage.removeItem('admin_token')
-      if (!window.location.hash.includes('/login')) {
-        window.location.hash = '#/login'
-      }
+      redirectToLogin()
     }
     return Promise.reject(new Error(msg))
   }
@@ -78,6 +86,10 @@ export async function download(url: string, params?: Record<string, unknown>, fa
   const response = await fetch(`/api${url}${query.size ? `?${query.toString()}` : ''}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   })
+  if (response.status === 401) {
+    redirectToLogin()
+    throw new Error('登录已过期，请重新登录')
+  }
   if (!response.ok) {
     throw new Error('导出失败，请稍后重试')
   }
