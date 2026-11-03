@@ -38,7 +38,7 @@
       </div>
     </a-spin>
 
-    <a-modal v-model:open="actionOpen" :title="approve ? '通过学分补录' : '驳回学分补录'" :confirm-loading="submitting" :ok-button-props="{ danger: !approve }" width="500" @ok="submit">
+    <a-modal v-model:open="actionOpen" :title="approve ? '通过学分补录' : '驳回学分补录'" :confirm-loading="submitting" :ok-button-props="{ danger: !approve }" :width="480" @ok="submit">
       <a-alert v-if="current" :type="approve ? 'success' : 'warning'" show-icon :message="`${current.userName} · ${current.projectName} · ${current.creditValue} 学分`" style="margin-bottom:16px" />
       <a-form layout="vertical">
         <a-form-item :label="approve ? '审批意见' : '驳回原因'" :required="!approve">

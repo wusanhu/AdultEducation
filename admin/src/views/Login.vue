@@ -57,7 +57,7 @@
       </div>
     </div>
 
-    <a-modal v-model:open="pwdOpen" title="首次登录需修改初始密码" :closable="false" :mask-closable="false" :confirm-loading="pwdLoading" @ok="changePwd">
+    <a-modal v-model:open="pwdOpen" title="首次登录需修改初始密码" :width="420" :closable="false" :mask-closable="false" :confirm-loading="pwdLoading" @ok="changePwd">
       <a-alert type="info" show-icon message="为保障账号安全，请设置包含字母与数字、长度 8-32 位的新密码。" style="margin-bottom:16px" />
       <a-form layout="vertical">
         <a-form-item label="新密码" required>

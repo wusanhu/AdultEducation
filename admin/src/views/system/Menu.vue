@@ -33,7 +33,7 @@
       </template>
     </a-table>
 
-    <a-modal v-model:open="open" :title="form.id ? '编辑菜单' : '新增菜单'" width="680" :confirm-loading="saving" @ok="save">
+    <a-modal v-model:open="open" :title="form.id ? '编辑菜单' : '新增菜单'" :width="620" :confirm-loading="saving" @ok="save">
       <a-form ref="formRef" :model="form" :rules="rules" layout="vertical">
         <a-row :gutter="16">
           <a-col :span="12">

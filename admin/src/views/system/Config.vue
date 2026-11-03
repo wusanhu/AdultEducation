@@ -46,7 +46,7 @@
       <a-empty v-if="!groups.length" description="暂无参数" />
     </a-spin>
 
-    <a-modal v-model:open="open" title="新增参数" :confirm-loading="saving" @ok="createConfig">
+    <a-modal v-model:open="open" title="新增参数" :width="520" :confirm-loading="saving" @ok="createConfig">
       <a-form layout="vertical">
         <a-form-item label="参数名称" required><a-input v-model:value="newItem.configName" /></a-form-item>
         <a-form-item label="参数键" required><a-input v-model:value="newItem.configKey" placeholder="如：study.popupMin" /></a-form-item>

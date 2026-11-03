@@ -59,7 +59,7 @@
       </template>
     </a-table>
 
-    <a-modal v-model:open="revokeOpen" title="撤销学分" :confirm-loading="revoking" width="500" @ok="submitRevoke">
+    <a-modal v-model:open="revokeOpen" title="撤销学分" :confirm-loading="revoking" :width="480" @ok="submitRevoke">
       <a-alert type="warning" show-icon message="撤销后将扣除该笔学分并生成审计日志，操作不可恢复。" style="margin-bottom:14px" />
       <a-descriptions v-if="current" :column="2" size="small" bordered style="margin-bottom:14px">
         <a-descriptions-item label="学员">{{ current.userName }}</a-descriptions-item>

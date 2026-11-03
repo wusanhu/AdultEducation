@@ -90,7 +90,7 @@
       </a-layout-content>
     </a-layout>
 
-    <a-modal v-model:open="pwdOpen" title="修改登录密码" :confirm-loading="pwdLoading" @ok="submitPwd">
+    <a-modal v-model:open="pwdOpen" title="修改登录密码" :width="420" :confirm-loading="pwdLoading" @ok="submitPwd">
       <a-form layout="vertical" style="margin-top:16px">
         <a-form-item label="原密码" required><a-input-password v-model:value="pwd.oldPassword" /></a-form-item>
         <a-form-item label="新密码" required><a-input-password v-model:value="pwd.newPassword" placeholder="8-32 位，包含字母和数字" /></a-form-item>

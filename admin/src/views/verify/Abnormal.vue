@@ -47,7 +47,7 @@
       </template>
     </a-table>
 
-    <a-modal v-model:open="reviewOpen" title="异常学习复核" :confirm-loading="reviewing" width="560" @ok="submitReview">
+    <a-modal v-model:open="reviewOpen" title="异常学习复核" :confirm-loading="reviewing" :width="540" @ok="submitReview">
       <a-alert type="error" show-icon :message="current?.abnormalReason || '触发防刷规则'" style="margin-bottom:16px" />
       <a-form layout="vertical">
         <a-form-item label="处理结论" required>

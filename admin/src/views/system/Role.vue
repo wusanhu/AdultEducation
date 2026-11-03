@@ -3,7 +3,7 @@
     <div class="toolbar">
       <span style="color:#64748b">角色决定功能权限与数据范围，预置角色可调整权限但不可删除。</span>
       <div class="spacer" />
-      <a-button v-if="auth.hasPerm('system:role:add')" type="primary" @click="openCreate"><PlusOutlined /> 新增角色</a-button>
+      <a-button v-if="auth.hasPerm('system:role:edit')" type="primary" @click="openCreate"><PlusOutlined /> 新增角色</a-button>
     </div>
     <a-table :data-source="rows" :columns="columns" :loading="loading" row-key="id" size="middle" :pagination="false">
       <template #bodyCell="{ column, record }">
@@ -29,7 +29,7 @@
       </template>
     </a-table>
 
-    <a-modal v-model:open="open" :title="form.id ? '编辑角色' : '新增角色'" width="860" :confirm-loading="saving" @ok="save">
+    <a-modal v-model:open="open" :title="form.id ? '编辑角色' : '新增角色'" :width="800" :confirm-loading="saving" @ok="save">
       <a-form ref="formRef" :model="form" :rules="rules" layout="vertical">
         <a-row :gutter="16">
           <a-col :span="8"><a-form-item label="角色名称" name="roleName"><a-input v-model:value="form.roleName" /></a-form-item></a-col>

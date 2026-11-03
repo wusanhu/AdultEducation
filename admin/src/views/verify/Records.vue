@@ -53,7 +53,7 @@
       </template>
     </a-table>
 
-    <a-modal v-model:open="reviewOpen" title="核验记录复核" :confirm-loading="reviewing" width="520" @ok="submitReview">
+    <a-modal v-model:open="reviewOpen" title="核验记录复核" :confirm-loading="reviewing" :width="500" @ok="submitReview">
       <a-descriptions v-if="current" :column="1" size="small" bordered style="margin-bottom:16px">
         <a-descriptions-item label="学员">{{ current.userName }}</a-descriptions-item>
         <a-descriptions-item label="课程">{{ current.courseName }}</a-descriptions-item>

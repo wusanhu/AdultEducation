@@ -29,7 +29,7 @@
       </template>
     </a-table>
 
-    <a-modal v-model:open="open" :title="form.id ? '编辑组织' : '新增组织'" :confirm-loading="saving" @ok="save">
+    <a-modal v-model:open="open" :title="form.id ? '编辑组织' : '新增组织'" :width="560" :confirm-loading="saving" @ok="save">
       <a-form ref="formRef" :model="form" :rules="rules" layout="vertical">
         <a-form-item label="上级" name="parentId">
           <a-tree-select v-model:value="form.parentId" :tree-data="tree" allow-clear placeholder="不选则为顶级"

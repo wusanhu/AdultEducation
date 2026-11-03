@@ -29,7 +29,7 @@
       </template>
     </a-table>
 
-    <a-modal v-model:open="open" :title="form.id ? '编辑字典项' : '新增字典项'" :confirm-loading="saving" @ok="save">
+    <a-modal v-model:open="open" :title="form.id ? '编辑字典项' : '新增字典项'" :width="500" :confirm-loading="saving" @ok="save">
       <a-form ref="formRef" :model="form" :rules="rules" layout="vertical">
         <a-form-item label="字典名称" name="dictName"><a-input v-model:value="form.dictName" placeholder="如：学分来源" /></a-form-item>
         <a-form-item label="字典类型" name="dictType"><a-input v-model:value="form.dictType" placeholder="如：credit_source" /></a-form-item>

@@ -48,7 +48,7 @@
       </template>
     </a-table>
 
-    <a-modal v-model:open="auditOpen" :title="approve ? '通过毕业申请' : '驳回毕业申请'" :confirm-loading="submitting" :ok-button-props="{ danger: !approve }" width="520" @ok="submitAudit">
+    <a-modal v-model:open="auditOpen" :title="approve ? '通过毕业申请' : '驳回毕业申请'" :confirm-loading="submitting" :ok-button-props="{ danger: !approve }" :width="500" @ok="submitAudit">
       <a-alert v-if="current" type="info" show-icon :message="`${current.userName} · ${current.projectName} · 当前节点：${nodeText(current.currentNode)}`" style="margin-bottom:16px" />
       <a-form layout="vertical">
         <a-form-item :label="approve ? '审批意见' : '驳回原因'" :required="!approve">

@@ -80,12 +80,12 @@
       </a-tabs>
     </div>
 
-    <a-modal v-model:open="addOpen" title="添加培训班学员" :confirm-loading="adding" width="640" @ok="addMembers">
+    <a-modal v-model:open="addOpen" title="添加培训班学员" :confirm-loading="adding" :width="520" @ok="addMembers">
       <a-alert type="info" show-icon message="可多选学员，已在本项目中的学员将自动忽略。" style="margin-bottom:14px" />
       <a-select v-model:value="selectedUserIds" mode="multiple" show-search option-filter-prop="label" placeholder="搜索姓名、账号或手机号" style="width:100%" :options="studentSelectOptions" :max-tag-count="6" />
     </a-modal>
 
-    <a-modal v-model:open="teacherOpen" title="分配培训班教员" :confirm-loading="assigning" width="560" @ok="assignTeachers">
+    <a-modal v-model:open="teacherOpen" title="分配培训班教员" :confirm-loading="assigning" :width="520" @ok="assignTeachers">
       <a-select v-model:value="selectedTeacherIds" mode="multiple" show-search option-filter-prop="label" placeholder="选择教员" style="width:100%" :options="teacherSelectOptions" />
       <div class="muted" style="font-size:12px;margin-top:10px">重新分配将覆盖当前教员列表。</div>
     </a-modal>

@@ -44,7 +44,7 @@
       </a-col>
     </a-row>
 
-    <a-modal v-model:open="open" :title="form.id ? '编辑核验档位' : '新增核验档位'" :confirm-loading="saving" width="600" @ok="save">
+    <a-modal v-model:open="open" :title="form.id ? '编辑核验档位' : '新增核验档位'" :confirm-loading="saving" :width="600" @ok="save">
       <a-form layout="vertical" style="margin-top:10px">
         <a-row :gutter="16">
           <a-col :span="10">
