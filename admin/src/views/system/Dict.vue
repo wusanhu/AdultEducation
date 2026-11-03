@@ -1,16 +1,18 @@
 <template>
   <div class="page-card">
     <div class="toolbar">
-      <a-select v-model:value="dictType" placeholder="全部字典类型" allow-clear show-search style="width:240px" :options="typeOptions" @change="load" />
+      <a-select v-model:value="dictType" placeholder="全部字典类型" allow-clear show-search style="width:240px" :options="typeOptions" />
       <a-input v-model:value="keyword" placeholder="字典标签 / 值" allow-clear style="width:200px" />
-      <a-button type="primary" @click="load">查询</a-button>
       <div class="spacer" />
       <a-button v-if="canEdit" type="primary" @click="openCreate"><PlusOutlined /> 新增字典项</a-button>
     </div>
 
     <a-table :data-source="filtered" :columns="columns" :loading="loading" row-key="id" size="middle" :pagination="{ pageSize: 30 }">
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'type'"><code>{{ record.dictType }}</code></template>
+        <template v-if="column.key === 'type'">
+          <code>{{ record.dictType }}</code>
+          <div class="muted" style="font-size:12px">{{ record.dictName }}</div>
+        </template>
         <template v-else-if="column.key === 'label'">
           <span style="font-weight:500">{{ record.dictLabel }}</span>
           <a-tag style="margin-left:8px">{{ record.dictValue }}</a-tag>
@@ -75,8 +77,11 @@ const rules = {
 const typeOptions = computed(() => Array.from(new Set(rows.value.map((r) => r.dictType))).map((t) => ({ value: t, label: t })))
 const filtered = computed(() => {
   const kw = keyword.value.trim()
-  if (!kw) return rows.value
-  return rows.value.filter((r) => r.dictLabel.includes(kw) || r.dictValue.includes(kw))
+  return rows.value.filter((r) => {
+    if (dictType.value && r.dictType !== dictType.value) return false
+    if (!kw) return true
+    return r.dictLabel.includes(kw) || r.dictValue.includes(kw)
+  })
 })
 const columns = [
   { title: '字典类型', key: 'type', width: 190 },
@@ -88,14 +93,22 @@ const columns = [
 
 async function load() {
   loading.value = true
-  try { rows.value = await systemApi.dicts(dictType.value) } catch (e) { message.error((e as Error).message) } finally { loading.value = false }
+  try { rows.value = await systemApi.dicts() } catch (e) { message.error((e as Error).message) } finally { loading.value = false }
 }
 function openCreate() {
   Object.assign(form, { id: undefined, dictName: '', dictType: dictType.value || '', dictValue: '', dictLabel: '', sort: 0, status: 1 })
   open.value = true
 }
 function openEdit(row: DictRow) {
-  Object.assign(form, row)
+  Object.assign(form, {
+    id: row.id,
+    dictName: row.dictName,
+    dictType: row.dictType,
+    dictValue: row.dictValue,
+    dictLabel: row.dictLabel,
+    sort: row.sort ?? 0,
+    status: row.status ?? 1
+  })
   open.value = true
 }
 async function save() {

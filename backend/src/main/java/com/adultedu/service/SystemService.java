@@ -762,22 +762,15 @@ public class SystemService {
         }
     }
 
-    public List<Map<String, Object>> dictList(String dictType) {
-        LambdaQueryWrapper<SysDict> qw = new LambdaQueryWrapper<SysDict>().orderByAsc(SysDict::getDictType).orderByAsc(SysDict::getSort);
+    public List<SysDict> dictList(String dictType) {
+        LambdaQueryWrapper<SysDict> qw = new LambdaQueryWrapper<SysDict>()
+                .orderByAsc(SysDict::getDictType)
+                .orderByAsc(SysDict::getSort)
+                .orderByAsc(SysDict::getId);
         if (StrUtil.isNotBlank(dictType)) {
             qw.eq(SysDict::getDictType, dictType);
         }
-        List<SysDict> all = dictMapper.selectList(qw);
-        Map<String, List<SysDict>> group = all.stream().collect(Collectors.groupingBy(SysDict::getDictType, LinkedHashMap::new, Collectors.toList()));
-        List<Map<String, Object>> result = new ArrayList<>();
-        group.forEach((type, items) -> {
-            Map<String, Object> map = new LinkedHashMap<>();
-            map.put("dictType", type);
-            map.put("dictName", items.get(0).getDictName());
-            map.put("items", items);
-            result.add(map);
-        });
-        return result;
+        return dictMapper.selectList(qw);
     }
 
     @Transactional

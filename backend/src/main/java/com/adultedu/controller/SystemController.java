@@ -12,6 +12,7 @@ import com.adultedu.dto.SystemDtos.RoleSaveRequest;
 import com.adultedu.dto.SystemDtos.StatusRequest;
 import com.adultedu.dto.SystemDtos.UserSaveRequest;
 import com.adultedu.entity.SysConfig;
+import com.adultedu.entity.SysDict;
 import com.adultedu.dto.MenuNode;
 import com.adultedu.security.SecurityUtils;
 import com.adultedu.service.SystemService;
@@ -268,7 +269,7 @@ public class SystemController {
     }
 
     @GetMapping("/dicts")
-    public R<List<Map<String, Object>>> dicts(@RequestParam(required = false) String dictType) {
+    public R<List<SysDict>> dicts(@RequestParam(required = false) String dictType) {
         return R.ok(systemService.dictList(dictType));
     }
 
