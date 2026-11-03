@@ -391,7 +391,40 @@ export interface LogRow {
   [key: string]: unknown
 }
 
+export interface DashboardTodo {
+  type: 'CREDIT' | 'GRADUATE'
+  id: number
+  userName?: string
+  projectName?: string
+  value?: number
+  node?: string
+  time?: string
+  link: string
+}
+
+export interface DashboardProjectRow {
+  id: number
+  projectName: string
+  status?: number
+  endTime?: string
+  memberCount: number
+  graduateCount: number
+  creditTotal: number
+  rate: number
+}
+
+export interface DashboardCourseRow {
+  id: number
+  courseName: string
+  projectName?: string
+  status?: number
+  studentCount: number
+  completedCount: number
+  avgProgress: number
+}
+
 export interface OverviewData {
+  role: 'admin' | 'leader' | 'teacher' | 'student'
   projectCount: number
   activeProjectCount: number
   studentCount: number
@@ -402,8 +435,12 @@ export interface OverviewData {
   creditTotal: number
   creditIssuedCount: number
   pendingCreditCount: number
+  pendingCreditList: DashboardTodo[]
   graduateCount: number
   pendingGraduateCount: number
+  pendingGraduateList: DashboardTodo[]
+  projectProgress?: DashboardProjectRow[]
+  myCourses?: DashboardCourseRow[]
   verifyTotal: number
   verifyPassRate: number
   abnormalCount: number

@@ -3,11 +3,12 @@
     <div class="hero-panel">
       <div class="hero-main">
         <div class="hero-greeting">{{ greeting }}，{{ auth.displayName }}</div>
-        <div class="hero-meta">今天是 {{ today }} · 当前角色：{{ auth.roleName }} · 让每一份学习成果都清晰可追溯</div>
+        <div class="hero-meta">今天是 {{ today }} · 当前角色：{{ auth.roleName }} · {{ roleTip }}</div>
       </div>
       <div class="hero-actions">
         <a-button v-if="auth.hasPerm('project:list')" @click="$router.push('/project/list')">培训班管理</a-button>
-        <a-button v-if="auth.hasPerm('report:org')" @click="$router.push('/report/org')">查看报表</a-button>
+        <a-button v-if="auth.hasPerm('course:list')" @click="$router.push('/course/list')">课程管理</a-button>
+        <a-button v-if="auth.hasPerm('study:monitor')" @click="$router.push('/study/monitor')">学习监控</a-button>
         <a-button v-if="auth.hasPerm('verify:abnormal')" type="primary" @click="$router.push('/verify/abnormal')">异常核验 {{ overview.abnormalCount || 0 }}</a-button>
       </div>
     </div>
@@ -28,7 +29,7 @@
         <div class="page-card" style="height:100%">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
             <div>
-              <div style="font-size:15px;font-weight:600">近 7 天学习趋势</div>
+              <div style="font-size:15px;font-weight:600">{{ trendTitle }}</div>
               <div style="font-size:12px;color:#94a3b8;margin-top:2px">学习分钟数与发放学分</div>
             </div>
             <div class="chart-legend">
@@ -63,6 +64,71 @@
               <div style="font-size:20px;font-weight:700;color:#16a34a">{{ overview.graduateCount || 0 }}</div>
               <div style="font-size:12px;color:#94a3b8">已毕业</div>
             </div>
+          </div>
+        </div>
+      </a-col>
+    </a-row>
+
+    <a-row :gutter="[16, 16]" style="margin-top:16px">
+      <a-col :xs="24" :lg="14">
+        <div class="page-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div>
+              <div style="font-size:15px;font-weight:600">{{ isTeacher ? '我负责的课程' : '培训班学习进度' }}</div>
+              <div style="font-size:12px;color:#94a3b8;margin-top:2px">{{ isTeacher ? '学习人数、完成人数与平均进度' : '按进行中优先展示，结业率 = 已毕业 / 学员数' }}</div>
+            </div>
+            <a-button v-if="isTeacher && auth.hasPerm('course:list')" type="link" size="small" @click="$router.push('/course/list')">课程管理</a-button>
+            <a-button v-else-if="auth.hasPerm('project:list')" type="link" size="small" @click="$router.push('/project/list')">全部培训班</a-button>
+          </div>
+          <a-table v-if="isTeacher" :data-source="overview.myCourses || []" :columns="courseColumns" :pagination="false" size="small" row-key="id">
+            <template #bodyCell="{ column, record }">
+              <template v-if="column.key === 'name'">
+                <a v-if="auth.hasPerm('course:edit')" @click="$router.push(`/course/edit/${record.id}`)">{{ record.courseName }}</a>
+                <span v-else>{{ record.courseName }}</span>
+                <div class="muted" style="font-size:12px">{{ record.projectName || '未归属培训班' }}</div>
+              </template>
+              <template v-else-if="column.key === 'progress'">
+                <a-progress :percent="Number(record.avgProgress || 0)" size="small" />
+              </template>
+              <template v-else-if="column.key === 'status'">
+                <a-tag :color="record.status === 1 ? 'green' : 'default'">{{ record.status === 1 ? '已上架' : '未上架' }}</a-tag>
+              </template>
+            </template>
+          </a-table>
+          <a-table v-else :data-source="overview.projectProgress || []" :columns="projectColumns" :pagination="false" size="small" row-key="id">
+            <template #bodyCell="{ column, record }">
+              <template v-if="column.key === 'name'">
+                <a v-if="auth.hasPerm('project:list')" @click="$router.push(`/project/${record.id}`)">{{ record.projectName }}</a>
+                <span v-else>{{ record.projectName }}</span>
+              </template>
+              <template v-else-if="column.key === 'status'">
+                <a-tag :color="projectStatusColor(record.status)">{{ projectStatusText(record.status) }}</a-tag>
+              </template>
+              <template v-else-if="column.key === 'gp'">{{ record.graduateCount }} / {{ record.memberCount }}</template>
+              <template v-else-if="column.key === 'rate'">
+                <a-progress :percent="Number(record.rate || 0)" size="small" />
+              </template>
+            </template>
+          </a-table>
+        </div>
+      </a-col>
+      <a-col :xs="24" :lg="10">
+        <div class="page-card" style="height:100%">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div>
+              <div style="font-size:15px;font-weight:600">{{ todoTitle }}</div>
+              <div style="font-size:12px;color:#94a3b8;margin-top:2px">{{ todoTip }}</div>
+            </div>
+            <a-button v-if="todoLink" type="link" size="small" @click="$router.push(todoLink)">去处理</a-button>
+          </div>
+          <div v-if="todos.length === 0" style="padding:34px 0;text-align:center;color:#94a3b8">暂无待办事项</div>
+          <div v-for="item in todos" :key="`${item.type}-${item.id}`" class="todo-row" @click="$router.push(item.link)">
+            <a-tag :color="item.type === 'CREDIT' ? 'orange' : 'blue'">{{ item.type === 'CREDIT' ? '学分补录' : '毕业申请' }}</a-tag>
+            <div class="todo-main">
+              <div class="todo-title">{{ item.userName || '学员' }}<span class="muted"> · {{ item.projectName || '未关联培训班' }}</span></div>
+              <div class="todo-sub">{{ item.node }} · {{ formatTime(item.time) }}</div>
+            </div>
+            <div v-if="item.type === 'CREDIT'" class="todo-value">+{{ item.value }} 分</div>
           </div>
         </div>
       </a-col>
@@ -111,12 +177,12 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { message } from 'ant-design-vue'
-import { CreditCardOutlined, ReadOutlined, TeamOutlined, FileDoneOutlined } from '@ant-design/icons-vue'
+import { CreditCardOutlined, ReadOutlined, TeamOutlined, FileDoneOutlined, ProjectOutlined } from '@ant-design/icons-vue'
 import { Chart } from '@antv/g2'
 import dayjs from 'dayjs'
 import { dashboardApi } from '../api'
 import { useAuthStore } from '../store/auth'
-import type { OverviewData } from '../types'
+import type { OverviewData, DashboardTodo } from '../types'
 
 const auth = useAuthStore()
 const overview = ref<OverviewData>({} as OverviewData)
@@ -128,20 +194,105 @@ const greeting = computed(() => {
   return hour < 11 ? '上午好' : hour < 14 ? '中午好' : hour < 18 ? '下午好' : '晚上好'
 })
 const percent = computed(() => `${Number(overview.value.verifyPassRate || 0)}%`)
-const stats = computed(() => [
-  { label: '学员总数', value: overview.value.studentCount || 0, unit: '人', hint: `在办培训班 ${overview.value.activeProjectCount || 0} 个`, icon: TeamOutlined, color: '#2563eb' },
-  { label: '课程学习', value: overview.value.studyCount || 0, unit: '人次', hint: `已完成 ${overview.value.completedStudyCount || 0} 人次`, icon: ReadOutlined, color: '#0e7490' },
-  { label: '累计发放学分', value: overview.value.creditTotal || 0, unit: '分', hint: `累计有效学时 ${overview.value.validHours || 0} 小时`, icon: CreditCardOutlined, color: '#16a34a' },
-  { label: '待办审批', value: (overview.value.pendingCreditCount || 0) + (overview.value.pendingGraduateCount || 0), unit: '项', hint: `学分补录 ${overview.value.pendingCreditCount || 0} · 毕业申请 ${overview.value.pendingGraduateCount || 0}`, icon: FileDoneOutlined, color: '#d97706' }
-])
+
+const role = computed(() => overview.value.role || (auth.roleCode === 'leader' ? 'leader' : auth.roleCode === 'teacher' ? 'teacher' : 'admin'))
+const isLeader = computed(() => role.value === 'leader')
+const isTeacher = computed(() => role.value === 'teacher')
+
+const roleTip = computed(() => {
+  if (isTeacher.value) return '关注我负责的课程与学员学习情况'
+  if (isLeader.value) return '聚焦本单位培训进度与待复核事项'
+  return '全局掌握平台学习、学分与结业情况'
+})
+
+const trendTitle = computed(() => {
+  if (isTeacher.value) return '我的学员近 7 天学习趋势'
+  if (isLeader.value) return '本单位近 7 天学习趋势'
+  return '平台近 7 天学习趋势'
+})
+
+const todoTitle = computed(() => {
+  if (isTeacher.value) return '待我初审'
+  if (isLeader.value) return '待我复核'
+  return '待办审批'
+})
+const todoTip = computed(() => {
+  if (isTeacher.value) return '毕业申请教员初审'
+  if (isLeader.value) return '学分补录复核 · 毕业申请复审'
+  return '学分补录 · 毕业申请'
+})
+
+const stats = computed(() => {
+  const o = overview.value
+  const pending = (o.pendingCreditCount || 0) + (o.pendingGraduateCount || 0)
+  if (isTeacher.value) {
+    return [
+      { label: '我的培训班', value: o.projectCount || 0, unit: '个', hint: `进行中 ${o.activeProjectCount || 0} 个`, icon: ProjectOutlined, color: '#2563eb' },
+      { label: '我的课程', value: o.courseCount || 0, unit: '门', hint: `覆盖 ${o.activeProjectCount || 0} 个培训班`, icon: ReadOutlined, color: '#0e7490' },
+      { label: '我的学员', value: o.studentCount || 0, unit: '人', hint: `学习完成 ${o.completedStudyCount || 0} 人次`, icon: TeamOutlined, color: '#16a34a' },
+      { label: '待我初审', value: o.pendingGraduateCount || 0, unit: '项', hint: `累计核验 ${o.verifyTotal || 0} 次`, icon: FileDoneOutlined, color: '#d97706' }
+    ]
+  }
+  if (isLeader.value) {
+    return [
+      { label: '本单位学员', value: o.studentCount || 0, unit: '人', hint: `已毕业 ${o.graduateCount || 0} 人`, icon: TeamOutlined, color: '#2563eb' },
+      { label: '本单位培训', value: o.projectCount || 0, unit: '个', hint: `进行中 ${o.activeProjectCount || 0} 个`, icon: ProjectOutlined, color: '#0e7490' },
+      { label: '本单位发放学分', value: o.creditTotal || 0, unit: '分', hint: `有效学时 ${o.validHours || 0} 小时`, icon: CreditCardOutlined, color: '#16a34a' },
+      { label: '待我复核', value: pending, unit: '项', hint: `学分 ${o.pendingCreditCount || 0} · 毕业 ${o.pendingGraduateCount || 0}`, icon: FileDoneOutlined, color: '#d97706' }
+    ]
+  }
+  return [
+    { label: '培训班', value: o.projectCount || 0, unit: '个', hint: `进行中 ${o.activeProjectCount || 0} 个`, icon: ProjectOutlined, color: '#2563eb' },
+    { label: '学员总数', value: o.studentCount || 0, unit: '人', hint: `已毕业 ${o.graduateCount || 0} 人`, icon: TeamOutlined, color: '#0e7490' },
+    { label: '累计发放学分', value: o.creditTotal || 0, unit: '分', hint: `有效学时 ${o.validHours || 0} 小时`, icon: CreditCardOutlined, color: '#16a34a' },
+    { label: '待办审批', value: pending, unit: '项', hint: `学分 ${o.pendingCreditCount || 0} · 毕业 ${o.pendingGraduateCount || 0}`, icon: FileDoneOutlined, color: '#d97706' }
+  ]
+})
+
+const todos = computed<DashboardTodo[]>(() => {
+  const o = overview.value
+  return [...(o.pendingCreditList || []), ...(o.pendingGraduateList || [])]
+    .sort((a, b) => (b.time || '').localeCompare(a.time || ''))
+    .slice(0, 6)
+})
+const todoLink = computed(() => {
+  if (todos.value.length > 0) return todos.value[0].link
+  if (isTeacher.value) return auth.hasPerm('graduate:list') ? '/graduate/apply' : ''
+  return auth.hasPerm('credit:audit') ? '/credit/audit' : ''
+})
+
 const recentGraduates = computed(() => overview.value.recentGraduate || [])
 const recentCredits = computed(() => overview.value.recentCredits || [])
 const graduateColumns = [
-  { title: '学员', key: 'user', width: 100 },
+  { title: '学员', key: 'user', width: 90 },
   { title: '培训班', dataIndex: 'projectName', key: 'project', ellipsis: true },
-  { title: '毕业时间', key: 'time', width: 150 },
-  { title: '证书编号', key: 'cert', width: 180 }
+  { title: '毕业时间', key: 'time', width: 120 },
+  { title: '证书编号', key: 'cert', width: 160 }
 ]
+const projectColumns = [
+  { title: '培训班', key: 'name', ellipsis: true },
+  { title: '状态', key: 'status', width: 82, align: 'center' as const },
+  { title: '毕业 / 学员', key: 'gp', width: 100, align: 'center' as const },
+  { title: '结业率', key: 'rate', width: 96 },
+  { title: '发放学分', dataIndex: 'creditTotal', key: 'credit', width: 84, align: 'center' as const }
+]
+const courseColumns = [
+  { title: '课程', key: 'name', ellipsis: true },
+  { title: '学习人数', dataIndex: 'studentCount', key: 'students', width: 84, align: 'center' as const },
+  { title: '完成人数', dataIndex: 'completedCount', key: 'completed', width: 84, align: 'center' as const },
+  { title: '平均进度', key: 'progress', width: 108 },
+  { title: '状态', key: 'status', width: 82, align: 'center' as const }
+]
+
+function projectStatusText(status?: number) {
+  return ({ 0: '未开始', 1: '进行中', 2: '已结束', 3: '已归档' } as Record<number, string>)[status || 0] || '未知'
+}
+function projectStatusColor(status?: number) {
+  return ({ 0: 'default', 1: 'green', 2: 'blue', 3: 'purple' } as Record<number, string>)[status || 0] || 'default'
+}
+function formatTime(value?: string) {
+  return value ? dayjs(value).format('MM-DD HH:mm') : '-'
+}
 
 function renderChart() {
   if (!chartEl.value) return
@@ -313,6 +464,27 @@ onBeforeUnmount(() => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.todo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 1px dashed #f1f5f9;
+  cursor: pointer;
+}
+.todo-row:last-child { border-bottom: none; }
+.todo-row:hover .todo-title { color: var(--admin-primary, #1f6feb); }
+.todo-main { flex: 1; min-width: 0; }
+.todo-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.todo-sub { margin-top: 2px; font-size: 12px; color: #94a3b8; }
+.todo-value { flex: none; font-size: 13px; font-weight: 700; color: #16a34a; }
 @media (max-width: 1100px) {
   .stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stat-cell:nth-child(3) { border-left: none; }

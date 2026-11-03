@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -77,6 +78,9 @@ public class ReportService {
         List<Long> courseIds = visibleCourseIds(current, projectIds);
         Map<String, Object> m = new LinkedHashMap<>();
         boolean unrestricted = projectIds == null;
+        boolean admin = current.isSuperAdmin() || (current.getDataScope() != null && current.getDataScope() == 1);
+        String role = admin ? "admin" : StrUtil.blankToDefault(current.getRoleCode(), "student");
+        m.put("role", role);
 
         List<TrainingProject> projects = projectMapper.selectList(new LambdaQueryWrapper<TrainingProject>()
                 .eq(!unrestricted, TrainingProject::getId, -1));
@@ -120,8 +124,20 @@ public class ReportService {
                 .map(CreditRecord::getCreditValue).reduce(BigDecimal.ZERO, BigDecimal::add);
         m.put("creditTotal", total);
         m.put("creditIssuedCount", credits.stream().filter(c -> c.getAuditStatus() != null && c.getAuditStatus() == 2).count());
-        m.put("pendingCreditCount", credits.stream().filter(c -> c.getAuditStatus() != null && c.getAuditStatus() == 1).count());
-        m.put("graduateCount", graduateFiles(userIds, projectIds).size());
+        // 待办按角色区分：管理员全部，领导仅本节点复核，教员无学分补录审批
+        List<CreditRecord> pendingCredits = credits.stream()
+                .filter(c -> c.getAuditStatus() != null && c.getAuditStatus() == 1)
+                .filter(c -> admin || ("leader".equals(role) && "LEADER".equals(c.getAuditNode())))
+                .sorted((a, b) -> {
+                    LocalDateTime x = a.getCreateTime();
+                    LocalDateTime y = b.getCreateTime();
+                    return y == null ? 1 : (x == null ? -1 : y.compareTo(x));
+                })
+                .toList();
+        m.put("pendingCreditCount", pendingCredits.size());
+        m.put("pendingCreditList", pendingCredits.stream().limit(5).map(this::creditTodo).toList());
+        List<GraduateFile> graduates = graduateFiles(userIds, projectIds);
+        m.put("graduateCount", graduates.size());
 
         LambdaQueryWrapper<GraduateApply> applyQw = new LambdaQueryWrapper<GraduateApply>()
                 .eq(GraduateApply::getAuditStatus, 0);
@@ -139,7 +155,13 @@ public class ReportService {
                 applyQw.in(GraduateApply::getProjectId, projectIds);
             }
         }
-        m.put("pendingGraduateCount", graduateApplyMapper.selectCount(applyQw));
+        List<GraduateApply> pendingApplies = graduateApplyMapper.selectList(applyQw.orderByAsc(GraduateApply::getApplyTime));
+        if (!admin) {
+            String node = "leader".equals(role) ? "LEADER" : "teacher".equals(role) ? "TEACHER" : "__none__";
+            pendingApplies = pendingApplies.stream().filter(a -> node.equals(a.getCurrentNode())).toList();
+        }
+        m.put("pendingGraduateCount", (long) pendingApplies.size());
+        m.put("pendingGraduateList", pendingApplies.stream().limit(5).map(this::graduateTodo).toList());
 
         List<UserVerifyLog> verifyLogs = verifyLogs(userIds, projectIds, courseIds);
         long done = verifyLogs.stream().filter(v -> v.getVerifyResult() != null).count();
@@ -147,6 +169,14 @@ public class ReportService {
         m.put("verifyTotal", done);
         m.put("verifyPassRate", done == 0 ? 0 : BigDecimal.valueOf(passed * 100.0 / done).setScale(1, RoundingMode.HALF_UP));
         m.put("abnormalCount", studies.stream().filter(s -> s.getIsAbnormal() != null && s.getIsAbnormal() == 1).count());
+
+        // 管理员 / 领导关注培训班整体进度，教员关注自己负责的课程
+        if (admin || "leader".equals(role)) {
+            m.put("projectProgress", projectProgress(projects, credits, graduates));
+        }
+        if ("teacher".equals(role)) {
+            m.put("myCourses", myCourses(courseIds, studies));
+        }
 
         m.put("unreadCount", notificationService.unread(current.getId()));
         m.put("trend", trend(userIds, projectIds, courseIds));
@@ -171,6 +201,93 @@ public class ReportService {
         m.put("auditTime", c.getAuditTime() == null ? c.getCreateTime() : c.getAuditTime());
         m.put("sourceLabel", c.getSourceType() != null && c.getSourceType() == 1 ? "课程自动" : "人工补录");
         return m;
+    }
+
+    private Map<String, Object> creditTodo(CreditRecord c) {
+        SysUser u = userMapper.selectById(c.getUserId());
+        TrainingProject p = c.getProjectId() == null ? null : projectMapper.selectById(c.getProjectId());
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("type", "CREDIT");
+        m.put("id", c.getId());
+        m.put("userName", u == null ? null : u.getRealName());
+        m.put("projectName", p == null ? null : p.getProjectName());
+        m.put("value", c.getCreditValue());
+        m.put("node", "LEADER".equals(c.getAuditNode()) ? "领导复核" : "管理员终审");
+        m.put("time", c.getCreateTime());
+        m.put("link", "/credit/audit");
+        return m;
+    }
+
+    private Map<String, Object> graduateTodo(GraduateApply a) {
+        SysUser u = userMapper.selectById(a.getUserId());
+        TrainingProject p = a.getProjectId() == null ? null : projectMapper.selectById(a.getProjectId());
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("type", "GRADUATE");
+        m.put("id", a.getId());
+        m.put("userName", u == null ? null : u.getRealName());
+        m.put("projectName", p == null ? null : p.getProjectName());
+        m.put("node", switch (StrUtil.blankToDefault(a.getCurrentNode(), "TEACHER")) {
+            case "TEACHER" -> "教员初审";
+            case "LEADER" -> "领导复审";
+            default -> "管理员终审";
+        });
+        m.put("time", a.getApplyTime());
+        m.put("link", "/graduate/apply");
+        return m;
+    }
+
+    private List<Map<String, Object>> projectProgress(List<TrainingProject> projects, List<CreditRecord> credits,
+                                                      List<GraduateFile> graduates) {
+        return projects.stream()
+                .sorted(Comparator.comparing((TrainingProject p) -> p.getStatus() == null ? 9 : p.getStatus())
+                        .thenComparing(TrainingProject::getId, Comparator.reverseOrder()))
+                .limit(6)
+                .map(p -> {
+                    long members = memberMapper.selectCount(new LambdaQueryWrapper<ProjectMember>()
+                            .eq(ProjectMember::getProjectId, p.getId()).eq(ProjectMember::getStatus, 1));
+                    long graduated = graduates.stream().filter(g -> p.getId().equals(g.getProjectId())).count();
+                    BigDecimal creditSum = credits.stream()
+                            .filter(c -> c.getAuditStatus() != null && c.getAuditStatus() == 2)
+                            .filter(c -> p.getId().equals(c.getProjectId()))
+                            .map(CreditRecord::getCreditValue).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    row.put("id", p.getId());
+                    row.put("projectName", p.getProjectName());
+                    row.put("status", p.getStatus());
+                    row.put("endTime", p.getEndTime());
+                    row.put("memberCount", members);
+                    row.put("graduateCount", graduated);
+                    row.put("creditTotal", creditSum);
+                    row.put("rate", members == 0 ? 0 : BigDecimal.valueOf(graduated * 100.0 / members).setScale(1, RoundingMode.HALF_UP));
+                    return row;
+                }).toList();
+    }
+
+    private List<Map<String, Object>> myCourses(List<Long> courseIds, List<StudyRecord> studies) {
+        if (courseIds != null && courseIds.isEmpty()) {
+            return List.of();
+        }
+        List<Course> courses = courseIds == null
+                ? courseMapper.selectList(new LambdaQueryWrapper<Course>().orderByDesc(Course::getId))
+                : courseMapper.selectBatchIds(courseIds);
+        return courses.stream().limit(6).map(c -> {
+            List<StudyRecord> rows = studies.stream().filter(s -> c.getId().equals(s.getCourseId())).toList();
+            long students = rows.stream().map(StudyRecord::getUserId).distinct().count();
+            long completed = rows.stream().filter(s -> s.getStatus() != null && s.getStatus() == 2)
+                    .map(StudyRecord::getUserId).distinct().count();
+            double avg = rows.stream().filter(s -> s.getProgress() != null)
+                    .mapToDouble(s -> s.getProgress().doubleValue()).average().orElse(0);
+            TrainingProject p = c.getProjectId() == null ? null : projectMapper.selectById(c.getProjectId());
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("id", c.getId());
+            row.put("courseName", c.getCourseName());
+            row.put("projectName", p == null ? null : p.getProjectName());
+            row.put("status", c.getStatus());
+            row.put("studentCount", students);
+            row.put("completedCount", completed);
+            row.put("avgProgress", BigDecimal.valueOf(avg).setScale(1, RoundingMode.HALF_UP));
+            return row;
+        }).toList();
     }
 
     private List<Map<String, Object>> trend(List<Long> userIds, List<Long> projectIds, List<Long> courseIds) {
