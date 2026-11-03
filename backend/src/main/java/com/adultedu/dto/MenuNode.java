@@ -18,5 +18,6 @@ public class MenuNode {
     private Integer sort;
     private Integer hidden;
     private Integer mobileVisible;
+    private Integer status;
     private List<MenuNode> children = new ArrayList<>();
 }

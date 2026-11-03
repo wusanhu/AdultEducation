@@ -659,6 +659,7 @@ public class SystemService {
             node.setSort(menu.getSort());
             node.setHidden(menu.getHidden());
             node.setMobileVisible(menu.getMobileVisible());
+            node.setStatus(menu.getStatus());
             nodes.put(menu.getId(), node);
         }
         List<com.adultedu.dto.MenuNode> roots = new ArrayList<>();

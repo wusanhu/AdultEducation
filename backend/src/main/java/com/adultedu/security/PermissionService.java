@@ -111,6 +111,7 @@ public class PermissionService {
         node.setSort(menu.getSort());
         node.setHidden(menu.getHidden());
         node.setMobileVisible(menu.getMobileVisible());
+        node.setStatus(menu.getStatus());
         return node;
     }
 }

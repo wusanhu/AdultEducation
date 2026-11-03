@@ -18,8 +18,10 @@
           <a-switch :checked="record.status === 1" size="small" :disabled="!auth.hasPerm('system:menu:edit')" @change="(v: boolean) => toggleStatus(record, v)" />
         </template>
         <template v-else-if="column.key === 'visible'">
-          <a-tag v-if="record.hidden" color="default">隐藏</a-tag>
-          <a-tag v-else color="success">显示</a-tag>
+          <a-tag :color="record.hidden === 1 ? 'default' : 'success'">{{ record.hidden === 1 ? '隐藏' : '显示' }}</a-tag>
+        </template>
+        <template v-else-if="column.key === 'mobile'">
+          <a-tag :color="record.mobileVisible === 1 ? 'success' : 'default'">{{ record.mobileVisible === 1 ? '显示' : '隐藏' }}</a-tag>
         </template>
         <template v-else-if="column.key === 'action'">
           <a-space v-if="auth.hasPerm('system:menu:edit')" size="small">
@@ -100,11 +102,12 @@ const rules = {
   menuType: [{ required: true, message: '请选择类型' }]
 }
 const columns = [
-  { title: '菜单名称', key: 'menuName', width: 300 },
-  { title: '路由', dataIndex: 'path', key: 'path', width: 200 },
-  { title: '权限标识', key: 'perms', width: 210 },
-  { title: '排序', dataIndex: 'sort', key: 'sort', width: 80 },
-  { title: '可见', key: 'visible', width: 90 },
+  { title: '菜单名称', key: 'menuName', width: 280 },
+  { title: '路由', dataIndex: 'path', key: 'path', width: 180 },
+  { title: '权限标识', key: 'perms', width: 200 },
+  { title: '排序', dataIndex: 'sort', key: 'sort', width: 70 },
+  { title: '导航可见', key: 'visible', width: 90 },
+  { title: '移动端', key: 'mobile', width: 90 },
   { title: '状态', key: 'status', width: 90 },
   { title: '操作', key: 'action', width: 190 }
 ]
@@ -124,7 +127,21 @@ function openCreate(parent?: MenuNode) {
   open.value = true
 }
 function openEdit(row: MenuNode) {
-  Object.assign(form, { ...row, children: undefined })
+  // 显式赋值，避免弹窗残留上一次编辑的状态
+  Object.assign(form, {
+    id: row.id,
+    parentId: row.parentId || undefined,
+    menuName: row.menuName,
+    menuType: row.menuType,
+    path: row.path ?? '',
+    component: row.component ?? '',
+    icon: row.icon ?? '',
+    perms: row.perms ?? '',
+    sort: row.sort ?? 0,
+    hidden: row.hidden ?? 0,
+    mobileVisible: row.mobileVisible ?? 0,
+    status: row.status ?? 1
+  })
   open.value = true
 }
 async function save() {
