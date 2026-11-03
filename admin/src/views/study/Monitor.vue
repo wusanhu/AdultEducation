@@ -147,7 +147,7 @@ const columns = [
   { title: '核验情况', key: 'verify', width: 160 },
   { title: '状态', key: 'status', width: 150 },
   { title: '最近心跳', key: 'heartbeat', width: 150 },
-  { title: '操作', key: 'action', width: 140, fixed: 'right' as const }
+  { title: '操作', key: 'action', width: 140, fixed: 'right' as const, align: 'right' as const }
 ]
 const heartbeatColumns = [
   { title: '上报时间', dataIndex: 'reportTime', width: 170 },

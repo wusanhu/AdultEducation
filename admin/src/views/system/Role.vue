@@ -103,7 +103,7 @@ const columns = [
   { title: '数据范围', key: 'scope', width: 140 },
   { title: '账号数', dataIndex: 'userCount', key: 'userCount', width: 100 },
   { title: '状态', key: 'status', width: 100 },
-  { title: '操作', key: 'action', width: 170 }
+  { title: '操作', key: 'action', width: 170, align: 'right' as const }
 ]
 
 function scopeLabel(v: number) { return scopeOptions.find((s) => s.value === v)?.label || '未知' }

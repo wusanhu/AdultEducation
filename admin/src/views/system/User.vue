@@ -149,7 +149,7 @@ const columns = [
   { title: '角色', key: 'role', width: 140 },
   { title: '状态', key: 'status', width: 140 },
   { title: '最近登录', key: 'login', width: 170 },
-  { title: '操作', key: 'action', width: 230, fixed: 'right' }
+  { title: '操作', key: 'action', width: 230, fixed: 'right', align: 'right' as const }
 ]
 
 async function load() {

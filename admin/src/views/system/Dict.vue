@@ -9,14 +9,9 @@
 
     <a-table :data-source="filtered" :columns="columns" :loading="loading" row-key="id" size="middle" :pagination="{ pageSize: 30 }">
       <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'type'">
-          <code>{{ record.dictType }}</code>
-          <div class="muted" style="font-size:12px">{{ record.dictName }}</div>
-        </template>
-        <template v-else-if="column.key === 'label'">
-          <span style="font-weight:500">{{ record.dictLabel }}</span>
-          <a-tag style="margin-left:8px">{{ record.dictValue }}</a-tag>
-        </template>
+        <template v-if="column.key === 'type'"><code>{{ record.dictType }}</code></template>
+        <template v-else-if="column.key === 'value'"><a-tag>{{ record.dictValue }}</a-tag></template>
+        <template v-else-if="column.key === 'label'"><span style="font-weight:500">{{ record.dictLabel }}</span></template>
         <template v-else-if="column.key === 'status'">
           <a-switch :checked="record.status === 1" size="small" :disabled="!canEdit" @change="(v: boolean) => toggle(record, v)" />
         </template>
@@ -84,11 +79,13 @@ const filtered = computed(() => {
   })
 })
 const columns = [
-  { title: '字典类型', key: 'type', width: 190 },
-  { title: '字典项', key: 'label', width: 280 },
-  { title: '排序', dataIndex: 'sort', key: 'sort', width: 90 },
+  { title: '字典名称', dataIndex: 'dictName', key: 'dictName', width: 160 },
+  { title: '字典类型', key: 'type', width: 180 },
+  { title: '字典值', key: 'value', width: 120 },
+  { title: '字典标签', key: 'label', width: 200 },
+  { title: '排序', dataIndex: 'sort', key: 'sort', width: 80 },
   { title: '状态', key: 'status', width: 100 },
-  { title: '操作', key: 'action', width: 140 }
+  { title: '操作', key: 'action', width: 140, align: 'right' as const }
 ]
 
 async function load() {

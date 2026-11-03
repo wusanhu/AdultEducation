@@ -135,7 +135,7 @@ const columns = [
   { title: '审批进度', key: 'node', width: 290 },
   { title: '状态', key: 'status', width: 180 },
   { title: '申请时间', key: 'time', width: 170 },
-  { title: '操作', key: 'action', width: 100, fixed: 'right' as const }
+  { title: '操作', key: 'action', width: 100, fixed: 'right' as const, align: 'right' as const }
 ]
 
 function nodeText(node: string) {

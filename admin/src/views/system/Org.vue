@@ -101,7 +101,7 @@ const columns = [
   { title: '账号数', dataIndex: 'userCount', key: 'userCount', width: 100 },
   { title: '排序', dataIndex: 'sort', key: 'sort', width: 80 },
   { title: '状态', key: 'status', width: 90 },
-  { title: '操作', key: 'action', width: 190 }
+  { title: '操作', key: 'action', width: 190, align: 'right' as const }
 ]
 
 async function load() {

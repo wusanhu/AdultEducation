@@ -102,7 +102,7 @@ const columns = [
   { title: '状态', key: 'status', width: 130 },
   { title: '审批人 / 时间', key: 'audit', width: 170 },
   { title: '备注', key: 'remark', width: 190 },
-  { title: '操作', key: 'action', width: 80, fixed: 'right' as const }
+  { title: '操作', key: 'action', width: 80, fixed: 'right' as const, align: 'right' as const }
 ]
 function statusColor(status: number) { return ({ 1: 'processing', 2: 'green', 3: 'red', 4: 'default' } as Record<number, string>)[status] || 'default' }
 

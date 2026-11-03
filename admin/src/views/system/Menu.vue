@@ -109,7 +109,7 @@ const columns = [
   { title: '导航可见', key: 'visible', width: 90 },
   { title: '移动端', key: 'mobile', width: 90 },
   { title: '状态', key: 'status', width: 90 },
-  { title: '操作', key: 'action', width: 190 }
+  { title: '操作', key: 'action', width: 190, align: 'right' as const }
 ]
 const parentTree = computed<MenuNode[]>(() => {
   const prune = (nodes: MenuNode[]): MenuNode[] => nodes

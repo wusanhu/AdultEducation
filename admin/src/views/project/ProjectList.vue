@@ -162,7 +162,7 @@ const columns = [
   { title: '规模', key: 'scale', width: 180 },
   { title: '状态', key: 'status', width: 100 },
   { title: '创建人', dataIndex: 'createUserName', key: 'creator', width: 100 },
-  { title: '操作', key: 'action', width: 190, fixed: 'right' as const }
+  { title: '操作', key: 'action', width: 190, fixed: 'right' as const, align: 'right' as const }
 ]
 const rules = {
   projectName: [{ required: true, message: '请填写项目名称' }],

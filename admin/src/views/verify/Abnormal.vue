@@ -118,7 +118,7 @@ const columns = [
   { title: '最近核验', key: 'latest', width: 170 },
   { title: '学习进度', key: 'progress', width: 180 },
   { title: '锁定状态', key: 'locked', width: 120 },
-  { title: '操作', key: 'action', width: 140, fixed: 'right' as const }
+  { title: '操作', key: 'action', width: 140, fixed: 'right' as const, align: 'right' as const }
 ]
 const verifyColumns = [
   { title: '时间', dataIndex: 'verifyTime', width: 165 },

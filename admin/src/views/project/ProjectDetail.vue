@@ -137,7 +137,7 @@ const memberColumns = [
   { title: '学习进度', key: 'progress', width: 280 },
   { title: '毕业状态', key: 'graduate', width: 150 },
   { title: '加入时间', dataIndex: 'joinTime', key: 'join', width: 160 },
-  { title: '操作', key: 'action', width: 80 }
+  { title: '操作', key: 'action', width: 80, align: 'right' as const }
 ]
 const teacherColumns = [
   { title: '教员', key: 'name', width: 200 },

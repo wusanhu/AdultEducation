@@ -110,7 +110,7 @@ const columns = [
   { title: '结果', key: 'result', width: 120 },
   { title: '抓拍', key: 'image', width: 80 },
   { title: '处理状态', key: 'status', width: 160 },
-  { title: '操作', key: 'action', width: 80, fixed: 'right' as const }
+  { title: '操作', key: 'action', width: 80, fixed: 'right' as const, align: 'right' as const }
 ]
 
 function resultColor(result?: number) { return result === 1 ? 'green' : result === 2 ? 'orange' : result === 0 ? 'red' : 'default' }
