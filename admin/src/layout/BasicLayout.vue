@@ -131,9 +131,11 @@
             <a-tooltip placement="right" :title="collapsed ? auth.displayName + ' · ' + (auth.roleName || '用户') : ''">
               <a-avatar :src="auth.user?.avatar || undefined" :size="38" class="user-avatar">{{ initial }}</a-avatar>
             </a-tooltip>
-            <div v-if="!collapsed" class="footer-user-name">{{ auth.displayName }}</div>
-            <div v-if="!collapsed" class="footer-user-role">
-              <span class="online-dot" />{{ auth.roleName || '用户' }} · 在线
+            <div v-if="!collapsed" class="footer-user-meta">
+              <div class="footer-user-name">{{ auth.displayName }}</div>
+              <div class="footer-user-role">
+                <span class="online-dot" />{{ auth.roleName || '用户' }} · 在线
+              </div>
             </div>
           </div>
         </div>
@@ -462,7 +464,7 @@ onMounted(loadUnread)
 <style scoped>
 .admin-shell {
   min-height: 100vh;
-  background: #fafcff;
+  background: var(--admin-shell-bg, #fafcff);
 }
 .app-topbar {
   position: sticky;
@@ -472,7 +474,7 @@ onMounted(loadUnread)
   display: flex;
   align-items: center;
   padding-right: 22px;
-  background: #fafcff;
+  background: var(--admin-shell-bg, #fafcff);
 }
 .topbar-brand {
   flex: none;
@@ -604,7 +606,7 @@ onMounted(loadUnread)
   top: 64px;
   display: flex;
   flex-direction: column;
-  background: #fafcff;
+  background: var(--admin-shell-bg, #fafcff);
   transition: width .25s cubic-bezier(.4, 0, .2, 1);
   overflow: hidden;
 }
@@ -779,7 +781,7 @@ onMounted(loadUnread)
   flex: none;
   padding: 10px 12px 14px;
   background: transparent;
-  border-top: 1px solid #e8eef7;
+  border-top: 1px solid var(--admin-line-strong, #e3eaf4);
 }
 .footer-links { display: flex; flex-direction: column; gap: 2px; }
 .footer-link {
@@ -806,20 +808,29 @@ onMounted(loadUnread)
 .footer-user {
   margin-top: 10px;
   padding-top: 14px;
-  border-top: 1px dashed #eef2f7;
+  border-top: 1px solid var(--admin-line, #eef2f7);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+}
+.footer-user-meta {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  gap: 3px;
 }
 .user-avatar {
+  flex: none;
   background: linear-gradient(135deg, #2563eb, #6d5efc) !important;
   font-size: 15px;
   font-weight: 600;
   border: 1px solid rgba(255, 255, 255, .6);
 }
 .footer-user-name {
-  margin-top: 8px;
+  margin-top: 0;
   font-size: 13px;
   font-weight: 650;
   line-height: 1.35;
@@ -832,11 +843,12 @@ onMounted(loadUnread)
 .footer-user-role {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 5px;
-  margin-top: 3px;
+  margin-top: 0;
   font-size: 10.5px;
   color: #94a3b8;
+  white-space: nowrap;
 }
 .online-dot {
   flex: none;
@@ -871,16 +883,20 @@ onMounted(loadUnread)
   padding: 0;
   height: 34px;
 }
-.app-sider.collapsed .footer-user { padding-top: 12px; }
+.app-sider.collapsed .footer-user {
+  padding-top: 12px;
+  justify-content: center;
+  gap: 0;
+}
 .admin-content {
   flex: 1;
   min-width: 0;
   min-height: calc(100vh - 80px);
   margin: 0 16px 16px 12px;
-  padding: 18px 18px 24px;
-  background: #eff4fb;
-  border: 1px solid #e6edf7;
-  border-radius: 18px;
+  padding: 20px 20px 24px;
+  background: var(--admin-canvas-bg, #fff);
+  border: 1px solid var(--admin-canvas-border, #e6edf7);
+  border-radius: var(--admin-radius-lg, 16px);
 }
 .nav-forward-enter-active,
 .nav-forward-leave-active,

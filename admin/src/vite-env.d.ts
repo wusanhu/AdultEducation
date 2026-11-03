@@ -9,10 +9,16 @@ interface ImportMetaEnv {
   readonly VITE_UPLOAD_BASE_URL: string
   readonly VITE_PROXY_TARGET?: string
   readonly VITE_DEV_PORT?: string
+  readonly VITE_ADMIN_SKIN?: string
 }
 
 interface ImportMeta {
   readonly env: ImportMetaEnv
+}
+
+interface Window {
+  /** 运行时外部注入的皮肤 key，需在应用脚本加载前赋值 */
+  __ADMIN_SKIN__?: string
 }
 
 declare module '*.vue' {

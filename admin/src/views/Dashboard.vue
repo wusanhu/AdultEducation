@@ -1,30 +1,27 @@
 <template>
   <div>
-    <div style="background:linear-gradient(120deg,#0f2d52,#155e9c 55%,#0e7490);border-radius:14px;padding:26px 28px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:18px;overflow:hidden;position:relative">
-      <div style="position:absolute;right:-40px;top:-80px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.06)"></div>
-      <div>
-        <div style="font-size:22px;font-weight:700;margin-bottom:6px">{{ greeting }}，{{ auth.displayName }}</div>
-        <div style="font-size:13px;opacity:.72">今天是 {{ today }} · 当前角色：{{ auth.roleName }} · 让每一份学习成果都清晰可追溯</div>
+    <div class="hero-panel">
+      <div class="hero-main">
+        <div class="hero-greeting">{{ greeting }}，{{ auth.displayName }}</div>
+        <div class="hero-meta">今天是 {{ today }} · 当前角色：{{ auth.roleName }} · 让每一份学习成果都清晰可追溯</div>
       </div>
-      <div style="display:flex;gap:10px;position:relative">
-        <a-button v-if="auth.hasPerm('project:list')" ghost @click="$router.push('/project/list')">培训班管理</a-button>
-        <a-button v-if="auth.hasPerm('report:org')" ghost @click="$router.push('/report/org')">查看报表</a-button>
-        <a-button v-if="auth.hasPerm('verify:abnormal')" type="primary" ghost @click="$router.push('/verify/abnormal')">异常核验 {{ overview.abnormalCount || 0 }}</a-button>
+      <div class="hero-actions">
+        <a-button v-if="auth.hasPerm('project:list')" @click="$router.push('/project/list')">培训班管理</a-button>
+        <a-button v-if="auth.hasPerm('report:org')" @click="$router.push('/report/org')">查看报表</a-button>
+        <a-button v-if="auth.hasPerm('verify:abnormal')" type="primary" @click="$router.push('/verify/abnormal')">异常核验 {{ overview.abnormalCount || 0 }}</a-button>
       </div>
     </div>
 
-    <a-row :gutter="[16, 16]">
-      <a-col :xs="12" :md="6" v-for="card in stats" :key="card.label">
-        <div class="stat-card" style="height:100%">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <span class="label">{{ card.label }}</span>
-            <component :is="card.icon" :style="{ color: card.color, fontSize: '18px' }" />
-          </div>
-          <div class="value">{{ card.value }}<small v-if="card.unit">{{ card.unit }}</small></div>
-          <div style="font-size:12px;color:#94a3b8;margin-top:6px">{{ card.hint }}</div>
+    <div class="stat-strip">
+      <div v-for="card in stats" :key="card.label" class="stat-cell">
+        <div class="stat-cell-head">
+          <span class="label">{{ card.label }}</span>
+          <component :is="card.icon" :style="{ color: card.color, fontSize: '18px' }" />
         </div>
-      </a-col>
-    </a-row>
+        <div class="value">{{ card.value }}<small v-if="card.unit">{{ card.unit }}</small></div>
+        <div class="stat-cell-hint">{{ card.hint }}</div>
+      </div>
+    </div>
 
     <a-row :gutter="[16, 16]" style="margin-top:16px">
       <a-col :xs="24" :lg="16">
@@ -248,6 +245,84 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.hero-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 26px;
+  margin-bottom: 16px;
+  background: var(--admin-canvas-bg, #fff);
+  border: 1px solid var(--admin-line, #eef2f7);
+  border-left: 3px solid var(--admin-primary, #1f6feb);
+  border-radius: var(--admin-radius-md, 12px);
+}
+.hero-main { min-width: 0; }
+.hero-greeting {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #0f172a;
+}
+.hero-meta {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #64748b;
+}
+.hero-actions {
+  flex: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: var(--admin-canvas-bg, #fff);
+  border: 1px solid var(--admin-line, #eef2f7);
+  border-radius: var(--admin-radius-md, 12px);
+}
+.stat-cell { padding: 18px 22px; min-width: 0; }
+.stat-cell + .stat-cell { border-left: 1px solid var(--admin-line, #eef2f7); }
+.stat-cell-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.stat-cell .label { color: #64748b; font-size: 13px; }
+.stat-cell .value {
+  margin-top: 6px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #0f172a;
+}
+.stat-cell .value small {
+  margin-left: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+.stat-cell-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 1100px) {
+  .stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat-cell:nth-child(3) { border-left: none; }
+  .stat-cell:nth-child(n + 3) { border-top: 1px solid var(--admin-line, #eef2f7); }
+}
+@media (max-width: 720px) {
+  .hero-panel { flex-direction: column; align-items: flex-start; }
+  .stat-strip { grid-template-columns: minmax(0, 1fr); }
+  .stat-cell + .stat-cell { border-left: none; border-top: 1px solid var(--admin-line, #eef2f7); }
+}
 .chart-legend {
   display: flex;
   align-items: center;
