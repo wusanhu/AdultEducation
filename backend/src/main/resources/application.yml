@@ -64,8 +64,8 @@ springdoc:
 
 app:
   cors:
-    # 前端开发服务器跨域白名单，生产同源部署时可不配置
-    allowed-origins: ${APP_CORS_ORIGINS:http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174}
+    # 前端开发服务器与预览域名跨域白名单，生产同源部署时可不配置
+    allowed-origins: ${APP_CORS_ORIGINS:http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,https://*.preview.qoderwork.com}
   jwt:
     secret: ${APP_JWT_SECRET:adult-education-credit-platform-2026-secret-key-for-hs256-signing}
     expire-hours: 12
