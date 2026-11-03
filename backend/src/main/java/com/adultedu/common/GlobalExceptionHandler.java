@@ -1,5 +1,6 @@
 package com.adultedu.common;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -47,9 +49,15 @@ public class GlobalExceptionHandler {
         return R.fail(400, "上传文件超过大小限制");
     }
 
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public R<Void> handleNotFound(NoResourceFoundException e) {
+        return R.fail(404, "资源不存在");
+    }
+
     @ExceptionHandler(Exception.class)
-    public R<Void> handleException(Exception e) {
-        log.error("系统异常", e);
+    public R<Void> handleException(Exception e, HttpServletRequest request) {
+        log.error("系统异常 uri={}", request.getRequestURI(), e);
         return R.fail(500, "系统异常：" + e.getMessage());
     }
 }

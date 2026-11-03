@@ -463,7 +463,8 @@ public class ProjectService {
             GraduateApply apply = latestApply(userId, project.getId());
             map.put("graduateStatus", apply == null ? null : apply.getAuditStatus());
             map.put("graduateNode", apply == null ? null : apply.getCurrentNode());
-            map.put("canApply", credit.compareTo(project.getNeedCredit()) >= 0
+            BigDecimal needCredit = project.getNeedCredit();
+            map.put("canApply", (needCredit == null || credit.compareTo(needCredit) >= 0)
                     && (apply == null || apply.getAuditStatus() == 2));
             list.add(map);
         }
