@@ -34,7 +34,11 @@
               <div style="font-size:15px;font-weight:600">近 7 天学习趋势</div>
               <div style="font-size:12px;color:#94a3b8;margin-top:2px">学习分钟数与发放学分</div>
             </div>
-            <a-tag color="blue">实时统计</a-tag>
+            <div class="chart-legend">
+              <span><i class="dot dot-blue"></i>学习分钟</span>
+              <span><i class="dot dot-green"></i>发放学分</span>
+              <a-tag color="blue">实时统计</a-tag>
+            </div>
           </div>
           <div ref="chartEl" style="height:290px;width:100%"></div>
         </div>
@@ -111,7 +115,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { message } from 'ant-design-vue'
 import { CreditCardOutlined, ReadOutlined, TeamOutlined, FileDoneOutlined } from '@ant-design/icons-vue'
-import * as echarts from 'echarts'
+import { Chart } from '@antv/g2'
 import dayjs from 'dayjs'
 import { dashboardApi } from '../api'
 import { useAuthStore } from '../store/auth'
@@ -120,8 +124,7 @@ import type { OverviewData } from '../types'
 const auth = useAuthStore()
 const overview = ref<OverviewData>({} as OverviewData)
 const chartEl = ref<HTMLDivElement>()
-let chart: echarts.ECharts | null = null
-
+let chart: Chart | null = null
 const today = dayjs().format('YYYY年MM月DD日')
 const greeting = computed(() => {
   const hour = dayjs().hour()
@@ -145,25 +148,87 @@ const graduateColumns = [
 
 function renderChart() {
   if (!chartEl.value) return
-  chart = echarts.init(chartEl.value)
-  const trend = overview.value.trend || []
-  chart.setOption({
-    tooltip: { trigger: 'axis' },
-    legend: { data: ['学习分钟', '发放学分'], right: 0, top: 0, textStyle: { color: '#64748b', fontSize: 12 } },
-    grid: { left: 8, right: 12, bottom: 8, top: 42, containLabel: true },
-    xAxis: { type: 'category', boundaryGap: false, data: trend.map((t) => dayjs(t.date).format('MM-DD')), axisLine: { lineStyle: { color: '#e2e8f0' } }, axisLabel: { color: '#94a3b8' } },
-    yAxis: [
-      { type: 'value', name: '分钟', splitLine: { lineStyle: { color: '#f1f5f9' } }, axisLabel: { color: '#94a3b8' }, nameTextStyle: { color: '#94a3b8' } },
-      { type: 'value', name: '学分', splitLine: { show: false }, axisLabel: { color: '#94a3b8' }, nameTextStyle: { color: '#94a3b8' } }
-    ],
-    series: [
-      { name: '学习分钟', type: 'line', smooth: true, symbolSize: 5, data: trend.map((t) => t.studyMinutes || 0), lineStyle: { width: 3, color: '#2563eb' }, itemStyle: { color: '#2563eb' }, areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(37,99,235,.28)' }, { offset: 1, color: 'rgba(37,99,235,.01)' }]) } },
-      { name: '发放学分', type: 'bar', yAxisIndex: 1, barWidth: 12, data: trend.map((t) => t.credits || 0), itemStyle: { color: '#22c55e', borderRadius: [4, 4, 0, 0] } }
-    ]
+  chart?.destroy()
+  chart = new Chart({
+    container: chartEl.value,
+    autoFit: true
   })
+
+  const trend = overview.value.trend || []
+  const data = trend.map((t) => ({
+    date: dayjs(t.date).format('MM-DD'),
+    minutes: Number(t.studyMinutes || 0),
+    credits: Number(t.credits || 0)
+  }))
+
+  chart.legend(false)
+  chart.scale('x', { type: 'band', paddingInner: 0.55, paddingOuter: 0.25 })
+  chart.axis('x', {
+    title: false,
+    labelFill: '#94a3b8',
+    lineStroke: '#e2e8f0',
+    tickStroke: '#e2e8f0'
+  })
+
+  // 学习分钟：左侧面积 + 折线
+  chart
+    .area()
+    .data(data)
+    .encode('x', 'date')
+    .encode('y', 'minutes')
+    .scale('y', { nice: true })
+    .style('fill', 'rgba(37, 99, 235, 0.12)')
+    .style('lineWidth', 0)
+    .tooltip(false)
+
+  chart
+    .line()
+    .data(data)
+    .encode('x', 'date')
+    .encode('y', 'minutes')
+    .scale('y', { nice: true })
+    .axis('y', {
+      position: 'left',
+      title: '分钟',
+      titleFill: '#94a3b8',
+      labelFill: '#94a3b8',
+      lineStroke: '#e2e8f0',
+      tickStroke: '#e2e8f0',
+      gridStroke: '#f1f5f9'
+    })
+    .style('stroke', '#2563eb')
+    .style('lineWidth', 3)
+    .tooltip('minutes')
+
+  // 发放学分：右侧独立坐标轴（最后绘制，避免被面积遮挡）
+  chart
+    .interval()
+    .data(data)
+    .encode('x', 'date')
+    .encode('y', 'credits')
+    .scale('y', { independent: true, nice: true })
+    .axis('y', {
+      position: 'right',
+      title: '学分',
+      titleFill: '#94a3b8',
+      labelFill: '#94a3b8',
+      lineStroke: '#e2e8f0',
+      tickStroke: '#e2e8f0',
+      grid: false
+    })
+    .style('fill', '#22c55e')
+    .style('maxWidth', 22)
+    .style('radiusTopLeft', 4)
+    .style('radiusTopRight', 4)
+    .tooltip('credits')
+
+  chart.interaction('tooltip', { shared: true })
+  chart.render()
 }
 
-function resize() { chart?.resize() }
+function resize() {
+  chart?.forceFit()
+}
 
 onMounted(async () => {
   try {
@@ -177,6 +242,34 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', resize)
-  chart?.dispose()
+  chart?.destroy()
+  chart = null
 })
 </script>
+
+<style scoped>
+.chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+  color: #64748b;
+}
+.chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.chart-legend .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot-blue {
+  background: #2563eb;
+}
+.dot-green {
+  background: #22c55e;
+}
+</style>

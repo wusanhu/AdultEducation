@@ -9,3 +9,5 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.mount('#app')
+
+document.title = import.meta.env.VITE_APP_TITLE || '继续教育学分管理'

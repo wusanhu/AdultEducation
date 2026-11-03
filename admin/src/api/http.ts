@@ -6,7 +6,9 @@ interface ApiBody<T> {
   data: T
 }
 
-const http = axios.create({ baseURL: '/api', timeout: 30000 })
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+
+const http = axios.create({ baseURL: API_BASE, timeout: 30000 })
 
 const AUTH_KEYS = [
   'admin_token', 'admin_user', 'admin_perms', 'admin_menus',
@@ -83,7 +85,7 @@ export async function download(url: string, params?: Record<string, unknown>, fa
     if (value !== undefined && value !== null && value !== '') query.append(key, String(value))
   })
   const token = localStorage.getItem('admin_token')
-  const response = await fetch(`/api${url}${query.size ? `?${query.toString()}` : ''}`, {
+  const response = await fetch(`${API_BASE}${url}${query.size ? `?${query.toString()}` : ''}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   })
   if (response.status === 401) {

@@ -7,7 +7,7 @@
 | 层 | 技术 |
 | --- | --- |
 | 后端 | Java 21、Spring Boot 3.3.5、Spring Security + JWT、MyBatis-Plus 3.5.7、MySQL 8、Redis、EasyExcel、OpenPDF |
-| 管理后台 | Vue 3 + TypeScript + Vite + Ant Design Vue 4 + Pinia + ECharts |
+| 管理后台 | Vue 3 + TypeScript + Vite + Ant Design Vue 4 + Pinia + @antv/g2 |
 | 移动端 | Vue 3 + TypeScript + Vite + Vant 4 + Pinia |
 | 数据库 | MySQL 8，启动时自动建库建表并写入演示数据 |
 | 部署 | Spring Boot 内置 Tomcat + Nginx 反向代理，见 `docs/deployment.md` |
@@ -84,6 +84,20 @@ npm run build
 ```
 
 > 两个前端均使用 Hash 路由，因此不需要额外的 history 重写规则即可由 Spring Boot 直接托管。
+
+### 5. 前端环境变量
+
+`admin/` 与 `mobile/` 均包含 `.env`、`.env.development`、`.env.production` 三份配置，Vite 会按启动模式自动合并加载：
+
+| 变量 | 说明 |
+| --- | --- |
+| `VITE_APP_TITLE` / `VITE_APP_SHORT_NAME` | 页面标题与简称，构建时会替换 `index.html` 中的占位符 |
+| `VITE_BASE_PATH` | 部署基础路径，同时用于 Vite `base` 与路由 history（管理端 `/admin/`，移动端 `/m/`） |
+| `VITE_API_BASE_URL` / `VITE_UPLOAD_BASE_URL` | 接口与上传文件前缀，默认同源 `/api`、`/uploads` |
+| `VITE_PROXY_TARGET` | 仅开发模式使用，Vite 将 `/api`、`/uploads` 代理到该后端地址 |
+| `VITE_DEV_PORT` | 开发服务器端口（管理端 5173，移动端 5174） |
+
+生产环境如更换域名或子路径，只需调整 `.env.production` 后重新执行 `npm run build`；无需修改源码。管理端工作台图表使用 `@antv/g2` 5 绘制（双 Y 轴：学习分钟折线/面积 + 发放学分柱状），不再依赖 ECharts。
 
 ## 演示账号
 

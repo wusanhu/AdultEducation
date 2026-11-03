@@ -51,7 +51,7 @@ const routes: RouteRecordRaw[] = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory('/admin/'),
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior: () => ({ top: 0 })
 })
@@ -81,7 +81,8 @@ router.beforeEach(async (to) => {
 })
 
 router.afterEach((to) => {
-  document.title = `${to.meta.title || '继续教育'} · 继续教育学分管理平台`
+  const appTitle = import.meta.env.VITE_APP_TITLE || '继续教育学分管理平台'
+  document.title = `${to.meta.title || '继续教育'} · ${appTitle}`
 })
 
 export default router

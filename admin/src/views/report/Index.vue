@@ -172,7 +172,7 @@ watch(() => route.path, () => {
 })
 
 onMounted(async () => {
-  document.title = `${titles[mode.value]} · 继续教育学分管理平台`
+  document.title = `${titles[mode.value]} · ${import.meta.env.VITE_APP_TITLE || '继续教育学分管理平台'}`
   try {
     projects.value = (await projectApi.page({ pageNum: 1, pageSize: 200 })).records as any
     if (route.query.projectId) projectId.value = Number(route.query.projectId)

@@ -1,8 +1,10 @@
 import axios from 'axios'
 import { showToast } from 'vant'
 
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
+
 const http = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE,
   timeout: 30000,
 })
 
