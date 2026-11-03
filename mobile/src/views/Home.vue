@@ -1,54 +1,51 @@
 <template>
   <div class="page-container home-page">
     <!-- Hero -->
-    <div class="home-header">
-      <div class="hero-orb orb-a"></div>
-      <div class="hero-orb orb-b"></div>
+    <div class="home-header ink-hero">
+      <span class="hero-watermark">笃学</span>
       <div class="greeting">
         <p class="hello">{{ greetingText }}</p>
-        <h2>{{ userStore.user?.realName || '同学' }}</h2>
+        <h2 class="hero-name">{{ userStore.user?.realName || '同学' }}</h2>
         <p class="org-name" v-if="userStore.user?.orgName">
-          <van-icon name="cluster-o" size="13" />
+          <van-icon name="cluster-o" size="12" />
           <span>{{ userStore.user?.orgName }}</span>
         </p>
       </div>
       <div class="notify-icon" @click="$router.push('/notifications')">
         <van-badge :content="unreadCount > 0 ? unreadCount : ''" :max="99">
-          <van-icon name="bell" size="22" color="#fff" />
+          <van-icon name="bell" size="20" color="rgba(245,242,234,0.9)" />
         </van-badge>
-      </div>
-      <div class="hero-credit" @click="$router.push('/credits')">
-        <div class="hero-credit-main">
-          <span class="hero-credit-label">本年度已获学分</span>
-          <span class="hero-credit-value">{{ stats.totalCredits || 0 }}</span>
-        </div>
-        <span class="hero-credit-link">
-          学分明细
-          <van-icon name="arrow" size="12" />
-        </span>
       </div>
     </div>
 
-    <!-- Stat Cards -->
+    <!-- 学分票券 -->
+    <div class="credit-ticket" @click="$router.push('/credits')">
+      <div class="ticket-left">
+        <span class="ticket-label">本年度已获学分</span>
+        <div class="ticket-value-row">
+          <span class="ticket-value num">{{ stats.totalCredits || 0 }}</span>
+          <span class="ticket-unit">学分</span>
+        </div>
+      </div>
+      <div class="ticket-seal seal seal--round">学分</div>
+      <span class="ticket-link">
+        明细
+        <van-icon name="arrow" size="11" />
+      </span>
+    </div>
+
+    <!-- Stat Strip -->
     <div class="stat-cards">
       <div class="stat-item" @click="$router.push('/projects')">
-        <span class="stat-dot dot-blue"></span>
-        <div class="stat-value">{{ stats.learningCourses || 0 }}</div>
+        <div class="stat-value num">{{ stats.learningCourses || 0 }}</div>
         <div class="stat-label">学习中</div>
       </div>
       <div class="stat-item" @click="$router.push('/projects')">
-        <span class="stat-dot dot-green"></span>
-        <div class="stat-value">{{ stats.completedCourses || 0 }}</div>
+        <div class="stat-value num">{{ stats.completedCourses || 0 }}</div>
         <div class="stat-label">已完成</div>
       </div>
       <div class="stat-item" @click="$router.push('/credits')">
-        <span class="stat-dot dot-orange"></span>
-        <div class="stat-value">{{ stats.totalCredits || 0 }}</div>
-        <div class="stat-label">总学分</div>
-      </div>
-      <div class="stat-item" @click="$router.push('/credits')">
-        <span class="stat-dot dot-red"></span>
-        <div class="stat-value">{{ stats.pendingCredits || 0 }}</div>
+        <div class="stat-value num stat-value--seal">{{ stats.pendingCredits || 0 }}</div>
         <div class="stat-label">待审核</div>
       </div>
     </div>
@@ -57,44 +54,45 @@
     <div class="card entry-card">
       <div class="entry-grid">
         <div class="entry-item" @click="$router.push('/projects')">
-          <span class="entry-icon ic-blue"><van-icon name="orders-o" size="22" /></span>
+          <span class="entry-icon"><van-icon name="bookmark-o" size="21" /></span>
           <span>培训班</span>
         </div>
         <div class="entry-item" @click="$router.push('/credits')">
-          <span class="entry-icon ic-green"><van-icon name="gold-coin-o" size="22" /></span>
+          <span class="entry-icon"><van-icon name="medal-o" size="21" /></span>
           <span>学分查询</span>
         </div>
         <div class="entry-item" @click="$router.push('/graduate')">
-          <span class="entry-icon ic-orange"><van-icon name="certificate" size="22" /></span>
+          <span class="entry-icon"><van-icon name="certificate" size="21" /></span>
           <span>毕业申请</span>
         </div>
         <div class="entry-item" @click="$router.push('/verify')">
-          <span class="entry-icon ic-red"><van-icon name="shield-o" size="22" /></span>
+          <span class="entry-icon"><van-icon name="shield-o" size="21" /></span>
           <span>核验记录</span>
         </div>
         <div class="entry-item" @click="$router.push('/notifications')">
-          <span class="entry-icon ic-purple"><van-icon name="bell" size="22" /></span>
+          <span class="entry-icon"><van-icon name="bell" size="21" /></span>
           <span>消息通知</span>
         </div>
         <div v-if="userStore.isTeacher" class="entry-item" @click="$router.push('/teacher')">
-          <span class="entry-icon ic-teal"><van-icon name="manager-o" size="22" /></span>
-          <span>教师管理</span>
+          <span class="entry-icon"><van-icon name="manager-o" size="21" /></span>
+          <span>教务管理</span>
         </div>
       </div>
     </div>
 
     <!-- Continue Learning -->
-    <div class="section-title flex-between">
-      <span>继续学习</span>
-      <span class="more-link" @click="$router.push('/projects')">全部 &gt;</span>
+    <div class="section-title">
+      继续学习
+      <span class="section-title-en">CONTINUE</span>
+      <span class="more-link" @click="$router.push('/projects')">全部 ›</span>
     </div>
     <div v-if="loading" class="card skeleton-card">
       <van-skeleton title :row="2" />
     </div>
-    <div v-else-if="continueList.length === 0" class="empty-card">
-      <van-icon name="video-o" size="34" color="#c8c9cc" />
+    <div v-else-if="continueList.length === 0" class="empty-ink">
+      <div class="empty-ink-glyph">学</div>
       <p>暂无进行中的课程</p>
-      <span class="empty-action" @click="$router.push('/projects')">去培训班看看</span>
+      <span class="empty-action" @click="$router.push('/projects')">去培训班看看 ›</span>
     </div>
     <div
       v-for="item in continueList"
@@ -104,7 +102,7 @@
     >
       <div class="course-cover">
         <img v-if="item.cover" :src="item.cover" alt="" @error="onCoverError" />
-        <van-icon v-else name="video-o" size="24" color="#fff" />
+        <span v-else class="cover-glyph num">{{ indexNum(item) }}</span>
       </div>
       <div class="course-body">
         <div class="course-top">
@@ -116,22 +114,21 @@
           <van-progress
             :percentage="Math.min(100, Math.round(item.progress || 0))"
             :show-pivot="false"
-            color="#1989fa"
-            stroke-width="5"
-            track-color="#eef1f6"
+            stroke-width="4"
           />
-          <span class="course-percent">{{ Math.min(100, Math.round(item.progress || 0)) }}%</span>
+          <span class="course-percent num">{{ Math.min(100, Math.round(item.progress || 0)) }}%</span>
         </div>
       </div>
-      <van-icon name="arrow" size="14" color="#c8c9cc" class="course-arrow" />
     </div>
 
     <!-- Recent Notifications -->
-    <div class="section-title flex-between">
-      <span>最新通知</span>
-      <span class="more-link" @click="$router.push('/notifications')">更多 &gt;</span>
+    <div class="section-title">
+      最新通知
+      <span class="section-title-en">NOTICES</span>
+      <span class="more-link" @click="$router.push('/notifications')">更多 ›</span>
     </div>
-    <div v-if="recentNotifications.length === 0" class="empty-card compact">
+    <div v-if="recentNotifications.length === 0" class="empty-ink compact">
+      <div class="empty-ink-glyph">函</div>
       <p>暂无通知</p>
     </div>
     <div
@@ -183,6 +180,11 @@ const greetingText = computed(() => {
   if (h < 18) return '下午好'
   return '晚上好'
 })
+
+function indexNum(item: any, idx = 0) {
+  const id = item.id ?? item.courseId
+  return id != null ? String(id).padStart(2, '0') : String(idx).padStart(2, '0')
+}
 
 function formatTime(t: string) {
   return dayjs(t).format('MM-DD HH:mm')
@@ -239,107 +241,110 @@ onMounted(async () => {
 
 <style scoped>
 .home-header {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(135deg, #2f7cf6 0%, #4f9cff 58%, #33c3a4 100%);
-  padding: 34px 20px 86px;
+  padding: 36px 20px 46px;
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  color: #fff;
-  border-radius: 0 0 22px 22px;
-}
-.hero-orb {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.14);
-  pointer-events: none;
-}
-.orb-a {
-  width: 150px;
-  height: 150px;
-  top: -50px;
-  right: -30px;
-}
-.orb-b {
-  width: 90px;
-  height: 90px;
-  bottom: 18px;
-  right: 88px;
-  background: rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 20px 20px;
 }
 .greeting {
   position: relative;
   z-index: 1;
 }
 .hello {
-  font-size: 13px;
-  opacity: 0.9;
-  margin-bottom: 2px;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: rgba(245, 242, 234, 0.6);
+  margin-bottom: 6px;
 }
-.greeting h2 {
-  font-size: 23px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+.hero-name {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
 }
 .org-name {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
-  opacity: 0.88;
-  margin-top: 6px;
+  font-size: 11px;
+  color: rgba(245, 242, 234, 0.62);
+  margin-top: 8px;
+  border: 1px solid rgba(245, 242, 234, 0.22);
+  border-radius: 99px;
+  padding: 3px 10px;
 }
 .notify-icon {
   position: relative;
   z-index: 1;
-  padding: 4px;
+  padding: 6px;
   cursor: pointer;
 }
-.hero-credit {
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: 14px;
+
+/* 学分票券 */
+.credit-ticket {
+  position: relative;
   z-index: 2;
+  margin: -34px 16px 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
+  gap: 12px;
+  padding: 16px;
+  background: var(--paper-card);
+  border: 1px solid var(--line);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 6px 18px rgba(19, 31, 56, 0.12);
   cursor: pointer;
 }
-.hero-credit-main {
+.ticket-left {
+  flex: 1;
+  min-width: 0;
+}
+.ticket-label {
+  font-size: 11px;
+  color: var(--text-sub);
+  letter-spacing: 0.12em;
+}
+.ticket-value-row {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
+  margin-top: 4px;
 }
-.hero-credit-label {
-  font-size: 12px;
-  color: #646566;
-}
-.hero-credit-value {
-  font-size: 24px;
+.ticket-value {
+  font-size: 34px;
   font-weight: 700;
-  color: #1f6fe5;
   line-height: 1;
+  color: var(--ink-800);
 }
-.hero-credit-link {
+.ticket-unit {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+.ticket-seal {
+  width: 46px;
+  height: 46px;
+  font-size: 14px;
+  flex: none;
+  margin-left: auto;
+}
+.ticket-link {
+  flex: none;
   display: flex;
   align-items: center;
   gap: 2px;
-  font-size: 12px;
-  color: #969799;
+  font-size: 11px;
+  color: var(--text-faint);
 }
+
+/* 统计条 */
 .stat-cards {
   display: flex;
-  background: #fff;
-  margin: 16px 16px 14px;
-  border-radius: 14px;
-  padding: 16px 4px;
-  border: 1px solid #ebedf0;
+  background: var(--paper-card);
+  margin: 12px 16px 0;
+  border-radius: 12px;
+  padding: 14px 4px;
+  border: 1px solid var(--line);
 }
 .stat-item {
   flex: 1;
@@ -351,31 +356,34 @@ onMounted(async () => {
 .stat-item:active {
   opacity: 0.6;
 }
-.stat-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  margin-bottom: 4px;
+.stat-item + .stat-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20%;
+  height: 60%;
+  width: 1px;
+  background: var(--line);
 }
-.dot-blue { background: #1989fa; }
-.dot-green { background: #07c160; }
-.dot-orange { background: #ff976a; }
-.dot-red { background: #ee0a24; }
 .stat-value {
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 700;
-  color: #323233;
+  color: var(--ink-800);
   line-height: 1.2;
-  font-variant-numeric: tabular-nums;
+}
+.stat-value--seal {
+  color: var(--seal);
 }
 .stat-label {
-  font-size: 12px;
-  color: #969799;
-  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-sub);
+  margin-top: 3px;
+  letter-spacing: 0.08em;
 }
+
+/* 入口 */
 .entry-card {
-  padding: 18px 8px 10px;
+  padding: 18px 8px 12px;
 }
 .entry-grid {
   display: grid;
@@ -386,9 +394,9 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   font-size: 12px;
-  color: #323233;
+  color: var(--text-main);
   cursor: pointer;
   transition: transform 0.12s;
 }
@@ -398,26 +406,24 @@ onMounted(async () => {
 .entry-icon {
   width: 46px;
   height: 46px;
-  border-radius: 14px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.ic-blue { color: #1989fa; background: #e8f3ff; }
-.ic-green { color: #07c160; background: #e7f8ef; }
-.ic-orange { color: #ff8f1f; background: #fff3e6; }
-.ic-red { color: #ee0a24; background: #ffeceb; }
-.ic-purple { color: #7d5cff; background: #f0ecff; }
-.ic-teal { color: #00a6a6; background: #e3f7f7; }
-.section-title {
-  margin-top: 20px;
+  color: var(--ink-800);
+  background: rgba(27, 42, 74, 0.06);
+  border: 1px solid rgba(27, 42, 74, 0.12);
 }
 .more-link {
+  margin-left: auto;
   font-size: 12px;
-  color: #969799;
+  color: var(--text-sub);
+  font-family: var(--font-body);
   font-weight: 400;
   cursor: pointer;
 }
+
+/* 课程卡 */
 .course-card {
   display: flex;
   align-items: center;
@@ -431,19 +437,26 @@ onMounted(async () => {
 }
 .course-cover {
   flex: none;
-  width: 92px;
-  height: 62px;
-  border-radius: 10px;
+  width: 88px;
+  height: 60px;
+  border-radius: 8px;
   overflow: hidden;
-  background: linear-gradient(135deg, #4f9cff, #33c3a4);
+  background: linear-gradient(150deg, var(--ink-700), var(--ink-900));
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 .course-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+.cover-glyph {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: rgba(245, 242, 234, 0.55);
+  letter-spacing: 0.1em;
 }
 .course-body {
   flex: 1;
@@ -459,14 +472,14 @@ onMounted(async () => {
   min-width: 0;
   font-size: 14px;
   font-weight: 600;
-  color: #323233;
+  color: var(--text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .course-project {
   font-size: 11px;
-  color: #969799;
+  color: var(--text-faint);
   margin: 5px 0 8px;
   white-space: nowrap;
   overflow: hidden;
@@ -483,34 +496,23 @@ onMounted(async () => {
 .course-percent {
   flex: none;
   font-size: 11px;
-  color: #969799;
-  font-variant-numeric: tabular-nums;
-}
-.course-arrow {
-  flex: none;
-}
-.empty-card {
-  background: #fff;
-  border-radius: 14px;
-  padding: 30px 16px;
-  text-align: center;
-  color: #969799;
-  font-size: 13px;
-}
-.empty-card p {
-  margin: 8px 0 10px;
-}
-.empty-card.compact {
-  padding: 20px 16px;
+  color: var(--text-sub);
 }
 .empty-action {
-  color: #1989fa;
-  font-size: 13px;
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--seal);
+  font-size: 12px;
   cursor: pointer;
+}
+.empty-ink.compact {
+  padding: 26px 16px;
 }
 .skeleton-card {
   padding: 16px;
 }
+
+/* 通知卡 */
 .notify-card {
   cursor: pointer;
   transition: opacity 0.15s;
@@ -519,7 +521,7 @@ onMounted(async () => {
   opacity: 0.7;
 }
 .notify-card.unread {
-  border-left: 3px solid #1989fa;
+  border-left: 3px solid var(--seal);
 }
 .notify-head {
   display: flex;
@@ -532,8 +534,8 @@ onMounted(async () => {
   align-items: center;
   gap: 6px;
   font-size: 14px;
-  font-weight: 500;
-  color: #323233;
+  font-weight: 600;
+  color: var(--text-strong);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -544,16 +546,16 @@ onMounted(async () => {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #ee0a24;
+  background: var(--seal);
 }
 .notify-time {
   flex: none;
   font-size: 11px;
-  color: #c8c9cc;
+  color: var(--text-faint);
 }
 .notify-content {
   font-size: 12px;
-  color: #646566;
+  color: var(--text-sub);
   margin-top: 6px;
   line-height: 1.5;
   overflow: hidden;

@@ -359,25 +359,30 @@ onMounted(() => {
   cursor: default;
 }
 .audit-name {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-strong);
   flex: 1;
+  min-width: 0;
 }
 .audit-credit {
   font-size: 16px;
   font-weight: 700;
-  color: #ff976a;
+  color: var(--seal);
+  font-family: var(--font-display);
 }
 .audit-meta {
   font-size: 12px;
-  color: #969799;
+  color: var(--text-sub);
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
 }
 .audit-remark {
-  font-size: 13px;
-  color: #646566;
+  font-size: 12px;
+  color: var(--text-sub);
+  border-top: 1px dashed var(--line);
+  padding-top: 8px;
 }
 .audit-actions {
   display: flex;
@@ -385,16 +390,13 @@ onMounted(() => {
 }
 .status-text {
   font-size: 12px;
-  color: #1989fa;
+  color: var(--ink-700);
 }
 .section-title {
-  margin: 18px 16px 8px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #323233;
+  margin: 4px 16px 0;
 }
 .empty-tip {
-  color: #969799;
+  color: var(--text-sub);
   text-align: center;
   font-size: 13px;
 }
@@ -406,15 +408,18 @@ onMounted(() => {
 }
 .stat-item b {
   display: block;
-  font-size: 20px;
-  color: #1989fa;
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--ink-800);
+  font-variant-numeric: tabular-nums;
 }
 .stat-item b.orange {
-  color: #ff976a;
+  color: var(--seal);
 }
 .stat-item span {
-  font-size: 12px;
-  color: #969799;
+  font-size: 11px;
+  color: var(--text-sub);
+  letter-spacing: 0.08em;
 }
 .loading-center {
   display: flex;

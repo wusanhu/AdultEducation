@@ -53,9 +53,9 @@
         <van-progress
           :percentage="progressPercent"
           :show-pivot="false"
-          color="#1989fa"
+          color="#d8b96c"
           stroke-width="4"
-          track-color="#333"
+          track-color="#2b3854"
         />
       </div>
       <div class="flex-between mt-8">
@@ -876,23 +876,26 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  background: #000;
-  color: #fff;
+  background: var(--ink-900);
+  color: #f5f2ea;
   z-index: 10;
+  border-bottom: 1px solid rgba(245, 242, 234, 0.1);
 }
 .study-title {
   flex: 1;
+  font-family: var(--font-display);
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 700;
+  letter-spacing: 0.03em;
 }
 .study-timer {
-  font-size: 13px;
-  color: #c8c9cc;
+  font-size: 12px;
+  color: rgba(245, 242, 234, 0.65);
   font-variant-numeric: tabular-nums;
 }
 .video-wrap {
   width: 100%;
-  background: #000;
+  background: #0b1120;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -912,8 +915,9 @@ onBeforeUnmount(() => {
   gap: 4px;
   padding: 4px 9px;
   border-radius: 20px;
-  background: rgba(0, 0, 0, 0.55);
-  color: #fff;
+  background: rgba(11, 17, 32, 0.7);
+  border: 1px solid rgba(245, 242, 234, 0.18);
+  color: rgba(245, 242, 234, 0.85);
   font-size: 11px;
   pointer-events: none;
 }
@@ -926,47 +930,48 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 10px;
   padding: 10px 12px 12px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+  background: linear-gradient(to top, rgba(11, 17, 32, 0.85), rgba(11, 17, 32, 0));
 }
 .cc-btn {
   flex: none;
   width: 32px;
   height: 32px;
-  border: none;
+  border: 1px solid rgba(245, 242, 234, 0.25);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
+  background: rgba(245, 242, 234, 0.1);
+  color: #f5f2ea;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0;
 }
 .cc-btn:active {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(245, 242, 234, 0.24);
 }
 .cc-time {
   flex: none;
   font-size: 11px;
-  color: #fff;
+  color: #f5f2ea;
   font-variant-numeric: tabular-nums;
 }
 .cc-track {
   flex: 1;
   height: 4px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(245, 242, 234, 0.22);
   overflow: hidden;
 }
 .cc-fill {
   height: 100%;
   border-radius: 4px;
-  background: #1989fa;
+  background: #d8b96c;
   transition: width 0.2s linear;
 }
 .study-info {
   padding: 16px;
-  background: #1a1a1a;
-  color: #fff;
+  background: var(--ink-900);
+  color: #f5f2ea;
+  flex: 1;
 }
 .seek-tip {
   display: flex;
@@ -974,35 +979,38 @@ onBeforeUnmount(() => {
   gap: 5px;
   margin-top: 10px;
   font-size: 11px;
-  color: #7bb8ff;
+  color: #9fb4d8;
 }
 .seek-tip.locked {
-  color: #ffb08a;
+  color: #d8b96c;
 }
 .progress-bar-wrap {
   padding: 4px 0;
 }
 .info-text {
   font-size: 12px;
-  color: #969799;
+  color: rgba(245, 242, 234, 0.55);
 }
 .study-bottom {
   padding: 16px;
-  background: #1a1a1a;
+  background: var(--ink-900);
+  border-top: 1px solid rgba(245, 242, 234, 0.1);
 }
 .popup-content {
   padding: 16px 20px 20px;
 }
 .popup-timer {
   text-align: center;
-  font-size: 24px;
+  font-family: var(--font-display);
+  font-size: 26px;
   font-weight: 700;
-  color: #ee0a24;
+  color: var(--seal);
   margin-bottom: 12px;
 }
 .popup-question {
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.7;
+  color: var(--text-strong);
   margin-bottom: 16px;
 }
 .popup-options {
@@ -1010,10 +1018,14 @@ onBeforeUnmount(() => {
 }
 .popup-option {
   padding: 8px 0;
+  border-bottom: 1px dashed var(--line);
+}
+.popup-option:last-child {
+  border-bottom: none;
 }
 .verify-countdown {
   text-align: center;
-  color: #ee0a24;
+  color: var(--seal);
   font-weight: 600;
   margin-bottom: 8px;
 }
@@ -1021,7 +1033,7 @@ onBeforeUnmount(() => {
   display: none;
 }
 .mock-code {
-  color: #1989fa;
+  color: var(--ink-700);
   font-size: 13px;
   margin-bottom: 8px;
 }
@@ -1031,14 +1043,16 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(11, 17, 32, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 999;
 }
 .warning-box {
-  background: #fff;
+  background: var(--paper-card);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--seal);
   border-radius: 12px;
   padding: 32px 24px;
   text-align: center;
@@ -1047,7 +1061,7 @@ onBeforeUnmount(() => {
 .warning-text {
   font-size: 15px;
   margin: 16px 0;
-  color: #323233;
+  color: var(--text-strong);
   line-height: 1.5;
 }
 </style>

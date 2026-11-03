@@ -3,8 +3,8 @@
     <router-view />
     <van-tabbar :model-value="active">
       <van-tabbar-item icon="home-o" @click="go('/')">首页</van-tabbar-item>
-      <van-tabbar-item icon="orders-o" @click="go('/projects')">培训班</van-tabbar-item>
-      <van-tabbar-item icon="gold-coin-o" @click="go('/credits')">学分</van-tabbar-item>
+      <van-tabbar-item icon="bookmark-o" @click="go('/projects')">培训班</van-tabbar-item>
+      <van-tabbar-item icon="medal-o" @click="go('/credits')">学分</van-tabbar-item>
       <van-tabbar-item icon="contact" @click="go('/profile')">我的</van-tabbar-item>
     </van-tabbar>
   </div>
@@ -34,6 +34,6 @@ function go(path: string) {
 <style scoped>
 .tab-layout {
   min-height: 100vh;
-  padding-bottom: 50px;
+  padding-bottom: calc(50px + env(safe-area-inset-bottom));
 }
 </style>

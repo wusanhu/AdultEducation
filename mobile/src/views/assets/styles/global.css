@@ -1,50 +1,225 @@
+/* ============================================================
+   墨卷·印信 —— 继续教育学分管理 H5 设计系统
+   深墨蓝主色 · 宣纸底 · 朱砂印红点睛 · 古铜金辅助 · 衬线标题
+   ============================================================ */
+
+:root {
+  /* 墨色阶 */
+  --ink-900: #131f38;
+  --ink-800: #1b2a4a;
+  --ink-700: #24365c;
+  --ink-600: #33496f;
+  --ink-400: #6d7f9f;
+  --ink-300: #9dabc4;
+  /* 朱砂与金 */
+  --seal: #c2432e;
+  --seal-deep: #a3311f;
+  --seal-soft: rgba(194, 67, 46, 0.09);
+  --gold: #b08a3e;
+  --gold-soft: rgba(176, 138, 62, 0.12);
+  /* 纸色 */
+  --paper: #f3f0e8;
+  --paper-card: #fffdf8;
+  --paper-dim: #eceadf;
+  --line: #e2dccc;
+  --line-strong: #d3ccb8;
+  /* 文字 */
+  --text-strong: #1d2436;
+  --text-main: #3a4356;
+  --text-sub: #7a8194;
+  --text-faint: #a8adba;
+  /* 功能色 */
+  --ok: #3e7a5e;
+  --ok-soft: rgba(62, 122, 94, 0.1);
+  --warn: #b08a3e;
+  --danger: #c2432e;
+
+  /* 字体 */
+  --font-display: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', STSong,
+    SimSun, Georgia, serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'PingFang SC',
+    'HarmonyOS Sans SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+
+  /* Vant 换肤 */
+  --van-primary-color: #1b2a4a;
+  --van-blue: #1b2a4a;
+  --van-danger-color: #c2432e;
+  --van-warning-color: #b08a3e;
+  --van-success-color: #3e7a5e;
+  --van-text-color: #3a4356;
+  --van-text-color-2: #7a8194;
+  --van-text-color-3: #a8adba;
+  --van-border-color: #e2dccc;
+  --van-background: #f3f0e8;
+  --van-background-2: #fffdf8;
+  --van-nav-bar-background: rgba(255, 253, 248, 0.94);
+  --van-nav-bar-title-text-color: #1d2436;
+  --van-nav-bar-title-font-size: 16px;
+  --van-nav-bar-arrow-size: 18px;
+  --van-nav-bar-icon-color: #3a4356;
+  --van-nav-bar-height: 48px;
+  --van-tabbar-background: #fffdf8;
+  --van-tabbar-item-text-color: #7a8194;
+  --van-tabbar-item-active-color: #1b2a4a;
+  --van-tabbar-item-icon-size: 21px;
+  --van-cell-background: #fffdf8;
+  --van-cell-font-size: 14px;
+  --van-cell-text-color: #3a4356;
+  --van-cell-value-color: #1d2436;
+  --van-cell-label-color: #a8adba;
+  --van-cell-vertical-padding: 13px;
+  --van-field-label-color: #7a8194;
+  --van-field-input-text-color: #1d2436;
+  --van-search-background: transparent;
+  --van-search-content-background: #eceadf;
+  --van-tabs-bottom-bar-color: #c2432e;
+  --van-tab-text-color: #7a8194;
+  --van-tab-active-text-color: #1b2a4a;
+  --van-progress-color: #1b2a4a;
+  --van-progress-background: #e7e3d6;
+  --van-button-primary-background: #1b2a4a;
+  --van-button-primary-border-color: #1b2a4a;
+  --van-button-border-width: 1px;
+  --van-button-default-border-color: #d3ccb8;
+  --van-button-default-background: #fffdf8;
+  --van-dialog-border-radius: 14px;
+  --van-dialog-confirm-button-text-color: #1b2a4a;
+  --van-picker-confirm-action-color: #c2432e;
+  --van-picker-background: #fffdf8;
+  --van-popup-background: #fffdf8;
+  --van-toast-background: rgba(27, 42, 74, 0.92);
+  --van-badge-background: #c2432e;
+  --van-checkbox-checked-icon-color: #1b2a4a;
+  --van-radio-checked-icon-color: #1b2a4a;
+  --van-switch-on-background: #1b2a4a;
+  --van-steps-active-color: #c2432e;
+  --van-empty-image-opacity: 0.9;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-/* 平面化设计：全局禁用阴影，层级改用描边与底色表达 */
-*, *::before, *::after {
-  box-shadow: none !important;
-}
-html, body, #app {
+
+html,
+body,
+#app {
   height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: #f7f8fa;
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--text-main);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+/* 宣纸肌理 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+#app {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- 页面骨架 ---------- */
 .page-container {
   min-height: 100vh;
-  padding-bottom: 70px;
-  background: #f7f8fa;
+  padding-bottom: calc(70px + env(safe-area-inset-bottom));
 }
+
 .fullscreen-page {
   min-height: 100vh;
-  background: #000;
+  background: var(--ink-900);
 }
-.section-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #323233;
-  padding: 16px 16px 8px;
-}
+
+/* ---------- 卡片 ---------- */
 .card {
-  background: #fff;
-  border: 1px solid #ebedf0;
-  border-radius: 8px;
+  background: var(--paper-card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
   margin: 0 16px 12px;
   padding: 16px;
+  box-shadow: 0 1px 2px rgba(19, 31, 56, 0.04);
 }
-.stat-value {
-  font-size: 24px;
+
+/* 卡片顶部金色髹线（用于重点卡） */
+.card--gilded {
+  border-top: 2px solid var(--gold);
+}
+
+/* ---------- 标题 ---------- */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 16px;
   font-weight: 700;
-  color: #1989fa;
+  color: var(--text-strong);
+  letter-spacing: 0.06em;
+  padding: 18px 16px 10px;
 }
-.stat-label {
-  font-size: 12px;
-  color: #969799;
-  margin-top: 4px;
+
+.section-title::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--seal);
+  border-radius: 1.5px;
+  transform: rotate(45deg);
+  flex: none;
 }
+
+.section-title .section-title-en {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-faint);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+/* ---------- 印章 ---------- */
+.seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--seal);
+  border: 2px solid currentColor;
+  border-radius: 6px;
+  transform: rotate(-8deg);
+  letter-spacing: 0.08em;
+  user-select: none;
+}
+
+.seal--round {
+  border-radius: 50%;
+  transform: rotate(-10deg);
+}
+
+.seal--ghost {
+  opacity: 0.85;
+}
+
+/* ---------- 数字 ---------- */
+.num {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* ---------- 文字工具 ---------- */
 .text-ellipsis {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -61,19 +236,161 @@ html, body, #app {
   justify-content: space-between;
   align-items: center;
 }
-/* 以描边替代 Vant 组件默认阴影，保持平面结构下的边界识别 */
-.van-tabbar,
-.van-tabbar--fixed { border-top: 1px solid #ebedf0; }
-.van-dropdown-menu__bar { border-bottom: 1px solid #ebedf0; }
-.van-popup--bottom { border-top: 1px solid #ebedf0; }
-.van-popup--top { border-bottom: 1px solid #ebedf0; }
-.van-popup--left { border-right: 1px solid #ebedf0; }
-.van-popup--right { border-left: 1px solid #ebedf0; }
-.van-popover__content { border: 1px solid #ebedf0; }
-.van-calendar__header { border-bottom: 1px solid #ebedf0; }
-.van-switch__node { border: 1px solid rgba(0, 0, 0, 0.08); }
-.van-slider__button { border: 1px solid #d8dee5; }
-.van-back-top { border: 1px solid #ebedf0; }
-.van-coupon { border: 1px solid #ebedf0; }
-/* 去掉阴影后仍需保留键盘焦点的可访问性提示 */
-:focus-visible { outline: 2px solid #1989fa; outline-offset: 2px; }
+
+/* ---------- 墨色英雄区 ---------- */
+.ink-hero {
+  position: relative;
+  overflow: hidden;
+  color: #f5f2ea;
+  background:
+    radial-gradient(120% 90% at 85% -10%, rgba(194, 67, 46, 0.28) 0%, transparent 52%),
+    radial-gradient(140% 110% at -10% 100%, rgba(176, 138, 62, 0.16) 0%, transparent 50%),
+    linear-gradient(160deg, #1d2f55 0%, #131f38 68%);
+}
+
+.ink-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+}
+
+/* 竖排水印字 */
+.ink-hero .hero-watermark {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  writing-mode: vertical-rl;
+  font-family: var(--font-display);
+  font-size: 44px;
+  line-height: 1.1;
+  letter-spacing: 0.35em;
+  color: rgba(245, 242, 234, 0.07);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ---------- 票券打孔 ---------- */
+.ticket-edge {
+  position: relative;
+}
+.ticket-edge::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 6px;
+  background-image: radial-gradient(circle at 6px 6px, var(--paper) 3px, transparent 3.5px);
+  background-size: 12px 6px;
+  background-repeat: repeat-x;
+}
+
+/* ---------- 分隔 ---------- */
+.rule-dashed {
+  border: none;
+  border-top: 1px dashed var(--line-strong);
+  margin: 12px 0;
+}
+
+/* ---------- 标签点 ---------- */
+.dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* ---------- 空态 ---------- */
+.empty-ink {
+  text-align: center;
+  padding: 44px 16px;
+  color: var(--text-faint);
+  font-size: 13px;
+}
+.empty-ink .empty-ink-glyph {
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--line-strong);
+}
+
+/* ---------- Vant 细节修形 ---------- */
+/* 导航栏底髹线 */
+.van-nav-bar::after {
+  border-bottom-color: var(--line);
+}
+
+/* 标签栏 */
+.van-tabbar {
+  border-top: 1px solid var(--line);
+  height: calc(56px + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.van-tabbar-item--active .van-tabbar-item__text {
+  font-weight: 600;
+}
+
+/* 搜索框 */
+.van-search {
+  padding: 10px 16px;
+}
+.van-search .van-field {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+/* 单元格组 */
+.van-cell-group--inset {
+  margin: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(19, 31, 56, 0.04);
+}
+
+/* 进度条圆头 */
+.van-progress {
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+/* 主按钮：微墨阶 */
+.van-button--primary {
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  box-shadow: 0 2px 6px rgba(19, 31, 56, 0.18);
+}
+.van-button--primary:active {
+  box-shadow: none;
+}
+
+/* 弹层 */
+.van-popup--bottom {
+  border-top: 1px solid var(--line);
+}
+.van-popup--top {
+  border-bottom: 1px solid var(--line);
+}
+
+/* 键盘焦点可访问性 */
+:focus-visible {
+  outline: 2px solid var(--seal);
+  outline-offset: 2px;
+}
+
+/* 滚动条隐藏（H5 观感） */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}

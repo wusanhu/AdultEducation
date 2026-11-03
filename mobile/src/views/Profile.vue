@@ -1,12 +1,13 @@
 <template>
   <div class="page-container">
     <!-- Profile Header -->
-    <div class="profile-header">
+    <div class="profile-header ink-hero">
+      <span class="hero-watermark">吾</span>
       <div class="avatar-wrap" @click="triggerUpload">
         <van-image
           round
-          width="64"
-          height="64"
+          width="68"
+          height="68"
           :src="userStore.user?.avatar || ''"
           fit="cover"
         >
@@ -26,8 +27,10 @@
         />
       </div>
       <h3 class="profile-name">{{ userStore.user?.realName }}</h3>
-      <p class="profile-role">{{ userStore.user?.roleName || '学员' }}</p>
-      <p class="profile-org">{{ userStore.user?.orgName }}</p>
+      <p class="profile-role">
+        <span class="role-chip">{{ userStore.user?.roleName || '学员' }}</span>
+      </p>
+      <p class="profile-org" v-if="userStore.user?.orgName">{{ userStore.user?.orgName }}</p>
     </div>
 
     <!-- Menu Cells -->
@@ -38,9 +41,9 @@
     </van-cell-group>
 
     <van-cell-group inset class="mt-12">
-      <van-cell title="修改密码" is-link @click="$router.push('/change-password')" />
-      <van-cell title="核验记录" is-link @click="$router.push('/verify')" />
-      <van-cell v-if="userStore.isTeacher" title="教师管理" is-link @click="$router.push('/teacher')" />
+      <van-cell title="修改密码" icon="lock" is-link @click="$router.push('/change-password')" />
+      <van-cell title="核验记录" icon="shield-o" is-link @click="$router.push('/verify')" />
+      <van-cell v-if="userStore.isTeacher" title="教务管理" icon="manager-o" is-link @click="$router.push('/teacher')" />
     </van-cell-group>
 
     <div class="logout-wrap mt-16">
@@ -154,52 +157,73 @@ async function onLogout() {
 
 <style scoped>
 .profile-header {
-  background: linear-gradient(135deg, #1989fa, #07c160);
-  padding: 40px 20px 32px;
+  padding: 44px 20px 34px;
   text-align: center;
-  color: #fff;
+  border-radius: 0 0 20px 20px;
 }
 .avatar-wrap {
   position: relative;
   display: inline-block;
   cursor: pointer;
+  padding: 4px;
+  border: 1.5px solid rgba(216, 185, 108, 0.6);
+  border-radius: 50%;
 }
 .avatar-fallback {
-  width: 64px;
-  height: 64px;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(245, 242, 234, 0.14);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-family: var(--font-display);
+  font-size: 26px;
   font-weight: 700;
-  color: #fff;
+  color: #f5f2ea;
 }
 .avatar-edit {
   position: absolute;
   bottom: 0;
   right: 0;
-  background: #fff;
+  background: var(--paper-card);
   border-radius: 50%;
-  padding: 2px;
+  padding: 3px;
+  color: var(--ink-800);
+  font-size: 12px;
+  border: 1px solid var(--line);
 }
 .profile-name {
-  font-size: 20px;
-  font-weight: 600;
-  margin-top: 12px;
+  font-family: var(--font-display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin-top: 14px;
+  color: #f5f2ea;
 }
 .profile-role {
-  font-size: 13px;
-  opacity: 0.85;
-  margin-top: 4px;
+  margin-top: 10px;
+}
+.role-chip {
+  display: inline-block;
+  font-size: 11px;
+  color: rgba(245, 242, 234, 0.8);
+  border: 1px solid rgba(245, 242, 234, 0.3);
+  border-radius: 99px;
+  padding: 3px 12px;
+  letter-spacing: 0.2em;
 }
 .profile-org {
   font-size: 12px;
-  opacity: 0.7;
-  margin-top: 2px;
+  color: rgba(245, 242, 234, 0.6);
+  margin-top: 8px;
 }
 .logout-wrap {
   padding: 0 16px;
+}
+.logout-wrap :deep(.van-button--danger) {
+  color: var(--danger);
+  border-color: rgba(194, 67, 46, 0.45);
+  background: transparent;
 }
 </style>

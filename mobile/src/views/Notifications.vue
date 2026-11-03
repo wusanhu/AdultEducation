@@ -122,24 +122,35 @@ async function onReadAll() {
 <style scoped>
 .notify-item {
   cursor: pointer;
+  transition: opacity 0.15s;
+}
+.notify-item:active {
+  opacity: 0.75;
 }
 .notify-item.unread {
-  border-left: 3px solid #1989fa;
+  border-left: 3px solid var(--seal);
 }
 .notify-title {
-  font-size: 15px;
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-strong);
   flex: 1;
+  min-width: 0;
   margin-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .notify-time {
-  font-size: 12px;
-  color: #c8c9cc;
+  font-size: 11px;
+  color: var(--text-faint);
   white-space: nowrap;
 }
 .notify-content {
   font-size: 13px;
-  color: #646566;
+  color: var(--text-sub);
   line-height: 1.6;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -150,5 +161,10 @@ async function onReadAll() {
 .notify-actions {
   display: flex;
   gap: 8px;
+}
+.notify-actions :deep(.van-tag) {
+  background: var(--seal-soft);
+  color: var(--seal);
+  border-color: rgba(194, 67, 46, 0.3);
 }
 </style>

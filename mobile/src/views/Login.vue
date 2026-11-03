@@ -1,11 +1,21 @@
 <template>
-  <div class="login-page">
-    <div class="login-header">
-      <h1 class="login-title">继续教育学分管理</h1>
-      <p class="login-subtitle">移动端学习平台</p>
+  <div class="login-page ink-hero">
+    <span class="hero-watermark">学无止境</span>
+
+    <!-- 印信品牌 -->
+    <div class="brand">
+      <div class="brand-seal seal seal--round seal--ghost">继教</div>
+      <h1 class="brand-title">继续教育学分管理</h1>
+      <p class="brand-sub">学籍在册 · 笃学不倦</p>
     </div>
-    <van-form @submit="onSubmit" class="login-form">
-      <van-cell-group inset>
+
+    <!-- 卷宗式表单 -->
+    <div class="dossier">
+      <div class="dossier-head">
+        <span class="dossier-tab">登录卷宗</span>
+        <span class="dossier-no num">NO. JXJY</span>
+      </div>
+      <van-form @submit="onSubmit" class="login-form">
         <van-field
           v-model="form.username"
           name="username"
@@ -14,6 +24,7 @@
           :rules="[{ required: true, message: '请输入账号' }]"
           left-icon="manager-o"
         />
+        <div class="rule-dashed"></div>
         <van-field
           v-model="form.password"
           type="password"
@@ -23,17 +34,22 @@
           :rules="[{ required: true, message: '请输入密码' }]"
           left-icon="lock"
         />
-      </van-cell-group>
-      <div class="login-btn-wrap">
-        <van-button round block type="primary" native-type="submit" :loading="loading">
-          登 录
-        </van-button>
-      </div>
-    </van-form>
+        <div class="login-btn-wrap">
+          <van-button round block type="primary" native-type="submit" :loading="loading">
+            入 学
+          </van-button>
+        </div>
+      </van-form>
+    </div>
+
+    <!-- 演示账号 -->
     <div class="demo-hints">
-      <p class="demo-title">演示账号：</p>
-      <p>学员：student / student123</p>
-      <p>教师：teacher / teacher123</p>
+      <p class="demo-title">演示账号</p>
+      <div class="demo-chips">
+        <span class="demo-chip" @click="fill('student', 'student123')">学员 student</span>
+        <span class="demo-chip" @click="fill('teacher', 'teacher123')">教员 teacher</span>
+        <span class="demo-chip" @click="fill('leader', 'leader123')">领导 leader</span>
+      </div>
     </div>
   </div>
 </template>
@@ -41,7 +57,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Form as VanForm, Field as VanField, CellGroup as VanCellGroup, Button as VanButton, showToast } from 'vant'
+import { Form as VanForm, Field as VanField, Button as VanButton, showToast } from 'vant'
 import { auth } from '@/api'
 import { useUserStore } from '@/stores/user'
 
@@ -52,6 +68,11 @@ const form = reactive({
   username: '',
   password: '',
 })
+
+function fill(u: string, p: string) {
+  form.username = u
+  form.password = p
+}
 
 async function onSubmit() {
   loading.value = true
@@ -79,44 +100,112 @@ async function onSubmit() {
 <style scoped>
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1989fa 0%, #07c160 100%);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 0 24px;
+  padding: 0 24px calc(32px + env(safe-area-inset-bottom));
 }
-.login-header {
+
+.brand {
+  position: relative;
+  z-index: 1;
   text-align: center;
-  margin-bottom: 40px;
+  padding: 68px 0 40px;
 }
-.login-title {
-  color: #fff;
-  font-size: 26px;
+.brand-seal {
+  width: 64px;
+  height: 64px;
+  font-size: 20px;
+  margin-bottom: 18px;
+  border-width: 2.5px;
+}
+.brand-title {
+  font-family: var(--font-display);
+  font-size: 25px;
   font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #f5f2ea;
 }
-.login-subtitle {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
-  margin-top: 8px;
+.brand-sub {
+  font-size: 12px;
+  color: rgba(245, 242, 234, 0.62);
+  letter-spacing: 0.5em;
+  margin-top: 10px;
 }
+
+.dossier {
+  position: relative;
+  z-index: 1;
+  background: var(--paper-card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+}
+.dossier-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px dashed var(--line-strong);
+  background: var(--paper-dim);
+}
+.dossier-tab {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-800);
+  letter-spacing: 0.2em;
+}
+.dossier-no {
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.12em;
+}
+
 .login-form {
-  background: #fff;
-  border-radius: 12px;
-  padding: 24px 0 16px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  padding: 20px 16px 4px;
+}
+.login-form :deep(.van-field) {
+  padding: 10px 4px;
+}
+.login-form :deep(.van-field__label) {
+  width: 44px;
+}
+.login-form :deep(.van-cell::after) {
+  display: none;
 }
 .login-btn-wrap {
-  padding: 24px 16px 8px;
+  padding: 26px 4px 20px;
 }
+
 .demo-hints {
-  margin-top: 24px;
+  position: relative;
+  z-index: 1;
+  margin-top: 30px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 13px;
-  line-height: 1.8;
 }
 .demo-title {
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-size: 11px;
+  color: rgba(245, 242, 234, 0.55);
+  letter-spacing: 0.4em;
+  margin-bottom: 12px;
+}
+.demo-chips {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.demo-chip {
+  font-size: 11px;
+  color: rgba(245, 242, 234, 0.85);
+  border: 1px solid rgba(245, 242, 234, 0.28);
+  border-radius: 99px;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.demo-chip:active {
+  background: rgba(245, 242, 234, 0.12);
 }
 </style>

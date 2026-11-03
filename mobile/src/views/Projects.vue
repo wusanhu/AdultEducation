@@ -5,7 +5,7 @@
     </div>
 
     <div v-if="list.length === 0 && !loading" style="padding-top: 40px;">
-      <EmptyState description="暂无培训班" />
+      <EmptyState description="暂无培训班" glyph="班" />
     </div>
 
     <div
@@ -14,28 +14,33 @@
       class="card project-card"
       @click="$router.push(`/projects/${item.id}`)"
     >
+      <span class="bookmark"></span>
       <div class="flex-between mb-8">
         <span class="project-name">{{ item.projectName }}</span>
         <StatusTag :status="item.status" type="project" />
       </div>
       <div class="project-meta">
-        <span>{{ item.projectCode }}</span>
+        <span class="num meta-code">{{ item.projectCode }}</span>
         <span v-if="item.startTime">{{ formatDate(item.startTime) }} ~ {{ formatDate(item.endTime) }}</span>
       </div>
       <div class="project-progress mt-8">
         <div class="flex-between mb-8">
           <span class="progress-text">学习进度</span>
-          <span class="progress-text">{{ item.completedCourse || 0 }}/{{ item.courseTotal || 0 }} 课程</span>
+          <span class="progress-text num">{{ item.completedCourse || 0 }}/{{ item.courseTotal || 0 }} 课程</span>
         </div>
         <van-progress
           :percentage="item.courseTotal ? Math.round(((item.completedCourse || 0) / item.courseTotal) * 100) : 0"
           :show-pivot="false"
-          color="#1989fa"
-          stroke-width="6"
+          stroke-width="5"
         />
       </div>
-      <div class="project-credits mt-8">
-        学分：{{ item.credit || 0 }} / {{ item.needCredit || 0 }}
+      <div class="rule-dashed"></div>
+      <div class="project-credits">
+        学分
+        <span class="num credit-num">{{ item.credit || 0 }}</span>
+        <span class="credit-sep">/</span>
+        需修
+        <span class="num">{{ item.needCredit || 0 }}</span>
       </div>
     </div>
 
@@ -83,31 +88,63 @@ onMounted(loadData)
 
 <style scoped>
 .search-bar {
-  background: #fff;
+  padding-top: 6px;
 }
 .project-card {
+  position: relative;
+  overflow: hidden;
   cursor: pointer;
+  transition: opacity 0.15s;
+}
+.project-card:active {
+  opacity: 0.75;
+}
+.bookmark {
+  position: absolute;
+  top: -1px;
+  left: 16px;
+  width: 34px;
+  height: 5px;
+  background: var(--seal);
+  border-radius: 0 0 3px 3px;
 }
 .project-name {
+  font-family: var(--font-display);
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-strong);
   flex: 1;
   margin-right: 8px;
 }
 .project-meta {
-  font-size: 12px;
-  color: #969799;
+  font-size: 11px;
+  color: var(--text-faint);
   display: flex;
   gap: 12px;
 }
+.meta-code {
+  letter-spacing: 0.08em;
+}
 .progress-text {
   font-size: 12px;
-  color: #646566;
+  color: var(--text-sub);
 }
 .project-credits {
-  font-size: 13px;
-  color: #ff976a;
-  font-weight: 500;
+  font-size: 12px;
+  color: var(--text-sub);
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.credit-num {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--seal);
+}
+.credit-sep {
+  color: var(--text-faint);
+  margin: 0 2px;
 }
 .loading-center {
   display: flex;

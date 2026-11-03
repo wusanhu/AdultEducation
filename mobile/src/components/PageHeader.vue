@@ -27,7 +27,7 @@ const props = withDefaults(defineProps<{
   title: '',
   leftArrow: true,
   fixed: true,
-  background: '#fff',
+  background: 'rgba(255, 253, 248, 0.94)',
 })
 
 const router = useRouter()
@@ -42,6 +42,8 @@ function onClickLeft() {
 
 <style scoped>
 .page-header :deep(.van-nav-bar__title) {
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.1em;
 }
 </style>

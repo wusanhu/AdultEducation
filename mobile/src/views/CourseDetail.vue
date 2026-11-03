@@ -8,18 +8,18 @@
       <div v-if="detail.cover" class="cover-wrap">
         <img :src="detail.cover" class="cover-img" />
       </div>
-      <div class="card">
-        <h3>{{ detail.courseName }}</h3>
+      <div class="card card--gilded">
+        <h3 class="course-title">{{ detail.courseName }}</h3>
         <div class="meta-list mt-12">
-          <span>学分：{{ detail.credit }}</span>
-          <span>学时：{{ detail.studyHour }}</span>
-          <span v-if="detail.videoDuration">时长：{{ formatDuration(detail.videoDuration) }}</span>
+          <span class="meta-chip">学分 <b class="num">{{ detail.credit }}</b></span>
+          <span class="meta-chip">学时 <b class="num">{{ detail.studyHour }}</b></span>
+          <span v-if="detail.videoDuration" class="meta-chip">时长 <b class="num">{{ formatDuration(detail.videoDuration) }}</b></span>
         </div>
         <div v-if="detail.intro" class="intro mt-12">{{ detail.intro }}</div>
       </div>
 
       <div v-if="detail.videoUrl" class="card">
-        <h4 class="mb-8">课程视频</h4>
+        <h4 class="block-title">课程视频</h4>
         <video
           :src="detail.videoUrl"
           controls
@@ -30,9 +30,9 @@
       </div>
 
       <div v-if="detail.attachments && detail.attachments.length > 0" class="card">
-        <h4 class="mb-8">附件资料</h4>
+        <h4 class="block-title">附件资料</h4>
         <div v-for="(att, i) in detail.attachments" :key="i" class="att-item">
-          <van-icon name="description" />
+          <van-icon name="description" color="#b08a3e" />
           <a :href="att.fileUrl" target="_blank">{{ att.fileName }}</a>
         </div>
       </div>
@@ -94,49 +94,96 @@ onMounted(async () => {
 <style scoped>
 .cover-wrap {
   width: 100%;
-  max-height: 200px;
+  max-height: 210px;
   overflow: hidden;
+  border-bottom: 1px solid var(--line);
 }
 .cover-img {
   width: 100%;
   object-fit: cover;
 }
+.course-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-strong);
+}
 .meta-list {
   display: flex;
-  gap: 16px;
-  font-size: 13px;
-  color: #969799;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.meta-chip {
+  font-size: 12px;
+  color: var(--text-sub);
+  background: var(--paper-dim);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 9px;
+}
+.meta-chip b {
+  color: var(--ink-800);
+  font-weight: 600;
+  margin-left: 2px;
 }
 .intro {
+  font-size: 13px;
+  color: var(--text-sub);
+  line-height: 1.7;
+  border-top: 1px dashed var(--line-strong);
+  padding-top: 12px;
+}
+.block-title {
+  font-family: var(--font-display);
   font-size: 14px;
-  color: #646566;
-  line-height: 1.6;
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: 0.08em;
+  padding-left: 10px;
+  position: relative;
+}
+.block-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 6px;
+  height: 6px;
+  background: var(--seal);
+  border-radius: 1px;
 }
 .video-preview {
   width: 100%;
   border-radius: 8px;
   max-height: 220px;
+  background: var(--ink-900);
 }
 .att-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 0;
+  padding: 9px 0;
   font-size: 14px;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px dashed var(--line);
+}
+.att-item:last-child {
+  border-bottom: none;
 }
 .att-item a {
-  color: #1989fa;
+  color: var(--ink-700);
   text-decoration: none;
 }
 .bottom-action {
-  padding: 16px;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: #fff;
-  border-top: 1px solid #ebedf0;
+  background: var(--paper-card);
+  border-top: 1px solid var(--line);
+  z-index: 5;
 }
 .loading-center {
   display: flex;

@@ -27,7 +27,7 @@
 
       <!-- Eligibility -->
       <div v-if="eligibility" class="card">
-        <h4 class="mb-8">毕业资格</h4>
+        <h4 class="block-title">毕业资格</h4>
         <van-steps direction="vertical" :active="activeStep">
           <van-step v-for="(step, i) in steps" :key="i">
             <h5>{{ step.title }}</h5>
@@ -38,7 +38,7 @@
 
       <!-- Application Status -->
       <div v-if="myApplication" class="card">
-        <h4 class="mb-8">申请状态</h4>
+        <h4 class="block-title">申请状态</h4>
         <div class="flex-between mb-8">
           <span>状态</span>
           <StatusTag :status="myApplication.auditStatus" type="graduate" />
@@ -58,11 +58,14 @@
       </div>
 
       <!-- Certificate -->
-      <div v-if="certificate" class="card">
-        <h4 class="mb-8">毕业证书</h4>
+      <div v-if="certificate" class="card card--gilded cert-card">
+        <h4 class="block-title">毕业证书</h4>
         <template v-if="certificate.certificateUrl">
-          <p class="cert-meta">证书编号：{{ certificate.certificateNo || '-' }}</p>
-          <p v-if="certificate.graduateTime" class="cert-meta">毕业时间：{{ formatDate(certificate.graduateTime) }}</p>
+          <div class="cert-plate">
+            <span class="cert-seal seal seal--round">证</span>
+            <p class="cert-meta">证书编号 <b class="num">{{ certificate.certificateNo || '-' }}</b></p>
+            <p v-if="certificate.graduateTime" class="cert-meta">毕业时间 <b class="num">{{ formatDate(certificate.graduateTime) }}</b></p>
+          </div>
           <van-button type="primary" block round class="mt-12" @click="downloadCert">
             查看 / 下载证书
           </van-button>
@@ -210,45 +213,79 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.block-title {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: 0.08em;
+  padding-left: 10px;
+  position: relative;
+  margin-bottom: 12px;
+}
+.block-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 6px;
+  height: 6px;
+  background: var(--seal);
+  border-radius: 1px;
+}
+.cert-plate {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--paper-dim);
+  border: 1px dashed var(--line-strong);
+  border-radius: 10px;
+  padding: 16px;
+}
+.cert-seal {
+  width: 52px;
+  height: 52px;
+  font-size: 18px;
+  flex: none;
+}
 .cert-meta {
   font-size: 13px;
-  color: #646566;
+  color: var(--text-sub);
   margin: 4px 0;
 }
-.cert-preview {
-  text-align: center;
-}
-.cert-img {
-  width: 100%;
-  max-width: 300px;
-  border-radius: 8px;
+.cert-meta b {
+  color: var(--text-strong);
+  font-weight: 600;
+  margin-left: 4px;
 }
 .reject-row {
   align-items: flex-start;
 }
 .reject-text {
-  color: #ee0a24;
+  color: var(--danger);
   max-width: 65%;
   text-align: right;
 }
 .tip-action {
-  color: #969799;
+  color: var(--text-sub);
   font-size: 13px;
   text-align: center;
 }
 .no-cert {
   text-align: center;
-  color: #969799;
+  color: var(--text-sub);
   padding: 20px 0;
 }
 .bottom-action {
-  padding: 16px;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: #fff;
-  border-top: 1px solid #ebedf0;
+  background: var(--paper-card);
+  border-top: 1px solid var(--line);
+  z-index: 5;
 }
 .loading-center {
   display: flex;

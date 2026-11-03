@@ -1,24 +1,24 @@
 <template>
-  <div class="empty-state">
-    <van-empty :image="image" :description="description" />
+  <div class="empty-ink">
+    <div class="empty-ink-glyph">{{ glyph }}</div>
+    <p>{{ description }}</p>
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
-import { Empty as VanEmpty } from 'vant'
+import { computed } from 'vue'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   description?: string
-  image?: string
+  glyph?: string
 }>(), {
   description: '暂无数据',
-  image: 'default',
+  glyph: '空',
+})
+
+const glyph = computed(() => {
+  if (props.glyph && props.glyph !== 'default') return props.glyph
+  return '空'
 })
 </script>
-
-<style scoped>
-.empty-state {
-  padding: 60px 0;
-}
-</style>

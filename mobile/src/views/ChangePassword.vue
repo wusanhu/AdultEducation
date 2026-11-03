@@ -2,7 +2,8 @@
   <div class="page-container">
     <PageHeader title="修改密码" />
 
-    <van-form @submit="onSubmit" class="mt-16">
+    <p class="page-intro">为保障学籍安全，请定期更换密码</p>
+    <van-form @submit="onSubmit" class="mt-8">
       <van-cell-group inset>
         <van-field
           v-model="form.oldPassword"
@@ -95,13 +96,20 @@ async function onSubmit() {
 </script>
 
 <style scoped>
+.page-intro {
+  font-size: 12px;
+  color: var(--text-faint);
+  text-align: center;
+  padding: 14px 16px 0;
+  letter-spacing: 0.08em;
+}
 .submit-wrap {
   padding: 24px 16px;
 }
 .hint-text {
   text-align: center;
   font-size: 13px;
-  color: #ee0a24;
+  color: var(--danger);
   padding: 0 16px;
 }
 </style>

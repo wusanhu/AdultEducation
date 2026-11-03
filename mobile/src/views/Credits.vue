@@ -1,46 +1,61 @@
 <template>
   <div class="page-container">
-    <!-- Summary Cards -->
-    <div class="summary-cards">
-      <div class="summary-item">
-        <div class="stat-value">{{ summary.issued || 0 }}</div>
-        <div class="stat-label">已发放学分</div>
+    <!-- 成绩单式总览 -->
+    <div class="ledger-hero ink-hero">
+      <span class="hero-watermark">学分</span>
+      <p class="ledger-title">学 分 册</p>
+      <div class="ledger-summary">
+        <div class="ledger-item">
+          <div class="ledger-value num">{{ summary.issued || 0 }}</div>
+          <div class="ledger-label">已发放</div>
+        </div>
+        <div class="ledger-divider"></div>
+        <div class="ledger-item">
+          <div class="ledger-value num ledger-value--gold">{{ summary.pending || 0 }}</div>
+          <div class="ledger-label">待发放</div>
+        </div>
+        <div class="ledger-divider"></div>
+        <div class="ledger-item">
+          <div class="ledger-value num">{{ summary.count || 0 }}</div>
+          <div class="ledger-label">记录数</div>
+        </div>
       </div>
-      <div class="summary-item">
-        <div class="stat-value" style="color: #ffd8a8">{{ summary.pending || 0 }}</div>
-        <div class="stat-label">待发放学分</div>
-      </div>
-      <div class="summary-item">
-        <div class="stat-value" style="color: #fff">{{ summary.count || 0 }}</div>
-        <div class="stat-label">学分记录</div>
-      </div>
+      <div class="ticket-edge"></div>
     </div>
 
     <!-- Apply Button -->
-    <div v-if="canApply" class="card" style="text-align: center;">
-      <van-button type="primary" plain size="small" round @click="openApply">
+    <div v-if="canApply" class="apply-entry">
+      <van-button type="primary" plain size="small" round icon="edit" @click="openApply">
         学分补录申请
       </van-button>
     </div>
 
     <!-- Ledger List -->
-    <div class="section-title">学分明细</div>
-    <div v-if="list.length === 0" style="padding-top: 20px;">
-      <EmptyState description="暂无学分记录" />
+    <div class="section-title">
+      学分明细
+      <span class="section-title-en">LEDGER</span>
+    </div>
+    <div v-if="list.length === 0" style="padding-top: 10px;">
+      <EmptyState description="暂无学分记录" glyph="分" />
     </div>
     <div v-for="item in list" :key="item.id" class="card credit-item">
-      <div class="flex-between mb-8">
-        <span class="credit-name">{{ item.courseName || item.projectName || '学分记录' }}</span>
-        <span class="credit-value">+{{ item.creditValue }}</span>
-      </div>
-      <div class="flex-between">
-        <div class="credit-meta">
-          <van-tag v-if="item.sourceType" size="medium" plain>{{ sourceLabel(item.sourceType) }}</van-tag>
-          <StatusTag v-if="item.auditStatus != null" :status="item.auditStatus" type="credit" />
+      <div class="credit-row">
+        <div class="credit-main">
+          <span class="credit-name">{{ item.courseName || item.projectName || '学分记录' }}</span>
+          <div class="credit-meta">
+            <span v-if="item.sourceType" class="source-chip">{{ sourceLabel(item.sourceType) }}</span>
+            <StatusTag v-if="item.auditStatus != null" :status="item.auditStatus" type="credit" />
+          </div>
         </div>
-        <span class="credit-time">{{ formatDate(item.createTime) }}</span>
+        <div class="credit-amount">
+          <span class="amount-plus">+</span>
+          <span class="amount-num num">{{ item.creditValue }}</span>
+        </div>
       </div>
-      <p v-if="item.remark" class="credit-remark mt-8">{{ item.remark }}</p>
+      <div class="credit-foot">
+        <span class="credit-time num">{{ formatDate(item.createTime) }}</span>
+        <span v-if="item.remark" class="credit-remark">{{ item.remark }}</span>
+      </div>
     </div>
 
     <!-- Apply Dialog -->
@@ -100,7 +115,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import {
-  Button as VanButton, Tag as VanTag, Popup as VanPopup,
+  Button as VanButton, Popup as VanPopup,
   Form as VanForm, Field as VanField, Picker as VanPicker, showToast,
 } from 'vant'
 import EmptyState from '@/components/EmptyState.vue'
@@ -254,56 +269,142 @@ onMounted(loadData)
 </script>
 
 <style scoped>
-.summary-cards {
-  display: flex;
-  background: linear-gradient(135deg, #1989fa, #07c160);
-  padding: 24px 16px;
-  margin-bottom: 12px;
+.ledger-hero {
+  padding: 30px 20px 22px;
 }
-.summary-item {
+.ledger-title {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.5em;
+  color: rgba(245, 242, 234, 0.85);
+  text-align: center;
+}
+.ledger-summary {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  margin-top: 18px;
+}
+.ledger-item {
   flex: 1;
   text-align: center;
-  color: #fff;
 }
-.summary-item .stat-value {
-  color: #fff;
+.ledger-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
 }
-.summary-item .stat-label {
-  color: rgba(255, 255, 255, 0.8);
+.ledger-value--gold {
+  color: #d8b96c;
 }
+.ledger-label {
+  font-size: 11px;
+  color: rgba(245, 242, 234, 0.55);
+  letter-spacing: 0.2em;
+  margin-top: 5px;
+}
+.ledger-divider {
+  width: 1px;
+  height: 30px;
+  background: rgba(245, 242, 234, 0.18);
+}
+
+.apply-entry {
+  display: flex;
+  justify-content: center;
+  padding: 14px 16px 0;
+}
+.apply-entry :deep(.van-button--plain) {
+  border-color: rgba(27, 42, 74, 0.4);
+  color: var(--ink-800);
+}
+
 .credit-item {
   cursor: default;
 }
+.credit-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.credit-main {
+  flex: 1;
+  min-width: 0;
+}
 .credit-name {
   font-size: 14px;
-  font-weight: 500;
-  flex: 1;
-  margin-right: 8px;
-}
-.credit-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: #07c160;
+  font-weight: 600;
+  color: var(--text-strong);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .credit-meta {
   display: flex;
   gap: 6px;
+  margin-top: 8px;
+}
+.source-chip {
+  font-size: 11px;
+  color: var(--text-sub);
+  background: var(--paper-dim);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 3px 7px;
+  white-space: nowrap;
+}
+.credit-amount {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  color: var(--seal);
+}
+.amount-plus {
+  font-size: 14px;
+  font-weight: 600;
+}
+.amount-num {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+.credit-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  border-top: 1px dashed var(--line);
+  padding-top: 9px;
 }
 .credit-time {
-  font-size: 12px;
-  color: #c8c9cc;
+  flex: none;
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: 0.06em;
 }
 .credit-remark {
-  font-size: 12px;
-  color: #969799;
+  font-size: 11px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .apply-form {
   padding: 20px 16px;
 }
 .apply-title {
   text-align: center;
+  font-family: var(--font-display);
   font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
   margin-bottom: 16px;
+  color: var(--text-strong);
 }
 .apply-btns {
   padding: 16px 0;
