@@ -462,7 +462,7 @@ onMounted(loadUnread)
 <style scoped>
 .admin-shell {
   min-height: 100vh;
-  background: #f3f6fb;
+  background: #fafcff;
 }
 .app-topbar {
   position: sticky;
@@ -472,10 +472,7 @@ onMounted(loadUnread)
   display: flex;
   align-items: center;
   padding-right: 22px;
-  background: rgba(255, 255, 255, .96);
-  border-bottom: 1px solid #e9eef6;
-  box-shadow: 0 1px 0 rgba(15, 23, 42, .02), 0 6px 20px rgba(15, 23, 42, .03);
-  backdrop-filter: blur(10px);
+  background: #fafcff;
 }
 .topbar-brand {
   flex: none;
@@ -485,7 +482,6 @@ onMounted(loadUnread)
   align-items: center;
   gap: 11px;
   padding: 0 18px;
-  border-right: 1px solid #e9eef6;
   overflow: hidden;
   transition: width .25s cubic-bezier(.4, 0, .2, 1), padding .25s ease;
 }
@@ -609,8 +605,7 @@ onMounted(loadUnread)
   top: 64px;
   display: flex;
   flex-direction: column;
-  background: #fbfcfe;
-  border-right: 1px solid #e9eef6;
+  background: #fafcff;
   transition: width .25s cubic-bezier(.4, 0, .2, 1);
   overflow: hidden;
 }
@@ -784,8 +779,8 @@ onMounted(loadUnread)
 .sider-footer {
   flex: none;
   padding: 10px 12px 14px;
-  background: #fff;
-  border-top: 1px solid #eef2f7;
+  background: transparent;
+  border-top: 1px solid #e8eef7;
 }
 .footer-links { display: flex; flex-direction: column; gap: 2px; }
 .footer-link {
@@ -880,8 +875,13 @@ onMounted(loadUnread)
 .admin-content {
   flex: 1;
   min-width: 0;
-  padding: 20px 24px 32px;
-  background: #f3f6fb;
+  min-height: calc(100vh - 80px);
+  margin: 0 16px 16px 12px;
+  padding: 18px 18px 24px;
+  background: #eff4fb;
+  border: 1px solid #e6edf7;
+  border-radius: 18px;
+  box-shadow: 0 6px 24px rgba(15, 23, 42, .035);
 }
 .nav-forward-enter-active,
 .nav-forward-leave-active,
