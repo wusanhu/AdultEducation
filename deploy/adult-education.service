@@ -1,0 +1,17 @@
+[Unit]
+Description=Adult Education Credit Platform
+After=network.target mysql.service redis.service
+
+[Service]
+Type=simple
+User=adultedu
+Group=adultedu
+WorkingDirectory=/opt/adulteducation
+Environment="JAVA_OPTS=-Xms512m -Xmx1024m -Duser.timezone=Asia/Shanghai"
+ExecStart=/usr/bin/java $JAVA_OPTS -jar /opt/adulteducation/credit-platform.jar
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target

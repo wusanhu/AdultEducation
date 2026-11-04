@@ -1,0 +1,277 @@
+:root {
+  /* 品牌：沉稳学院蓝 */
+  --brand: #1a4c8b;
+  --brand-strong: #123a6b;
+  --brand-deep: #0e2a4d;
+  --brand-tint: #eef3fa;
+  --brand-line: #d6e2f2;
+
+  /* 语义色 */
+  --ok: #1f8a5b;
+  --ok-tint: #e9f5ef;
+  --warn: #b8781f;
+  --warn-tint: #faf2e2;
+  --bad: #c0392b;
+  --bad-tint: #fbeceb;
+
+  /* 文本 */
+  --ink: #16202e;
+  --ink-2: #4a5568;
+  --ink-3: #8a94a6;
+  --ink-4: #b4bac6;
+
+  /* 面 */
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #fafbfc;
+
+  /* 描边 */
+  --line: #e3e7ee;
+  --line-strong: #d3d9e4;
+
+  /* 圆角 */
+  --r-card: 12px;
+  --r-control: 10px;
+  --r-chip: 8px;
+  --r-tag: 5px;
+
+  /* 间距 */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --page-x: 16px;
+
+  --tabbar-h: 52px;
+}
+
+/* Vant 主题变量对齐设计 tokens */
+:root {
+  --van-primary-color: var(--brand);
+  --van-success-color: var(--ok);
+  --van-danger-color: var(--bad);
+  --van-warning-color: var(--warn);
+
+  --van-text-color: var(--ink);
+  --van-text-color-2: var(--ink-2);
+  --van-text-color-3: var(--ink-3);
+  --van-gray-1: #f6f7f9;
+  --van-gray-2: #eef1f5;
+  --van-gray-3: var(--line);
+  --van-gray-4: var(--line-strong);
+  --van-gray-5: var(--ink-4);
+  --van-gray-6: var(--ink-3);
+  --van-gray-7: var(--ink-2);
+  --van-gray-8: var(--ink);
+
+  --van-background: var(--bg);
+  --van-background-2: var(--surface);
+  --van-background-3: #fff;
+  --van-border-color: var(--line);
+  --van-active-color: var(--bg);
+
+  --van-font-size-sm: 13px;
+  --van-font-size-md: 15px;
+  --van-font-size-lg: 16px;
+
+  --van-cell-font-size: 15px;
+  --van-cell-line-height: 22px;
+  --van-cell-vertical-padding: 12px;
+  --van-cell-horizontal-padding: var(--page-x);
+  --van-cell-border-color: var(--line);
+
+  --van-button-primary-background-color: var(--brand);
+  --van-button-primary-border-color: var(--brand);
+  --van-button-border-radius: var(--r-control);
+  --van-button-normal-font-size: 15px;
+
+  --van-nav-bar-height: 46px;
+  --van-nav-bar-title-font-size: 17px;
+  --van-nav-bar-background: var(--surface);
+  --van-nav-bar-title-text-color: var(--ink);
+  --van-nav-bar-icon-color: var(--ink-2);
+  --van-nav-bar-text-color: var(--ink-2);
+  --van-nav-bar-border-color: var(--line);
+
+  --van-tabbar-height: var(--tabbar-h);
+  --van-tabbar-background: var(--surface);
+  --van-tabbar-border-color: var(--line);
+  --van-tabbar-item-active-color: var(--brand);
+  --van-tabbar-item-font-size: 11px;
+  --van-tabbar-item-icon-size: 20px;
+
+  --van-tab-active-text-color: var(--brand);
+  --van-tab-font-size: 15px;
+  --van-tabs-bottom-bar-color: var(--brand);
+  --van-tabs-bottom-bar-height: 3px;
+
+  --van-tag-primary-color: var(--brand);
+  --van-tag-success-color: var(--ok);
+  --van-tag-danger-color: var(--bad);
+  --van-tag-warning-color: var(--warn);
+  --van-tag-default-color: #6b7688;
+  --van-tag-border-radius: var(--r-tag);
+  --van-tag-medium-height: 22px;
+  --van-tag-font-size: 11px;
+
+  --van-field-label-color: var(--ink-2);
+  --van-field-input-text-color: var(--ink);
+  --van-field-placeholder-text-color: var(--ink-4);
+  --van-field-label-font-size: 14px;
+
+  --van-radio-checked-icon-color: var(--brand);
+  --van-checkbox-checked-icon-color: var(--brand);
+  --van-switch-on-background: var(--brand);
+  --van-slider-bar-background: var(--brand);
+  --van-stepper-input-background: var(--surface-2);
+  --van-search-content-background: var(--bg);
+
+  --van-circle-layer-fill: var(--brand);
+  --van-steps-finish-icon-text-color: var(--brand);
+  --van-step-finish-line-color: var(--brand);
+  --van-dialog-border-radius: var(--r-card);
+  --van-dialog-confirm-button-text-color: var(--brand);
+  --van-empty-description-color: var(--ink-3);
+  --van-skeleton-paragraph-background: var(--van-gray-2);
+  --van-loading-spinner-color: var(--brand);
+  --van-progress-color: var(--brand);
+  --van-progress-background: var(--line);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+/* 平面化设计：全局禁用阴影，层级改用描边与底色表达 */
+*, *::before, *::after {
+  box-shadow: none !important;
+}
+html, body, #app {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- 页面骨架 ---------- */
+.page-container {
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding-bottom: calc(var(--tabbar-h) + 24px + env(safe-area-inset-bottom));
+  background: var(--bg);
+}
+.fullscreen-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #000;
+}
+
+/* ---------- 区块标题 ---------- */
+.section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--ink);
+  padding: var(--sp-6) var(--page-x) var(--sp-3);
+}
+/* 需要强调条时用这个修饰类，避免与 flex-between 子项争抢间距 */
+.section-title--accent {
+  border-left: 3px solid var(--brand);
+  padding-left: 10px;
+  margin-left: calc(var(--page-x) - 13px);
+}
+.kicker {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* ---------- 卡片 ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  margin: 0 var(--page-x) var(--sp-3);
+  padding: var(--sp-4);
+}
+.card--flat {
+  background: var(--surface-2);
+}
+
+/* ---------- 数字与指标 ---------- */
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: var(--sp-1);
+}
+.metric-brand { color: var(--brand); }
+.metric-ok { color: var(--ok); }
+.metric-warn { color: var(--warn); }
+.metric-bad { color: var(--bad); }
+
+/* ---------- 工具类 ---------- */
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mt-4 { margin-top: var(--sp-1); }
+.mt-8 { margin-top: var(--sp-2); }
+.mt-12 { margin-top: var(--sp-3); }
+.mt-16 { margin-top: var(--sp-4); }
+.mt-24 { margin-top: var(--sp-6); }
+.mb-8 { margin-bottom: var(--sp-2); }
+.mb-12 { margin-bottom: var(--sp-3); }
+.mb-16 { margin-bottom: var(--sp-4); }
+.px-16 { padding-left: var(--page-x); padding-right: var(--page-x); }
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.hairline {
+  height: 1px;
+  background: var(--line);
+  border: 0;
+  margin: var(--sp-4) 0;
+}
+
+/* 以描边替代 Vant 组件默认阴影，保持平面结构下的边界识别 */
+.van-tabbar,
+.van-tabbar--fixed { border-top: 1px solid var(--line); }
+.van-dropdown-menu__bar { border-bottom: 1px solid var(--line); }
+.van-popup--bottom { border-top: 1px solid var(--line); }
+.van-popup--top { border-bottom: 1px solid var(--line); }
+.van-popup--left { border-right: 1px solid var(--line); }
+.van-popup--right { border-left: 1px solid var(--line); }
+.van-popover__content { border: 1px solid var(--line); }
+.van-calendar__header { border-bottom: 1px solid var(--line); }
+.van-switch__node { border: 1px solid rgba(0, 0, 0, 0.08); }
+.van-slider__button { border: 1px solid var(--line-strong); }
+.van-back-top { border: 1px solid var(--line); }
+.van-coupon { border: 1px solid var(--line); }
+.van-cell::after { border-bottom-color: var(--line); }
+.van-hairline--top-bottom::after,
+.van-hairline-unset--top-bottom::after { border-color: var(--line); }
+.van-button { text-transform: none; }
+.van-tag { letter-spacing: 0.2px; }
+/* 去掉阴影后仍需保留键盘焦点的可访问性提示 */
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }

@@ -1,0 +1,59 @@
+* { box-sizing: border-box; }
+/* 平面化设计：全局禁用阴影，改用描边与底色区分层级 */
+*, *::before, *::after { box-shadow: none !important; }
+html, body, #app { height: 100%; margin: 0; overflow: hidden; }
+body {
+  background: var(--admin-shell-bg, #fafcff);
+  color: #1e293b;
+  font-family: 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--admin-primary, #1f6feb); }
+/* 右侧白底工作区内的模块以细线分隔，不使用色块与阴影 */
+.page-card {
+  background: var(--admin-canvas-bg, #fff);
+  border: 1px solid var(--admin-line, #eef2f7);
+  border-radius: var(--admin-radius-md, 12px);
+  padding: 20px;
+}
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+.toolbar .spacer { flex: 1; }
+.page-title { font-size: 20px; font-weight: 600; margin: 0 0 4px; color: #0f172a; }
+.page-sub { color: #64748b; font-size: 13px; margin-bottom: 18px; }
+.muted { color: #94a3b8; }
+.ant-table-thead > tr > th {
+  background: #fafbfd !important;
+  border-bottom-color: var(--admin-line, #eef2f7) !important;
+}
+.ant-table-tbody > tr > td { border-bottom-color: var(--admin-line, #eef2f7) !important; }
+.ant-table-tbody > tr:last-child > td { border-bottom-color: transparent !important; }
+.ant-table-cell { vertical-align: middle; }
+.table-cover { width: 80px; height: 46px; object-fit: cover; border-radius: 6px; background: #eef2f7; }
+.login-bg {
+  min-height: 100%;
+  background:
+    radial-gradient(900px 500px at 10% 10%, rgba(31, 111, 235, .35), transparent 60%),
+    radial-gradient(800px 500px at 90% 80%, rgba(14, 165, 233, .28), transparent 60%),
+    linear-gradient(135deg, #0b1728 0%, #10233d 55%, #0b1728 100%);
+}
+.markdown-note { color: #64748b; font-size: 13px; line-height: 1.8; }
+
+/* 浮层用描边替代阴影，保证平面结构下的层次可辨 */
+.ant-dropdown-menu,
+.ant-dropdown .ant-dropdown-menu,
+.ant-dropdown-menu-submenu-popup .ant-dropdown-menu,
+.ant-select-dropdown,
+.ant-cascader-dropdown,
+.ant-popover-inner,
+.ant-modal-content,
+.ant-notification-notice,
+.ant-message-notice-content,
+.ant-table-filter-dropdown,
+.ant-picker-dropdown .ant-picker-panel-container,
+.ant-tooltip-inner { border: 1px solid #e2eaf4; }
+.ant-tooltip-inner { border-color: #dbe4f0; }
+.ant-modal-header { border-bottom: 1px solid #eef3fa; }
+.ant-drawer-content { border-left: 1px solid #e2eaf4; }
+
+/* 去掉阴影后仍需保留键盘焦点的可访问性提示 */
+:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
