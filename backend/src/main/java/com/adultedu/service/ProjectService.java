@@ -171,6 +171,8 @@ public class ProjectService {
         }
         assertCanViewProject(p, current);
         Map<String, Object> map = new LinkedHashMap<>(projectMap(p, current));
+        // 学员/教务详情同样按周期推导展示状态
+        map.put("status", effectiveStatus(p));
         List<Map<String, Object>> members = memberMapper.selectList(new LambdaQueryWrapper<ProjectMember>()
                         .eq(ProjectMember::getProjectId, id).eq(ProjectMember::getStatus, 1))
                 .stream().limit(20).map(m -> {
@@ -207,6 +209,29 @@ public class ProjectService {
 
     public boolean isArchived(TrainingProject project) {
         return project != null && project.getStatus() != null && project.getStatus() == 3;
+    }
+
+    /**
+     * 展示用有效状态：归档优先；启用周期已过视为已结束；进行中但未到开始时间视为未开始。
+     * status 是人工维护字段（0未开始/1进行中/2已结束/3已归档），周期到期不会自动翻转，
+     * 读取展示时按时间推导，避免出现"已过期仍显示进行中"。
+     */
+    public int effectiveStatus(TrainingProject project) {
+        Integer s = project.getStatus();
+        if (s == null || s == 0) {
+            return 0;
+        }
+        if (s == 3) {
+            return 3;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        if (project.getEndTime() != null && now.isAfter(project.getEndTime())) {
+            return 2;
+        }
+        if (s == 1 && project.getStartTime() != null && now.isBefore(project.getStartTime())) {
+            return 0;
+        }
+        return s;
     }
 
     /**
@@ -556,7 +581,7 @@ public class ProjectService {
             map.put("startTime", project.getStartTime());
             map.put("endTime", project.getEndTime());
             map.put("needCredit", project.getNeedCredit());
-            map.put("status", project.getStatus());
+            map.put("status", effectiveStatus(project));
             map.put("completionStatus", member.getCompletionStatus());
             BigDecimal credit = grantedCredits(userId, project.getId());
             map.put("credit", credit);
@@ -568,8 +593,12 @@ public class ProjectService {
                     .stream().map(Course::getId).toList();
             long completed = courseIds.isEmpty() ? 0 : studyRecordMapper.selectCount(new LambdaQueryWrapper<StudyRecord>()
                     .eq(StudyRecord::getUserId, userId).in(StudyRecord::getCourseId, courseIds).eq(StudyRecord::getStatus, 2));
+            // 学习中课程数：与 myDetail 的 studyStatus 同口径（StudyRecord.status=1）
+            long learning = courseIds.isEmpty() ? 0 : studyRecordMapper.selectCount(new LambdaQueryWrapper<StudyRecord>()
+                    .eq(StudyRecord::getUserId, userId).in(StudyRecord::getCourseId, courseIds).eq(StudyRecord::getStatus, 1));
             map.put("courseTotal", total);
             map.put("completedCourse", completed);
+            map.put("learningCourse", learning);
             GraduateApply apply = latestApply(userId, project.getId());
             map.put("graduateStatus", apply == null ? null : apply.getAuditStatus());
             map.put("graduateNode", apply == null ? null : apply.getCurrentNode());
@@ -593,6 +622,7 @@ public class ProjectService {
         }
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("project", project);
+        map.put("status", effectiveStatus(project));
         BigDecimal credit = grantedCredits(userId, projectId);
         map.put("credit", credit);
         map.put("needCredit", project.getNeedCredit());

@@ -2,7 +2,9 @@
   <div class="fullscreen-page study-page">
     <!-- Top Bar -->
     <div class="study-topbar">
-      <van-icon name="arrow-left" size="20" color="#fff" @click="onBack" />
+      <button class="study-back" type="button" aria-label="返回" @click="onBack">
+        <van-icon name="arrow-left" size="18" />
+      </button>
       <span class="study-title text-ellipsis">{{ courseInfo?.courseName || '课程学习' }}</span>
       <span class="study-timer">{{ formatTime(currentTime) }} / {{ formatTime(duration) }}</span>
     </div>
@@ -28,6 +30,13 @@
         @timeupdate="onTimeUpdate"
         @loadedmetadata="onLoadedMetadata"
       />
+      <!-- 业务阻断态：培训班已结束 / 无权限 / 记录异常锁定等，禁止播放 -->
+      <div v-if="blockedMsg" class="study-blocked">
+        <van-icon name="shield-o" size="28" />
+        <p class="sb-title">无法开始学习</p>
+        <p class="sb-msg">{{ blockedMsg }}</p>
+        <button class="sb-back" type="button" @click="onBack">返回</button>
+      </div>
       <!-- Custom controls shown when progress seeking is locked -->
       <div v-if="courseInfo && !allowSeek" class="lock-badge">
         <van-icon name="lock" size="12" />
@@ -49,18 +58,28 @@
 
     <!-- Progress Info -->
     <div class="study-info">
+      <div class="info-head">
+        <span class="kicker">学习状态</span>
+        <span class="info-percent">{{ progressPercent }}%</span>
+      </div>
       <div class="progress-bar-wrap">
         <van-progress
           :percentage="progressPercent"
           :show-pivot="false"
-          color="var(--brand)"
-          stroke-width="4"
-          track-color="var(--line)"
+          color="var(--accent)"
+          stroke-width="5"
+          track-color="var(--surface-3)"
         />
       </div>
-      <div class="flex-between mt-8">
-        <span class="info-text">有效学习：{{ formatTime(effectiveSeconds) }}</span>
-        <span class="info-text">切换次数：{{ screenSwitchCount }}</span>
+      <div class="info-metrics">
+        <div class="info-metric">
+          <span class="info-value">{{ formatTime(effectiveSeconds) }}</span>
+          <span class="info-text">有效学习</span>
+        </div>
+        <div class="info-metric">
+          <span class="info-value">{{ screenSwitchCount }}</span>
+          <span class="info-text">切换次数</span>
+        </div>
       </div>
       <div class="seek-tip" :class="{ locked: !allowSeek }">
         <van-icon :name="allowSeek ? 'exchange' : 'lock'" size="12" />
@@ -71,7 +90,7 @@
     <!-- Completion Button -->
     <div v-if="isCompleted" class="study-bottom">
       <van-button type="success" block round @click="onComplete">
-        {{ courseInfo?.needExam ? '完成学习，进入考试' : '完成学习' }}
+        {{ hasExam ? '完成学习，进入考试' : '完成学习' }}
       </van-button>
     </div>
 
@@ -183,10 +202,14 @@ const userStore = useUserStore()
 
 const courseId = computed(() => Number(route.params.courseId))
 const courseInfo = ref<any>(null)
+const blockedMsg = ref('')
 const videoRef = ref<HTMLVideoElement | null>(null)
 const videoContainer = ref<HTMLElement | null>(null)
 // 1 = free seeking, 0 = progress locked
 const allowSeek = computed(() => Number(courseInfo.value?.allowSeek) === 1)
+// 仅开启测验开关不够，题目为空时后端会拒绝作答，入口一并以“已配置题目”为准
+const hasExam = computed(() => Number(courseInfo.value?.needExam) === 1
+  && (courseInfo.value?.questions?.length ?? 0) > 0)
 
 // Session
 const sessionId = ref('')
@@ -270,10 +293,15 @@ function formatTime(sec: number) {
   return `${m.toString().padStart(2, '0')}:${ss.toString().padStart(2, '0')}`
 }
 
-function onBack() {
-  if (sessionId.value) {
+/** 统一的暂停上报：courseId 为 NaN（路由已切换）或无会话时不调用，避免后端 500 */
+function safePause() {
+  if (sessionId.value && Number.isFinite(courseId.value)) {
     pauseStudy(courseId.value).catch(() => {})
   }
+}
+
+function onBack() {
+  safePause()
   router.back()
 }
 
@@ -319,6 +347,7 @@ function expectedPosition() {
 }
 
 function togglePlay() {
+  if (blockedMsg.value) return
   const v = videoRef.value
   if (!v) return
   if (v.paused) {
@@ -350,6 +379,10 @@ function toggleFullscreen() {
 }
 
 function onPlay() {
+  if (blockedMsg.value) {
+    videoRef.value?.pause()
+    return
+  }
   isPlaying.value = true
   refreshAnchor()
   startHeartbeat()
@@ -756,7 +789,7 @@ function dismissWarning() {
 }
 
 function onComplete() {
-  if (courseInfo.value?.needExam) {
+  if (hasExam.value) {
     router.push(`/exam/${courseId.value}`)
   } else {
     showToast('学习完成！')
@@ -822,8 +855,12 @@ async function initStudy() {
       showWarningMsg(res.abnormalReason || '学习记录已标记异常，请联系教员复核')
     }
   } catch (e: any) {
-    if (!e?.response) {
+    videoRef.value?.pause()
+    if (e?.response) {
       showToast('网络异常，请稍后重试')
+    } else if (e?.message) {
+      // 业务校验失败（培训班已结束/无权限等）：进入阻断态，页面给出明确提示
+      blockedMsg.value = e.message
     }
   }
 }
@@ -838,12 +875,13 @@ onMounted(() => {
 watch(courseId, async (id, oldId) => {
   if (!id || id === oldId) return
   stopHeartbeat()
-  if (oldId && sessionId.value) {
+  if (oldId && Number.isFinite(oldId) && sessionId.value) {
     pauseStudy(Number(oldId)).catch(() => {})
   }
   videoRef.value?.pause()
   sessionId.value = ''
   courseInfo.value = null
+  blockedMsg.value = ''
   currentTime.value = 0
   duration.value = 0
   effectiveSeconds.value = 0
@@ -859,9 +897,7 @@ onBeforeUnmount(() => {
   stopHeartbeat()
   if (popupTimer) clearInterval(popupTimer)
   if (verifyTimer) clearInterval(verifyTimer)
-  if (sessionId.value) {
-    pauseStudy(courseId.value).catch(() => {})
-  }
+  safePause()
   document.removeEventListener('visibilitychange', onVisibilityChange)
 })
 </script>
@@ -876,26 +912,47 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  padding: var(--sp-3) var(--page-x);
-  background: #000;
-  color: #fff;
+  padding: calc(env(safe-area-inset-top) + 10px) var(--page-x) 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+}
+.study-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+.study-back:active {
+  background: var(--brand-tint);
 }
 .study-title {
   flex: 1;
   min-width: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
 }
 .study-timer {
   flex: none;
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  color: var(--ink-3);
   font-variant-numeric: tabular-nums;
 }
 .video-wrap {
   width: 100%;
-  background: #000;
+  background: #101820;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -906,6 +963,49 @@ onBeforeUnmount(() => {
   max-height: 56vw;
   outline: none;
 }
+/* 业务阻断态遮罩：覆盖视频区，明确告知原因 */
+.study-blocked {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: var(--sp-5);
+  text-align: center;
+  color: var(--ink-2);
+  background: rgba(248, 250, 252, 0.96);
+}
+.study-blocked .van-icon {
+  color: var(--brand);
+}
+.sb-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.sb-msg {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  max-width: 280px;
+}
+.sb-back {
+  margin-top: var(--sp-3);
+  padding: 9px 32px;
+  border: 1px solid var(--brand-line);
+  border-radius: 999px;
+  background: var(--brand-tint);
+  color: var(--brand);
+  font-size: 14px;
+  font-weight: 500;
+}
+.sb-back:active {
+  background: var(--brand-line);
+}
+
 .lock-badge {
   position: absolute;
   top: var(--sp-3);
@@ -965,62 +1065,118 @@ onBeforeUnmount(() => {
 .cc-fill {
   height: 100%;
   border-radius: var(--r-tag);
-  background: var(--brand-tint);
+  background: var(--accent);
   transition: width 0.2s linear;
 }
 .study-info {
-  padding: var(--page-x);
+  margin: var(--sp-5) var(--page-x) 0;
+  padding: var(--sp-5) var(--sp-4);
   background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
   color: var(--ink);
-  border-bottom: 1px solid var(--line);
+}
+.info-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.info-percent {
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--accent-strong);
+  font-variant-numeric: tabular-nums;
+}
+.progress-bar-wrap {
+  padding: var(--sp-3) 0 var(--sp-4);
+}
+.info-metrics {
+  display: flex;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
+}
+.info-metric {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.info-metric + .info-metric {
+  padding-left: var(--sp-4);
+  border-left: 1px solid var(--line);
+}
+.info-value {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.info-text {
+  font-size: 11px;
+  color: var(--ink-3);
 }
 .seek-tip {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  margin-top: var(--sp-3);
+  margin-top: var(--sp-4);
+  padding: 8px 10px;
+  border: 1px solid var(--brand-line);
+  border-radius: var(--r-chip);
+  background: var(--brand-tint);
   font-size: 12px;
   line-height: 1.5;
   color: var(--brand);
 }
 .seek-tip.locked {
+  border-color: var(--accent-line);
+  background: var(--warn-tint);
   color: var(--warn);
 }
-.progress-bar-wrap {
-  padding: var(--sp-1) 0;
-}
-.info-text {
-  font-size: 13px;
-  color: var(--ink-2);
-  font-variant-numeric: tabular-nums;
-}
 .study-bottom {
-  padding: var(--page-x);
-  padding-bottom: calc(var(--page-x) + env(safe-area-inset-bottom));
-  background: var(--surface);
+  margin: var(--sp-5) var(--page-x) 0;
+  padding: 0 0 calc(var(--sp-6) + env(safe-area-inset-bottom));
 }
 .popup-content {
   padding: var(--sp-4) var(--sp-5) var(--sp-5);
 }
 .popup-timer {
-  text-align: center;
-  font-size: 24px;
+  margin-bottom: var(--sp-4);
+  font-family: var(--font-serif);
+  font-size: 26px;
   font-weight: 700;
+  text-align: center;
   color: var(--bad);
   font-variant-numeric: tabular-nums;
-  margin-bottom: var(--sp-3);
 }
 .popup-question {
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--ink);
   margin-bottom: var(--sp-4);
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink);
 }
 .popup-options {
   margin-bottom: var(--sp-4);
 }
 .popup-option {
-  padding: var(--sp-2) 0;
+  margin-bottom: var(--sp-2);
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-chip);
+  background: var(--surface-2);
+}
+.popup-option:last-child {
+  margin-bottom: 0;
+}
+.popup-option :deep(.van-radio__label),
+.popup-option :deep(.van-checkbox__label) {
+  color: var(--ink-2);
+  line-height: 1.5;
 }
 .verify-countdown {
   text-align: center;
@@ -1049,12 +1205,13 @@ onBeforeUnmount(() => {
   z-index: 999;
 }
 .warning-box {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--r-card);
+  max-width: 288px;
   padding: var(--sp-8) var(--sp-6);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-float);
   text-align: center;
-  max-width: 280px;
 }
 .warning-text {
   font-size: 15px;

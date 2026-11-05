@@ -27,7 +27,28 @@
 
       <!-- Eligibility -->
       <div v-if="eligibility" class="card">
-        <h4 class="card-title mb-8">毕业资格</h4>
+        <div class="card-head">
+          <span class="kicker">GRADUATION CHECK</span>
+          <span class="card-tag">{{ activeStep }}/3 已完成</span>
+        </div>
+        <h4 class="card-title">毕业资格</h4>
+
+        <div class="credit-progress">
+          <div class="credit-progress-top">
+            <span>学分进度</span>
+            <span class="credit-progress-num">
+              <b>{{ eligibility.credits || 0 }}</b> / {{ eligibility.needCredit || 0 }}
+            </span>
+          </div>
+          <van-progress
+            :percentage="creditPercent"
+            :show-pivot="false"
+            color="var(--accent)"
+            track-color="var(--surface-3)"
+            stroke-width="6"
+          />
+        </div>
+
         <van-steps direction="vertical" :active="activeStep">
           <van-step v-for="(step, i) in steps" :key="i">
             <h5>{{ step.title }}</h5>
@@ -38,11 +59,11 @@
 
       <!-- Application Status -->
       <div v-if="myApplication" class="card">
-        <h4 class="card-title mb-8">申请状态</h4>
-        <div class="flex-between mb-8">
-          <span class="info-label">状态</span>
+        <div class="card-head">
+          <span class="kicker">APPLICATION</span>
           <StatusTag :status="myApplication.auditStatus" type="graduate" />
         </div>
+        <h4 class="card-title mb-8">申请状态</h4>
         <div class="flex-between mb-8">
           <span class="info-label">提交时间</span>
           <span class="info-value">{{ formatDate(myApplication.applyTime || myApplication.createTime) }}</span>
@@ -58,22 +79,30 @@
       </div>
 
       <!-- Certificate -->
-      <div v-if="certificate" class="card">
-        <h4 class="card-title mb-8">毕业证书</h4>
+      <div v-if="certificate" class="cert-card">
+        <span class="cert-watermark" aria-hidden="true">证</span>
+        <div class="cert-head">
+          <span class="cert-kicker">CERTIFICATE OF COMPLETION</span>
+          <span class="cert-seal">验</span>
+        </div>
+        <h4 class="cert-title">毕业证书</h4>
         <template v-if="certificate.certificateUrl">
-          <div class="flex-between mb-8">
-            <span class="info-label">证书编号</span>
-            <span class="info-value">{{ certificate.certificateNo || '-' }}</span>
+          <div class="cert-rule"></div>
+          <div class="cert-meta">
+            <div class="cert-meta-row">
+              <span class="info-label">证书编号</span>
+              <span class="info-value cert-no">{{ certificate.certificateNo || '-' }}</span>
+            </div>
+            <div v-if="certificate.graduateTime" class="cert-meta-row">
+              <span class="info-label">毕业时间</span>
+              <span class="info-value">{{ formatDate(certificate.graduateTime) }}</span>
+            </div>
           </div>
-          <div v-if="certificate.graduateTime" class="flex-between">
-            <span class="info-label">毕业时间</span>
-            <span class="info-value">{{ formatDate(certificate.graduateTime) }}</span>
-          </div>
-          <van-button type="primary" block round class="mt-12" @click="downloadCert">
+          <van-button type="primary" block class="cert-btn" @click="downloadCert">
             查看 / 下载证书
           </van-button>
         </template>
-        <p v-else class="no-cert">证书生成中...</p>
+        <p v-else class="no-cert">证书生成中，请稍后查看</p>
       </div>
 
       <!-- Apply Button -->
@@ -94,7 +123,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import {
   Button as VanButton, Field as VanField, Loading as VanLoading,
   Popup as VanPopup, Picker as VanPicker, Steps as VanSteps, Step as VanStep,
-  showToast,
+  Progress as VanProgress, showToast,
 } from 'vant'
 import PageHeader from '@/components/PageHeader.vue'
 import StatusTag from '@/components/StatusTag.vue'
@@ -145,6 +174,13 @@ const steps = computed(() => {
 })
 
 const activeStep = computed(() => steps.value.filter((s) => s.done).length)
+
+const creditPercent = computed(() => {
+  const need = Number(eligibility.value?.needCredit || 0)
+  const got = Number(eligibility.value?.credits || 0)
+  if (!need) return 0
+  return Math.min(100, Math.round((got / need) * 100))
+})
 
 function formatDate(d: string) {
   return d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '-'
@@ -230,11 +266,55 @@ onMounted(async () => {
   font-weight: 500;
   color: var(--ink-2);
 }
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: 8px;
+}
+.card-tag {
+  flex: none;
+  padding: 2px 8px;
+  border: 1px solid var(--brand-line);
+  border-radius: 999px;
+  background: var(--brand-tint);
+  font-size: 10px;
+  color: var(--brand);
+  font-variant-numeric: tabular-nums;
+}
 .card-title {
-  font-size: 15px;
+  font-family: var(--font-serif);
+  font-size: 18px;
   font-weight: 600;
   color: var(--ink);
-  line-height: 1.5;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.credit-progress {
+  margin: var(--sp-4) 0 var(--sp-3);
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-chip);
+  background: var(--surface-2);
+}
+.credit-progress-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 9px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.credit-progress-num {
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.credit-progress-num b {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  color: var(--accent-strong);
 }
 .card h5 {
   font-size: 14px;
@@ -282,24 +362,126 @@ onMounted(async () => {
   color: var(--bad);
   line-height: 1.55;
 }
+/* ---------- 证书 ---------- */
+.cert-card {
+  position: relative;
+  overflow: hidden;
+  margin: 0 var(--page-x) var(--sp-4);
+  padding: 22px var(--sp-5) var(--sp-4);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-card);
+  background:
+    radial-gradient(120% 100% at 0% 0%, rgba(173, 122, 53, 0.1) 0%, transparent 52%),
+    #fcf9f1;
+  box-shadow: inset 0 0 0 4px #fcf9f1, inset 0 0 0 5px var(--accent-line);
+}
+
+.cert-watermark {
+  position: absolute;
+  top: -12px;
+  right: -4px;
+  font-family: var(--font-serif);
+  font-size: 88px;
+  line-height: 1;
+  color: rgba(173, 122, 53, 0.08);
+  pointer-events: none;
+  user-select: none;
+}
+
+.cert-head {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.cert-kicker {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--accent-strong);
+  opacity: 0.72;
+}
+
+.cert-seal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin-top: -4px;
+  border: 1px solid var(--accent);
+  border-radius: 50%;
+  font-family: var(--font-serif);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-strong);
+  opacity: 0.8;
+  transform: rotate(-8deg);
+}
+
+.cert-title {
+  margin-top: 6px;
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--brand-deep);
+}
+
+.cert-rule {
+  height: 1px;
+  margin: var(--sp-3) 0;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-line) 38%, transparent 100%);
+}
+
+.cert-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.cert-meta-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.cert-no {
+  font-family: var(--font-serif);
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  color: var(--accent-strong);
+}
+
+.cert-btn {
+  height: 44px;
+  margin-top: var(--sp-4);
+  font-size: 14px;
+  letter-spacing: 0.06em;
+}
+
 .no-cert {
+  padding: var(--sp-5) 0 6px;
+  font-size: 12px;
   text-align: center;
   color: var(--ink-3);
-  font-size: 13px;
-  padding: var(--sp-5) 0;
 }
 .bottom-action {
-  padding: var(--sp-3) var(--page-x) calc(var(--sp-3) + env(safe-area-inset-bottom));
   position: fixed;
+  right: 0;
   bottom: 0;
   left: 0;
-  right: 0;
-  background: var(--surface);
+  padding: var(--sp-3) var(--page-x) calc(var(--sp-3) + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.94);
   border-top: 1px solid var(--line);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
 }
 .bottom-action :deep(.van-button) {
   height: 46px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
 }
 .tip-action {

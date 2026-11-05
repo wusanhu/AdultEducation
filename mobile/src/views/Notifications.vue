@@ -39,17 +39,18 @@
       >
         <div class="flex-between mb-8">
           <div class="notify-head">
-            <van-tag :type="notifyCategory(item.type).tag" plain size="medium" class="cat-tag">
-              {{ notifyCategory(item.type).label }}
-            </van-tag>
+            <span
+              class="cat-badge"
+              :class="`cat-badge--${notifyCategory(item.type).tag}`"
+            >{{ notifyCategory(item.type).label }}</span>
+            <span v-if="!item.isRead" class="unread-dot"></span>
             <span class="notify-title">{{ item.title }}</span>
           </div>
           <span class="notify-time">{{ formatTime(item.createTime) }}</span>
         </div>
         <p class="notify-content">{{ item.content }}</p>
-        <div class="notify-foot mt-8">
-          <van-tag v-if="!item.isRead" type="primary" size="medium">未读</van-tag>
-          <span v-if="item.link" class="notify-jump">查看详情 ›</span>
+        <div v-if="item.link" class="notify-foot mt-8">
+          <span class="notify-jump">查看详情 <van-icon name="arrow" size="11" /></span>
         </div>
       </div>
     </van-list>
@@ -64,7 +65,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  Button as VanButton, Tabs as VanTabs, Tab as VanTab, Tag as VanTag,
+  Button as VanButton, Tabs as VanTabs, Tab as VanTab, Icon as VanIcon,
   List as VanList, showToast,
 } from 'vant'
 import PageHeader from '@/components/PageHeader.vue'
@@ -160,8 +161,7 @@ async function onReadAll() {
   gap: var(--sp-2);
   overflow-x: auto;
   padding: var(--sp-3) var(--page-x);
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  background: var(--bg);
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
@@ -170,73 +170,108 @@ async function onReadAll() {
 }
 .cat-chip {
   flex: none;
-  padding: 6px 12px;
-  font-size: 13px;
-  line-height: 1;
-  color: var(--ink-2);
-  background: var(--surface-2);
+  padding: 7px 13px;
   border: 1px solid var(--line);
   border-radius: 999px;
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--ink-2);
+  -webkit-appearance: none;
+  appearance: none;
+  transition: color 0.18s, background-color 0.18s, border-color 0.18s;
 }
 .cat-chip.on {
-  color: #fff;
-  font-weight: 500;
-  background: var(--brand);
   border-color: var(--brand);
+  background: var(--brand);
+  font-weight: 600;
+  color: #fff;
 }
 .notify-item {
   cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.notify-item:active {
+  transform: scale(0.985);
 }
 .notify-item.unread {
-  border-left: 3px solid var(--brand);
+  padding-left: 15px;
+}
+.notify-item.unread::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  bottom: 16px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
 }
 .notify-head {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
-  min-width: 0;
+  gap: 6px;
   flex: 1;
+  min-width: 0;
   margin-right: 8px;
 }
-.cat-tag {
+.cat-badge {
   flex: none;
-  padding: 3px 7px;
-  font-weight: 500;
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-tag);
+  background: var(--surface-2);
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--ink-2);
 }
-.cat-tag.van-tag--primary { background: var(--brand-tint); }
-.cat-tag.van-tag--success { background: var(--ok-tint); }
-.cat-tag.van-tag--warning { background: var(--warn-tint); }
-.cat-tag.van-tag--danger { background: var(--bad-tint); }
+.cat-badge--primary { border-color: var(--brand-line); background: var(--brand-tint); color: var(--brand); }
+.cat-badge--success { border-color: #cfe5da; background: var(--ok-tint); color: var(--ok); }
+.cat-badge--warning { border-color: var(--accent-line); background: var(--warn-tint); color: var(--warn); }
+.cat-badge--danger { border-color: #edcfcd; background: var(--bad-tint); color: var(--bad); }
+.unread-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
 .notify-title {
-  font-size: 15px;
-  font-weight: 500;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
 }
 .notify-time {
-  font-size: 12px;
+  flex: none;
+  font-size: 11px;
   color: var(--ink-4);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 .notify-content {
-  font-size: 13px;
-  color: var(--ink-2);
-  line-height: 1.6;
-  overflow: hidden;
-  text-overflow: ellipsis;
   display: -webkit-box;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink-2);
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 .notify-foot {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-2);
+  justify-content: flex-end;
 }
 .notify-jump {
-  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--brand);
 }
 </style>

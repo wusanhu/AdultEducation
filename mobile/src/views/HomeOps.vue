@@ -1,6 +1,7 @@
 <template>
   <div class="page-container ops-home">
     <header class="home-hero">
+      <span class="hero-ornament" aria-hidden="true">学</span>
       <div class="hero-top">
         <div class="greeting">
           <p class="hello">{{ greetingText }}</p>
@@ -13,7 +14,7 @@
         </div>
         <div class="notify-icon" @click="go('/notifications')">
           <van-badge :content="unreadCount > 0 ? unreadCount : ''" :max="99">
-            <van-icon name="bell" size="22" color="#fff" />
+            <van-icon name="bell" size="21" color="var(--ink-2)" />
           </van-badge>
         </div>
       </div>
@@ -66,9 +67,9 @@
       <van-progress
         :percentage="row.percent"
         :show-pivot="false"
-        color="var(--brand)"
-        stroke-width="4"
-        track-color="var(--line)"
+        color="var(--accent)"
+        stroke-width="5"
+        track-color="var(--surface-3)"
       />
       <div class="flex-between mt-8">
         <span class="prog-meta text-ellipsis">{{ row.left }}</span>
@@ -168,6 +169,9 @@ import { useUserStore } from '@/stores/user'
 import { useTodoStore } from '@/stores/todo'
 import { reports, credits, graduate, verify, notifications } from '@/api'
 import dayjs from 'dayjs'
+
+// 首页学习预警只取临期班：进入结班前 3 天窗口（含已结班）的班里学分不足的学员
+const ENDING_WINDOW_DAYS = 3
 
 const userStore = useUserStore()
 const todoStore = useTodoStore()
@@ -351,7 +355,7 @@ async function fillFromListApis(base: any) {
             userName: r.userName,
             projectName: r.projectName,
             value: r.creditValue,
-            node: r.auditNode === 'LEADER' ? '领导复核' : '管理员终审',
+            node: '领导审核',
             time: r.createTime,
           }))
         })
@@ -392,7 +396,7 @@ async function fillFromListApis(base: any) {
 onMounted(async () => {
   const [ov, warnRows] = await Promise.all([
     reports.overview().catch(() => null),
-    reports.warnings().catch(() => []),
+    reports.warnings({ type: 'CREDIT', endWithinDays: ENDING_WINDOW_DAYS }).catch(() => []),
   ])
   warnings.value = asArr(warnRows)
   const merged = await fillFromListApis(ov || {})
@@ -406,64 +410,92 @@ onMounted(async () => {
 
 <style scoped>
 .home-hero {
-  background: var(--brand);
-  color: #fff;
-  padding: calc(env(safe-area-inset-top) + 28px) var(--page-x) 30px;
+  position: relative;
+  overflow: hidden;
+  padding: calc(env(safe-area-inset-top) + 24px) var(--page-x) var(--sp-5);
+  color: var(--ink);
+  background: linear-gradient(180deg, #edf3f9 0%, #f3f6fa 58%, var(--bg) 100%);
+}
+.hero-ornament {
+  position: absolute;
+  top: 4px;
+  right: -6px;
+  font-family: var(--font-serif);
+  font-size: 96px;
+  line-height: 1;
+  color: rgba(79, 109, 143, 0.09);
+  pointer-events: none;
+  user-select: none;
 }
 .hero-top {
+  position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--sp-3);
 }
 .hello {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.72);
-  margin-bottom: 5px;
+  margin-bottom: 7px;
+  font-size: 12px;
+  color: var(--ink-3);
 }
 .greeting h2 {
-  font-size: 25px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--ink);
 }
 .hero-role {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 9px;
+  margin-top: 10px;
   min-width: 0;
+  font-size: 11px;
+  color: var(--ink-2);
 }
 .role-name {
   flex: none;
   max-width: 45%;
+  padding: 2px 8px;
+  border: 1px solid var(--brand-line);
+  border-radius: 999px;
+  background: var(--brand-tint);
+  color: var(--brand);
 }
 .hero-org {
   padding-left: 7px;
-  border-left: 1px solid rgba(255, 255, 255, 0.24);
+  border-left: 1px solid var(--line-strong);
   min-width: 0;
 }
 .notify-icon {
   flex: none;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--r-control);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
   cursor: pointer;
+  transition: background-color 0.18s ease;
 }
 .notify-icon:active {
-  background: rgba(255, 255, 255, 0.24);
+  background: var(--surface-2);
 }
 .hero-strip {
+  position: relative;
   display: flex;
   margin-top: var(--sp-5);
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 14px var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  box-shadow: var(--shadow-card);
 }
 .strip-cell {
   flex: 1;
@@ -477,39 +509,42 @@ onMounted(async () => {
   transition: opacity 0.15s;
 }
 .strip-cell + .strip-cell {
-  border-left: 1px solid rgba(255, 255, 255, 0.16);
+  border-left: 1px solid var(--line);
   padding-left: var(--sp-4);
 }
 .strip-cell:active {
   opacity: 0.6;
 }
 .strip-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  color: var(--ink-3);
 }
 .strip-value {
-  font-size: 22px;
+  font-family: var(--font-serif);
+  font-size: 23px;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.01em;
+  color: var(--brand);
   font-variant-numeric: tabular-nums;
 }
 .strip-value i {
   font-style: normal;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 400;
   margin-left: 3px;
-  color: rgba(255, 255, 255, 0.72);
+  color: var(--ink-3);
 }
 .stat-cards {
   position: relative;
   z-index: 1;
   display: flex;
-  margin: -20px var(--page-x) var(--sp-4);
-  padding: 14px 0;
+  margin: 0 var(--page-x) var(--sp-4);
+  padding: 18px 0;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
 }
 .stat-item {
   flex: 1;
@@ -561,7 +596,7 @@ onMounted(async () => {
   color: var(--brand);
 }
 .prog-card {
-  padding: var(--sp-3) var(--sp-4);
+  padding: var(--sp-4);
   cursor: pointer;
   transition: opacity 0.15s;
 }

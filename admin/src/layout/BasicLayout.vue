@@ -181,7 +181,7 @@ import {
   FolderOpenOutlined, KeyOutlined, LineChartOutlined, LockOutlined, LoginOutlined,
   LogoutOutlined, MenuFoldOutlined, MenuOutlined, MenuUnfoldOutlined, MonitorOutlined,
   PieChartOutlined, PlusSquareOutlined, ProfileOutlined, ReadOutlined, RightOutlined,
-  SafetyCertificateOutlined, SettingOutlined, TeamOutlined, UserOutlined, VideoCameraOutlined,
+  SafetyCertificateOutlined, SettingOutlined, TeamOutlined, UserOutlined, UsergroupAddOutlined, VideoCameraOutlined,
   WarningOutlined
 } from '@ant-design/icons-vue'
 import { authApi, notificationApi } from '../api'
@@ -240,7 +240,8 @@ const iconMap: Record<string, Component> = {
   ControlOutlined, CreditCardOutlined, SafetyCertificateOutlined, BarChartOutlined, SettingOutlined,
   TeamOutlined, ApartmentOutlined, UserOutlined, KeyOutlined, MenuOutlined, PieChartOutlined,
   LineChartOutlined, AreaChartOutlined, ProfileOutlined, PlusSquareOutlined, AuditOutlined,
-  FileDoneOutlined, FolderOpenOutlined, LoginOutlined, FileTextOutlined, BookOutlined, BellOutlined
+  FileDoneOutlined, FolderOpenOutlined, LoginOutlined, FileTextOutlined, BookOutlined, BellOutlined,
+  UsergroupAddOutlined
 }
 
 function resolveIcon(name?: string): Component {

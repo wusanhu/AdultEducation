@@ -62,10 +62,10 @@ const TAB: Record<string, TabDef> = {
   home: { key: 'home', label: '首页', icon: 'home-o', route: '/' },
   projects: { key: 'projects', label: '培训班', icon: 'orders-o', route: '/projects' },
   credits: { key: 'credits', label: '学分', icon: 'gold-coin-o', route: '/credits' },
-  approvals: { key: 'approvals', label: '审批', icon: 'audit', route: '/approvals', badge: 'approval' },
+  approvals: { key: 'approvals', label: '审批', icon: 'records-o', route: '/approvals', badge: 'approval' },
   notifications: { key: 'notifications', label: '消息', icon: 'chat-o', route: '/notifications', badge: 'unread' },
   monitor: { key: 'monitor', label: '监控', icon: 'eye-o', route: '/monitor' },
-  profile: { key: 'profile', label: '我的', icon: 'contact', route: '/profile' },
+  profile: { key: 'profile', label: '我的', icon: 'user-o', route: '/profile' },
 }
 
 /** 中部两格按角色动线排序：带班者先「培训班」后「审批」，只审批者先「审批」后「消息」 */
@@ -93,15 +93,15 @@ export interface EntryDef extends TabDef {
 const ENTRIES: EntryDef[] = [
   { key: 'projects', label: '培训班', icon: 'orders-o', route: '/projects' },
   { key: 'credits', label: '学分查询', icon: 'gold-coin-o', route: '/credits' },
-  { key: 'graduate', label: '毕业申请', icon: 'certificate', route: '/graduate' },
+  { key: 'graduate', label: '毕业申请', icon: 'medal-o', route: '/graduate' },
   { key: 'verify', label: '核验记录', icon: 'shield-o', route: '/verify' },
-  { key: 'notifications', label: '消息通知', icon: 'bell', route: '/notifications' },
+  { key: 'notifications', label: '消息通知', icon: 'chat-o', route: '/notifications' },
   { key: 'monitor', label: '学习监控', icon: 'eye-o', route: '/monitor', perms: ['study:monitor'] },
   { key: 'exam', label: '考试成绩', icon: 'award-o', route: '/monitor?tab=exam', perms: ['study:monitor'] },
   { key: 'creditAudit', label: '学分审核', icon: 'balance-o', route: '/approvals?tab=credit', perms: ['credit:audit'] },
   { key: 'graduateAudit', label: '毕业审批', icon: 'todo-list-o', route: '/approvals?tab=graduate', perms: ['graduate:list'] },
   { key: 'verifyReview', label: '异常复核', icon: 'warning-o', route: '/approvals?tab=verify', perms: ['verify:abnormal'] },
-  { key: 'creditApply', label: '学分补录', icon: 'edit', route: '/credits?apply=1', perms: ['credit:apply'] },
+  { key: 'creditApply', label: '学分补录', icon: 'notes-o', route: '/credits?apply=1', perms: ['credit:apply'] },
 ]
 
 /** 学员自用入口，教务视角下不展示 */

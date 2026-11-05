@@ -47,6 +47,7 @@ com/adultedu/controller/GraduateController.class
 com/adultedu/AdultEduApplication.class
 com/adultedu/dto/AuthDtos$SmsLoginRequest.class
 com/adultedu/mapper/SysOperLogMapper.class
+com/adultedu/service/StudentService.class
 com/adultedu/dto/BizDtos$HeartbeatRequest.class
 com/adultedu/dto/BizDtos$PopupConfirmRequest.class
 com/adultedu/mapper/GraduateFileMapper.class
@@ -94,6 +95,7 @@ com/adultedu/dto/SystemDtos.class
 com/adultedu/mapper/CourseMapper.class
 com/adultedu/mapper/SysConfigMapper.class
 com/adultedu/dto/BizDtos$ExamSubmitRequest.class
+com/adultedu/controller/StudentController.class
 com/adultedu/service/ExamService.class
 com/adultedu/dto/BizDtos$CourseSaveRequest.class
 com/adultedu/dto/AuthDtos$LoginRequest.class

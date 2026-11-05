@@ -216,17 +216,21 @@ onMounted(() => {
 
 <style scoped>
 .empty-wrap {
-  padding-top: var(--sp-5);
+  margin: var(--sp-4) var(--page-x) var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
 }
 .list-count {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--sp-2);
-  padding: var(--sp-4) var(--page-x) var(--sp-2);
+  padding: var(--sp-4) var(--page-x) var(--sp-1);
 }
 .list-count-num {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--ink-3);
 }
 .verify-item {
@@ -241,8 +245,8 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: var(--r-chip);
@@ -260,19 +264,22 @@ onMounted(() => {
   min-width: 0;
 }
 .verify-course {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--ink);
   flex: 1;
   min-width: 0;
   margin-right: var(--sp-2);
-}
-.verify-user {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 15px;
   font-weight: 600;
   color: var(--ink);
+}
+.verify-user {
   min-width: 0;
   margin-right: var(--sp-2);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
 }
 .verify-line {
   font-size: 13px;
@@ -281,13 +288,22 @@ onMounted(() => {
 }
 .verify-result {
   flex: none;
-  font-size: 13px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 11px;
   font-weight: 600;
+  line-height: 1.5;
 }
 .verify-result.is-ok {
+  border-color: #cfe5da;
+  background: var(--ok-tint);
   color: var(--ok);
 }
 .verify-result.is-bad {
+  border-color: #edcfcd;
+  background: var(--bad-tint);
   color: var(--bad);
 }
 .verify-meta {
@@ -297,19 +313,23 @@ onMounted(() => {
   font-size: 12px;
   color: var(--ink-3);
 }
-.verify-fail {
-  font-size: 12px;
-  color: var(--bad);
-  line-height: 1.6;
-}
 .verify-remark {
   padding: var(--sp-2) var(--sp-3);
   border: 1px solid var(--line);
-  border-radius: var(--r-chip);
+  border-radius: var(--r-tag);
   background: var(--surface-2);
-  font-size: 12px;
-  color: var(--ink-2);
+  font-size: 11px;
   line-height: 1.6;
+  color: var(--ink-2);
+}
+.verify-fail {
+  padding: 6px 10px;
+  border: 1px solid #edcfcd;
+  border-radius: var(--r-tag);
+  background: var(--bad-tint);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--bad);
 }
 .loading-center {
   display: flex;

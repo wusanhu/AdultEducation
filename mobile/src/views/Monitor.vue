@@ -1,5 +1,13 @@
 <template>
   <div class="page-container monitor-page">
+    <header class="page-head">
+      <div>
+        <span class="kicker">MONITOR</span>
+        <h1>学习监控</h1>
+      </div>
+      <span class="head-count">教务视角</span>
+    </header>
+
     <van-tabs v-model:active="activeTab" sticky @change="onTabChange">
       <!-- Tab A 学习记录 -->
       <van-tab title="学习记录" name="study">
@@ -292,12 +300,44 @@ function goDetail(id: number) {
 </script>
 
 <style scoped>
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: calc(env(safe-area-inset-top) + 24px) var(--page-x) var(--sp-3);
+}
+.page-head h1 {
+  margin-top: 5px;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.head-count {
+  flex: none;
+  margin-bottom: 3px;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 11px;
+  color: var(--ink-3);
+}
 .monitor-page :deep(.van-tabs__wrap) {
   border-bottom: 1px solid var(--line);
 }
+.monitor-page :deep(.van-sticky--fixed) {
+  top: env(safe-area-inset-top) !important;
+}
 .search-bar {
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  padding: var(--sp-3) var(--page-x) var(--sp-1);
+  background: transparent;
+}
+.search-bar :deep(.van-search) {
+  padding: 0;
 }
 .search-bar :deep(.van-search__content) {
   border-radius: var(--r-control);
@@ -308,9 +348,8 @@ function goDetail(id: number) {
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
-  padding: var(--sp-3) var(--page-x) var(--sp-2);
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  padding: var(--sp-2) var(--page-x) var(--sp-3);
+  background: transparent;
 }
 .chip-group {
   display: flex;

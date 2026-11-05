@@ -7,11 +7,12 @@
     <!-- 学员：我的学习详情，可从课程进入学习/考试 -->
     <template v-if="!isOps && detail">
       <div class="card detail-head">
+        <span class="detail-kicker">PROGRAM</span>
         <div class="flex-between mb-12">
           <h3 class="detail-title">{{ detail.projectName }}</h3>
           <StatusTag :status="detail.status" type="project" />
         </div>
-        <p class="desc">{{ detail.description }}</p>
+        <p v-if="detail.description" class="desc">{{ detail.description }}</p>
         <div class="meta-list">
           <div class="meta-item">
             <span class="meta-label">编号</span>
@@ -30,7 +31,8 @@
 
       <div class="section-title">课程列表</div>
       <div v-if="!detail.courses || detail.courses.length === 0" class="card empty-course">
-        暂无课程
+        <van-icon name="notes-o" size="22" color="var(--ink-4)" />
+        <span>暂无课程</span>
       </div>
       <div
         v-for="course in detail.courses"
@@ -71,7 +73,7 @@
             size="small"
             type="warning"
             plain
-            @click="$router.push(`/exam/${course.id}`)"
+            @click="goExam(course)"
           >
             进入考试
           </van-button>
@@ -89,6 +91,7 @@
     <!-- 教务：托管班只读概览，配置与编辑动作留在 PC 后台 -->
     <template v-else-if="isOps && detail">
       <div class="card detail-head">
+        <span class="detail-kicker">PROGRAM</span>
         <div class="flex-between mb-12">
           <h3 class="detail-title">{{ detail.projectName }}</h3>
           <StatusTag :status="detail.status" type="project" />
@@ -132,7 +135,8 @@
 
       <div class="section-title">课程</div>
       <div v-if="!detail.courses || detail.courses.length === 0" class="card empty-course">
-        暂无课程
+        <van-icon name="notes-o" size="22" color="var(--ink-4)" />
+        <span>暂无课程</span>
       </div>
       <div v-for="course in detail.courses" :key="course.id" class="card course-item">
         <div class="flex-between mb-8">
@@ -147,18 +151,20 @@
 
       <div class="section-title">师资</div>
       <div v-if="!detail.teachers || detail.teachers.length === 0" class="card empty-course">
-        暂无师资
+        <van-icon name="manager-o" size="22" color="var(--ink-4)" />
+        <span>暂无师资</span>
       </div>
       <div v-else class="card list-card">
         <div v-for="(t, i) in detail.teachers" :key="t.id || i" class="teacher-item">
-          <span class="teacher-avatar"><van-icon name="manager" size="15" /></span>
+          <span class="teacher-avatar"><van-icon name="manager-o" size="15" /></span>
           <span class="teacher-name text-ellipsis">{{ t.realName || '未命名' }}</span>
         </div>
       </div>
 
       <div class="section-title">学员名册</div>
       <div v-if="!detail.members || detail.members.length === 0" class="card empty-course">
-        暂无学员
+        <van-icon name="friends-o" size="22" color="var(--ink-4)" />
+        <span>暂无学员</span>
       </div>
       <template v-else>
         <div class="card list-card">
@@ -181,20 +187,22 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   Button as VanButton,
   Progress as VanProgress,
   Loading as VanLoading,
   Icon as VanIcon,
+  showToast,
 } from 'vant'
 import PageHeader from '@/components/PageHeader.vue'
 import StatusTag from '@/components/StatusTag.vue'
-import { projects } from '@/api'
+import { courses, projects } from '@/api'
 import { useUserStore } from '@/stores/user'
 import dayjs from 'dayjs'
 
 const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 /** 分支只看能力：project:list 走托管视图 */
 const isOps = computed(() => userStore.caps.canListProjects)
@@ -206,6 +214,20 @@ function formatDate(d: string) {
   return d ? dayjs(d).format('YYYY-MM-DD') : '-'
 }
 
+// 课程列表项只带 needExam 开关，题目是否真的配置需回源课程详情后再跳转
+async function goExam(course: any) {
+  try {
+    const detail = await courses.detail(course.id)
+    if ((detail?.questions?.length ?? 0) === 0) {
+      showToast('该课程尚未配置课后测验题目')
+      return
+    }
+    router.push(`/exam/${course.id}`)
+  } catch {
+    // http 层已提示原因
+  }
+}
+
 onMounted(async () => {
   try {
     const id = Number(route.params.id)
@@ -214,7 +236,9 @@ onMounted(async () => {
       detail.value = await projects.detail(id)
     } else {
       const res: any = await projects.myDetail(id)
-      detail.value = { ...(res.project || res), courses: res.courses || [] }
+      const base = res.project || res
+      // 后端顶层 status 为按周期推导的有效状态，优先于实体内的原始状态
+      detail.value = { ...base, status: res.status ?? base.status, courses: res.courses || [] }
     }
   } catch {
     // ignore
@@ -226,50 +250,74 @@ onMounted(async () => {
 
 <style scoped>
 .detail-head {
-  padding-bottom: var(--sp-3);
+  position: relative;
+  overflow: hidden;
+  padding-bottom: var(--sp-4);
 }
+
+.detail-kicker {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: var(--ink-4);
+}
+
 .detail-title {
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.4;
-  color: var(--ink);
   flex: 1;
+  min-width: 0;
   margin-right: var(--sp-2);
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  color: var(--ink);
 }
+
 .desc {
-  font-size: 13px;
-  color: var(--ink-2);
-  line-height: 1.6;
   margin-bottom: var(--sp-3);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--ink-2);
 }
+
 .meta-list {
   display: flex;
   flex-direction: column;
   gap: var(--sp-1);
-  padding: var(--sp-3);
+  padding: 11px var(--sp-3);
   border: 1px solid var(--line);
   border-radius: var(--r-chip);
   background: var(--surface-2);
 }
+
 .meta-item {
   display: flex;
   align-items: baseline;
   gap: var(--sp-3);
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 12px;
+  line-height: 1.65;
 }
+
 .meta-label {
   flex: none;
-  width: 60px;
+  width: 58px;
   color: var(--ink-3);
 }
+
 .meta-value {
+  min-width: 0;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
 }
+
 .credit-value {
-  color: var(--brand);
-  font-weight: 600;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-strong);
 }
 .overview {
   display: flex;
@@ -290,21 +338,28 @@ onMounted(async () => {
   color: var(--brand);
 }
 .empty-course {
-  text-align: center;
-  color: var(--ink-3);
-  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   padding: var(--sp-6) var(--page-x);
+  color: var(--ink-3);
+  font-size: 12px;
 }
 .course-item {
   cursor: default;
 }
 .course-name {
+  flex: 1;
+  min-width: 0;
+  margin-right: var(--sp-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
   color: var(--ink);
-  flex: 1;
-  margin-right: var(--sp-2);
 }
 .course-state {
   flex: none;
@@ -354,11 +409,24 @@ onMounted(async () => {
   gap: var(--sp-2);
 }
 .course-actions :deep(.van-button) {
-  border-radius: var(--r-chip);
-  padding: 0 var(--sp-4);
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 36px;
+  padding: 0 8px;
+  border-radius: var(--r-control);
+  font-size: 13px;
+  font-weight: 500;
 }
 .course-actions :deep(.van-button--plain) {
   background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink-2);
+}
+
+.course-actions :deep(.van-button--warning.van-button--plain) {
+  background: var(--warn-tint);
+  border-color: var(--accent-line);
+  color: var(--warn);
 }
 .list-card {
   padding-top: var(--sp-2);
@@ -424,9 +492,10 @@ onMounted(async () => {
   gap: 2px;
 }
 .member-credit {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--brand);
+  font-family: var(--font-serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-strong);
   font-variant-numeric: tabular-nums;
 }
 .member-phone {

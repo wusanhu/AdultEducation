@@ -98,6 +98,24 @@ export interface UserRow {
   remark?: string
 }
 
+export interface StudentRow {
+  id: number
+  username: string
+  realName: string
+  phone?: string
+  orgId?: number
+  orgName?: string
+  deptName?: string
+  status: number
+  createTime?: string
+  lastLoginTime?: string
+  enrolledProjects: number
+  learningCourses: number
+  completedCourses: number
+  totalCredits: number
+  lastStudyTime?: string
+}
+
 export interface ProjectRow {
   id: number
   projectName: string

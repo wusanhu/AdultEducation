@@ -19,8 +19,7 @@
               <span style="font-size:15px;font-weight:600">{{ item.userName }}</span>
               <span style="font-size:12px;color:#94a3b8">{{ item.orgName }}</span>
               <a-tag color="purple">人工补录</a-tag>
-              <a-tag v-if="item.auditNode === 'LEADER'" color="orange">领导复核</a-tag>
-              <a-tag v-else color="blue">管理员终审</a-tag>
+              <a-tag color="orange">领导审核</a-tag>
             </div>
             <div style="font-size:13px;color:#475569;margin-top:8px">
               《{{ item.projectName }}》 <a-tag v-if="item.projectArchived" color="purple">已归档</a-tag> · <b style="color:#16a34a">+{{ item.creditValue }} 学分</b>

@@ -11,7 +11,6 @@ import com.adultedu.entity.CreditRecord;
 import com.adultedu.entity.ProjectMember;
 import com.adultedu.entity.ProjectTeacher;
 import com.adultedu.entity.StudyRecord;
-import com.adultedu.entity.SysConfig;
 import com.adultedu.entity.SysOrg;
 import com.adultedu.entity.SysRole;
 import com.adultedu.entity.SysUser;
@@ -22,7 +21,6 @@ import com.adultedu.mapper.CreditRecordMapper;
 import com.adultedu.mapper.ProjectMemberMapper;
 import com.adultedu.mapper.ProjectTeacherMapper;
 import com.adultedu.mapper.StudyRecordMapper;
-import com.adultedu.mapper.SysConfigMapper;
 import com.adultedu.mapper.SysOrgMapper;
 import com.adultedu.mapper.SysRoleMapper;
 import com.adultedu.mapper.SysUserMapper;
@@ -55,7 +53,6 @@ public class CreditService {
     private final SysUserMapper userMapper;
     private final SysOrgMapper orgMapper;
     private final SysRoleMapper roleMapper;
-    private final SysConfigMapper configMapper;
     private final ProjectMemberMapper memberMapper;
     private final ProjectTeacherMapper teacherMapper;
     private final StudyRecordMapper studyRecordMapper;
@@ -362,7 +359,8 @@ public class CreditService {
         record.setCreditValue(req.creditValue());
         record.setSourceType(2);
         record.setAuditStatus(1);
-        record.setAuditNode(needLeaderAudit() ? "LEADER" : "ADMIN");
+        // 补录流程：教员发起 → 领导审核即终审（通过后直接发放，无需管理员终审）
+        record.setAuditNode("LEADER");
         record.setApplyUserId(current.getId());
         record.setRemark(req.remark());
         creditMapper.insert(record);
@@ -388,8 +386,8 @@ public class CreditService {
     }
 
     private void notifyApprovers(CreditRecord record, Long applyUserId, String node) {
-        String roleCode = "LEADER".equals(node) ? "leader" : "super_admin";
-        SysRole role = roleMapper.selectOne(new LambdaQueryWrapper<SysRole>().eq(SysRole::getRoleCode, roleCode));
+        // 补录申请统一提交至领导审核
+        SysRole role = roleMapper.selectOne(new LambdaQueryWrapper<SysRole>().eq(SysRole::getRoleCode, "leader"));
         if (role == null) {
             return;
         }
@@ -401,7 +399,7 @@ public class CreditService {
                 Map.of("studentName", student == null ? "" : student.getRealName(),
                         "credit", record.getCreditValue(),
                         "reason", StrUtil.blankToDefault(record.getRemark(), "未填写"),
-                        "node", "LEADER".equals(node) ? "单位领导复核" : "管理员终审"),
+                        "node", "领导审核"),
                 record.getId());
     }
 
@@ -445,13 +443,16 @@ public class CreditService {
             return;
         }
         if ("LEADER".equals(node) && !admin) {
-            record.setAuditNode("ADMIN");
+            // 领导审核即终审：通过后学分立即发放
+            record.setAuditStatus(2);
+            record.setAuditNode("DONE");
             record.setAuditUserId(current.getId());
             record.setAuditTime(LocalDateTime.now());
             record.setAuditRemark(remark);
             creditMapper.updateById(record);
-            writeLog("CREDIT", id, "APPROVE", current, StrUtil.blankToDefault(remark, "领导复核通过，转管理员终审"));
-            notifyApprovers(record, current.getId(), record.getAuditNode());
+            writeLog("CREDIT", id, "APPROVE", current, StrUtil.blankToDefault(remark, "领导审核通过"));
+            notificationService.sendByTemplate(NotificationTemplates.CREDIT_APPROVED, record.getUserId(),
+                    Map.of("credit", record.getCreditValue()), id);
             return;
         }
         record.setAuditStatus(2);
@@ -533,12 +534,6 @@ public class CreditService {
             records = records.stream().filter(r -> visible.contains(r.getUserId())).toList();
         }
         return enrich(records);
-    }
-
-    private boolean needLeaderAudit() {
-        SysConfig config = configMapper.selectOne(new LambdaQueryWrapper<SysConfig>()
-                .eq(SysConfig::getConfigKey, "credit.needLeaderAudit"));
-        return config != null && "true".equalsIgnoreCase(config.getConfigValue());
     }
 
     private void writeLog(String bizType, Long bizId, String action, LoginUser current, String opinion) {

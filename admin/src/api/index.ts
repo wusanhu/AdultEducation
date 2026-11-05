@@ -2,7 +2,7 @@ import { del, download, get, post, put, upload } from './http'
 import type {
   AbnormalRow, ConfigRow, CourseDetail, CourseRow, CreditRow, DictRow, GraduateApplyRow,
   GraduateFileRow, LoginResult, LogRow, NoticeTemplateRow, OrgNode, OverviewData, PageResult, ProjectMemberRow,
-  ProjectRow, RoleRow, StudyRecordRow, UserInfo, UserRow, VerifyGear, VerifyLogRow
+  ProjectRow, RoleRow, StudentRow, StudyRecordRow, UserInfo, UserRow, VerifyGear, VerifyLogRow
 } from '../types'
 
 export const authApi = {
@@ -68,6 +68,10 @@ export const verifyApi = {
   records: (params: Record<string, unknown>) => get<PageResult<VerifyLogRow>>('/verify/records', params),
   abnormal: (params: Record<string, unknown>) => get<PageResult<AbnormalRow>>('/verify/abnormal', params),
   review: (id: number, action: string, remark?: string) => post<void>(`/verify/${id}/review`, { action, remark })
+}
+
+export const studentApi = {
+  page: (params: Record<string, unknown>) => get<PageResult<StudentRow>>('/students', params)
 }
 
 export const creditApi = {

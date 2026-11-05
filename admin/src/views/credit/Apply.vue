@@ -3,7 +3,7 @@
     <a-col :xs="24" :lg="13">
       <div class="page-card">
         <div style="font-size:16px;font-weight:600">发起学分补录</div>
-        <div style="font-size:12px;color:#94a3b8;margin:4px 0 22px">用于线下培训、学时折算等场景。提交后按系统配置进入领导复核或管理员终审，审批通过自动入账。</div>
+        <div style="font-size:12px;color:#94a3b8;margin:4px 0 22px">用于线下培训、学时折算等场景。提交后由单位领导审核，审核通过自动入账。</div>
         <a-form ref="formRef" :model="form" :rules="rules" layout="vertical">
           <a-form-item label="学员" name="userId">
             <a-select v-model:value="form.userId" show-search option-filter-prop="label" placeholder="搜索姓名、账号或手机号" :options="studentSelectOptions" />
@@ -44,7 +44,7 @@
       <div class="page-card" style="margin-top:16px;background:linear-gradient(135deg,#f0f9ff,#f8fafc)">
         <div style="font-size:14px;font-weight:600;margin-bottom:10px">审批说明</div>
         <div class="markdown-note">
-          <p style="margin:0 0 6px">1. 默认由管理员终审；系统参数开启“学分补录需领导复核”后，先由领导审批再进入管理员终审。</p>
+          <p style="margin:0 0 6px">1. 补录申请提交后由单位领导审核，领导审核即终审，无需管理员审批。</p>
           <p style="margin:0 0 6px">2. 审批通过后学分立即入账，学员可在移动端查看明细。</p>
           <p style="margin:0">3. 申请、审批与入账结果均写入操作日志，可在系统日志中追溯。</p>
         </div>
@@ -81,7 +81,7 @@ const studentSelectOptions = computed(() => students.value.map((s) => ({
   label: `${String(s.realName || s.label || '')}（${String(s.username || '')} · ${String(s.phone || '无手机号')}）`
 })))
 const projectOptions = computed(() => projects.value.map((p) => ({ value: p.id, label: p.projectName })))
-const auditHint = computed(() => '提交后进入审批流：默认管理员终审，可在平台设置中开启领导复核。')
+const auditHint = computed(() => '提交后由单位领导审核，审核通过学分立即入账。')
 
 function statusColor(status: number) { return ({ 1: 'processing', 2: 'green', 3: 'red', 4: 'default' } as Record<number, string>)[status] || 'default' }
 

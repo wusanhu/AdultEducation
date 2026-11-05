@@ -49,6 +49,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -213,7 +214,7 @@ public class ReportService {
         m.put("userName", u == null ? null : u.getRealName());
         m.put("projectName", p == null ? null : p.getProjectName());
         m.put("value", c.getCreditValue());
-        m.put("node", "LEADER".equals(c.getAuditNode()) ? "领导复核" : "管理员终审");
+        m.put("node", "领导审核");
         m.put("time", c.getCreateTime());
         m.put("link", "/credit/audit");
         return m;
@@ -501,6 +502,14 @@ public class ReportService {
     // ---------------- 预警 ----------------
 
     public List<Map<String, Object>> warnings(LoginUser current, Long projectId, String type) {
+        return warnings(current, projectId, type, null);
+    }
+
+    /**
+     * endWithinDays 非空时只保留已进入结班倒计时的培训班（endTime ≤ 今天+endWithinDays，含已结班的班），
+     * 移动端首页据此把预警收窄到临期班。
+     */
+    public List<Map<String, Object>> warnings(LoginUser current, Long projectId, String type, Integer endWithinDays) {
         List<Long> projectIds = projectService.visibleProjectIds(current);
         List<Long> userIds = visibleUserIds(current);
         List<Map<String, Object>> rows = new ArrayList<>();
@@ -515,7 +524,23 @@ public class ReportService {
         if ("ALL".equals(t) || "INACTIVE".equals(t)) {
             rows.addAll(inactiveWarnings(projectId, projectIds, userIds, today));
         }
+        if (endWithinDays != null) {
+            rows = keepEndingSoon(rows, endWithinDays);
+        }
         return rows.stream().limit(500).toList();
+    }
+
+    private List<Map<String, Object>> keepEndingSoon(List<Map<String, Object>> rows, int endWithinDays) {
+        List<Long> ids = rows.stream().map(r -> (Long) r.get("projectId"))
+                .filter(Objects::nonNull).distinct().toList();
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        LocalDate lastDay = LocalDate.now().plusDays(endWithinDays);
+        Set<Long> ending = projectMapper.selectBatchIds(ids).stream()
+                .filter(p -> p.getEndTime() != null && !p.getEndTime().toLocalDate().isAfter(lastDay))
+                .map(TrainingProject::getId).collect(Collectors.toSet());
+        return rows.stream().filter(r -> ending.contains(r.get("projectId"))).toList();
     }
 
     private List<Map<String, Object>> creditWarnings(Long projectId, List<Long> projectIds, List<Long> userIds) {

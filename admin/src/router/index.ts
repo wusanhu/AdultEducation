@@ -27,6 +27,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'verify/record', component: () => import('../views/verify/Records.vue'), meta: { title: '身份核验记录', perms: ['verify:list'] } },
       { path: 'verify/abnormal', component: () => import('../views/verify/Abnormal.vue'), meta: { title: '核验异常清单', perms: ['verify:abnormal'] } },
       { path: 'verify/gear', component: () => import('../views/verify/Gears.vue'), meta: { title: '核验档位模板', perms: ['verify:gear'] } },
+      { path: 'student/list', component: () => import('../views/student/StudentList.vue'), meta: { title: '学员台账', perms: ['student:list'] } },
       { path: 'credit/list', component: () => import('../views/credit/Ledger.vue'), meta: { title: '学分台账', perms: ['credit:list'] } },
       { path: 'credit/apply', component: () => import('../views/credit/Apply.vue'), meta: { title: '学分补录', perms: ['credit:apply'] } },
       { path: 'credit/audit', component: () => import('../views/credit/Audit.vue'), meta: { title: '补录审批', perms: ['credit:audit'] } },

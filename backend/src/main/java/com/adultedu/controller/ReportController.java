@@ -50,8 +50,9 @@ public class ReportController {
     @GetMapping("/warnings")
     @PreAuthorize("hasAnyAuthority('report:warning','report:view')")
     public R<List<Map<String, Object>>> warnings(@RequestParam(required = false) Long projectId,
-                                                @RequestParam(required = false) String type) {
-        return R.ok(reportService.warnings(SecurityUtils.current(), projectId, type));
+                                                @RequestParam(required = false) String type,
+                                                @RequestParam(required = false) Integer endWithinDays) {
+        return R.ok(reportService.warnings(SecurityUtils.current(), projectId, type, endWithinDays));
     }
 
     @PostMapping("/warnings/notify")

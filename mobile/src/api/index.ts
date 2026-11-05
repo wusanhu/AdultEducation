@@ -154,7 +154,8 @@ export const verify = {
 // ---- Reports ----
 export const reports = {
   overview: () => get<any>('/reports/overview'),
-  warnings: (params?: { projectId?: number; type?: string }) => get<any[]>('/reports/warnings', params),
+  warnings: (params?: { projectId?: number; type?: string; endWithinDays?: number }) =>
+    get<any[]>('/reports/warnings', params),
 }
 
 // ---- Files ----

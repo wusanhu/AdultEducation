@@ -2,7 +2,13 @@
   <div class="page-container">
     <PageHeader title="修改密码" />
 
-    <van-form @submit="onSubmit" class="mt-16">
+    <div class="pwd-intro">
+      <span class="kicker">ACCOUNT SECURITY</span>
+      <h2>修改登录密码</h2>
+      <p>为保障账号安全，新密码需为 8-32 位且同时包含字母与数字。</p>
+    </div>
+
+    <van-form @submit="onSubmit" class="pwd-form">
       <van-cell-group inset>
         <van-field
           v-model="form.oldPassword"
@@ -95,13 +101,55 @@ async function onSubmit() {
 </script>
 
 <style scoped>
+.pwd-intro {
+  margin: var(--sp-4) var(--page-x) var(--sp-4);
+  padding: var(--sp-5) var(--sp-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  background:
+    radial-gradient(100% 120% at 100% 0%, rgba(173, 122, 53, 0.1) 0%, transparent 58%),
+    var(--surface);
+  box-shadow: var(--shadow-card);
+}
+.pwd-intro h2 {
+  margin-top: 6px;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.pwd-intro p {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--ink-3);
+}
+.pwd-form :deep(.van-cell-group--inset) {
+  margin-top: 0;
+}
+.pwd-form :deep(.van-field__label) {
+  width: 74px;
+  color: var(--ink-2);
+  font-size: 14px;
+}
+.pwd-form :deep(.van-cell) {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
 .submit-wrap {
-  padding: 24px 16px;
+  padding: var(--sp-6) var(--page-x);
+}
+.submit-wrap :deep(.van-button) {
+  height: 48px;
+  font-size: 15px;
+  font-weight: 600;
 }
 .hint-text {
+  padding: 0 var(--page-x);
+  font-size: 12px;
+  line-height: 1.6;
   text-align: center;
-  font-size: 13px;
-  color: #ee0a24;
-  padding: 0 16px;
+  color: var(--warn);
 }
 </style>

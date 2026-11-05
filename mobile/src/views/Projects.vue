@@ -1,18 +1,37 @@
 <template>
   <div class="page-container">
+    <header class="page-head">
+      <div>
+        <span class="kicker">PROGRAMS</span>
+        <h1>培训班</h1>
+      </div>
+      <span class="head-count">{{ isOps ? opsTotal : list.length }} 个</span>
+    </header>
+
     <!-- 学员：我的培训班，接口返回全量，搜索在前端过滤 -->
     <template v-if="!isOps">
-      <div class="search-bar">
-        <van-search v-model="keyword" placeholder="搜索培训班" @search="loadData" />
+      <!-- 课程聚合：口径与首页学分卡一致（按课程学习状态统计） -->
+      <div v-if="courseStats.total > 0" class="course-stats">
+        <div class="course-stat">
+          <b>{{ courseStats.learning }}<i>门</i></b>
+          <span>学习中</span>
+        </div>
+        <div class="course-stat">
+          <b>{{ courseStats.completed }}<i>门</i></b>
+          <span>已完成</span>
+        </div>
+        <div class="course-stat">
+          <b>{{ courseStats.total }}<i>门</i></b>
+          <span>全部课程</span>
+        </div>
       </div>
 
-      <div v-if="list.length > 0" class="list-count">
-        <span class="kicker">培训班</span>
-        <span class="list-count-num">{{ list.length }} 个</span>
+      <div class="search-bar">
+        <van-search v-model="keyword" placeholder="搜索培训班名称或编号" @search="loadData" />
       </div>
 
       <div v-if="list.length === 0 && !loading" class="empty-wrap">
-        <EmptyState description="暂无培训班" />
+        <EmptyState icon="cluster-o" :description="keyword ? '没有匹配的培训班' : '暂无培训班'" />
       </div>
 
       <div
@@ -45,8 +64,8 @@
         <van-progress
           :percentage="item.courseTotal ? Math.round(((item.completedCourse || 0) / item.courseTotal) * 100) : 0"
           :show-pivot="false"
-          color="var(--brand)"
-          track-color="var(--line)"
+          color="var(--accent)"
+          track-color="var(--surface-3)"
           stroke-width="5"
         />
 
@@ -73,10 +92,7 @@
         />
       </div>
 
-      <div v-if="opsTotal > 0" class="list-count">
-        <span class="kicker">培训班</span>
-        <span class="list-count-num">共 {{ opsTotal }} 个培训班</span>
-      </div>
+
 
       <van-pull-refresh v-model="refreshing" @refresh="resetOpsList">
         <van-list
@@ -158,6 +174,35 @@ const isOps = computed(() => userStore.caps.canListProjects)
 const keyword = ref('')
 const list = ref<any[]>([])
 const loading = ref(false)
+/** 课程聚合：直接累加 /projects/my 下发的 learningCourse/completedCourse/courseTotal，
+ *  与首页学分卡同口径，无需逐班请求详情 */
+const courseStats = ref({ learning: 0, completed: 0, total: 0 })
+
+function computeCourseStats(all: any[]) {
+  courseStats.value = {
+    learning: all.reduce((s, p) => s + (p.learningCourse || 0), 0),
+    completed: all.reduce((s, p) => s + (p.completedCourse || 0), 0),
+    total: all.reduce((s, p) => s + (p.courseTotal || 0), 0),
+  }
+}
+
+/** 旧版后端未下发 learningCourse 时，回退为逐班详情统计 */
+async function loadCourseStatsFallback(all: any[]) {
+  const details = await Promise.all(
+    all.map((p) => projects.myDetail(p.id).catch(() => null))
+  )
+  let learning = 0
+  let completed = 0
+  let total = 0
+  for (const d of details) {
+    for (const c of (d?.courses || []) as any[]) {
+      total++
+      if (c.studyStatus === 1) learning++
+      else if (c.studyStatus === 2) completed++
+    }
+  }
+  courseStats.value = { learning, completed, total }
+}
 
 const opsList = ref<any[]>([])
 const opsTotal = ref(0)
@@ -184,14 +229,21 @@ async function loadData() {
   loading.value = true
   try {
     const data = await projects.my()
-    let result = data as any[]
+    const all = data as any[]
     if (keyword.value) {
-      result = result.filter((p: any) =>
+      list.value = all.filter((p: any) =>
         (p.projectName || '').includes(keyword.value) ||
         (p.projectCode || '').includes(keyword.value)
       )
+    } else {
+      list.value = all
     }
-    list.value = result
+    // 聚合始终基于全量培训班，保证与首页数字一致，不受搜索过滤影响
+    if (all.length > 0 && all[0].learningCourse != null) {
+      computeCourseStats(all)
+    } else {
+      loadCourseStatsFallback(all)
+    }
   } catch {
     // ignore
   } finally {
@@ -237,46 +289,127 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.search-bar {
-  padding-top: var(--sp-2);
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: calc(env(safe-area-inset-top) + 24px) var(--page-x) var(--sp-3);
+}
+.page-head h1 {
+  margin-top: 5px;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.head-count {
+  flex: none;
+  margin-bottom: 3px;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
   background: var(--surface);
-  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+/* 课程聚合条：与首页学分卡同一口径 */
+.course-stats {
+  display: flex;
+  margin: 0 var(--page-x) var(--sp-4);
+  padding: var(--sp-3) 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+}
+.course-stat {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+.course-stat + .course-stat {
+  border-left: 1px solid var(--line);
+}
+.course-stat b {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.course-stat b i {
+  font-style: normal;
+  font-size: 11px;
+  margin-left: 2px;
+  color: var(--ink-3);
+  font-family: var(--font-sans, inherit);
+}
+.course-stat span {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+.search-bar {
+  padding: 0 var(--page-x) var(--sp-3);
+  background: transparent;
+}
+.search-bar :deep(.van-search) {
+  padding: 0;
 }
 .search-bar :deep(.van-search__content) {
   border-radius: var(--r-control);
+  background: var(--surface);
+  border: 1px solid var(--line);
 }
-.list-count {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sp-2);
-  padding: var(--sp-4) var(--page-x) var(--sp-2);
-}
-.list-count-num {
-  font-size: 12px;
-  color: var(--ink-3);
+.search-bar :deep(.van-field__control) {
+  font-size: 14px;
 }
 .empty-wrap {
-  padding-top: var(--sp-5);
+  margin: 0 var(--page-x) var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
 }
 .project-card {
   position: relative;
+  overflow: hidden;
+  padding: var(--sp-4);
   cursor: pointer;
-  transition: border-color 0.15s, opacity 0.15s;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 .project-card:active {
-  opacity: 0.7;
+  background: var(--surface-2);
 }
-.project-card--active {
-  border-left: 3px solid var(--brand);
+.project-card--active::before {
+  content: '';
+  position: absolute;
+  top: var(--sp-4);
+  bottom: var(--sp-4);
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--accent);
 }
 .project-name {
+  flex: 1;
+  min-width: 0;
+  margin-right: var(--sp-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 16px;
   font-weight: 600;
   line-height: 1.4;
   color: var(--ink);
-  flex: 1;
-  margin-right: var(--sp-2);
+  letter-spacing: 0.01em;
 }
 .project-meta {
   display: flex;
@@ -305,11 +438,12 @@ onMounted(() => {
   margin-bottom: var(--sp-2);
 }
 .progress-text {
-  font-size: 13px;
-  color: var(--ink-2);
+  font-size: 12px;
+  color: var(--ink-3);
 }
 .progress-num {
-  font-size: 13px;
+  font-family: var(--font-serif);
+  font-size: 14px;
   font-weight: 600;
   color: var(--ink);
   font-variant-numeric: tabular-nums;
@@ -325,14 +459,15 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-2);
-  padding: var(--sp-3) var(--sp-3);
-  border: 1px solid var(--line);
+  padding: 10px var(--sp-3);
+  border: 1px solid var(--accent-line);
   border-radius: var(--r-chip);
-  background: var(--surface-2);
+  background: var(--accent-tint);
 }
 .credit-box-label {
-  font-size: 12px;
-  color: var(--ink-3);
+  font-size: 11px;
+  color: var(--accent-strong);
+  opacity: 0.8;
 }
 .credit-box-value {
   display: flex;
@@ -341,7 +476,7 @@ onMounted(() => {
 }
 .credit-box-value b.stat-value {
   font-size: 22px;
-  color: var(--brand);
+  color: var(--accent-strong);
 }
 .credit-box-value i {
   font-style: normal;
@@ -362,7 +497,8 @@ onMounted(() => {
 }
 .ops-stat-num {
   display: block;
-  font-size: 20px;
+  font-size: 21px;
+  color: var(--brand);
 }
 .ops-teachers {
   display: flex;

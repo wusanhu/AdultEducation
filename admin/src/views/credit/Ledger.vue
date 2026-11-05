@@ -42,7 +42,7 @@
         </template>
         <template v-else-if="column.key === 'status'">
           <a-tag :color="statusColor(record.auditStatus)">{{ record.auditStatusLabel }}</a-tag>
-          <div v-if="record.auditStatus === 1 && record.auditNode" style="font-size:12px;color:#94a3b8;margin-top:2px">{{ record.auditNode === 'LEADER' ? '领导复核中' : '管理员审批中' }}</div>
+          <div v-if="record.auditStatus === 1 && record.auditNode" style="font-size:12px;color:#94a3b8;margin-top:2px">领导审核中</div>
         </template>
         <template v-else-if="column.key === 'audit'">
           <div style="font-size:12px">{{ record.auditUserName || record.applyUserName || '-' }}</div>

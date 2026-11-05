@@ -1,5 +1,13 @@
 <template>
   <div class="page-container">
+    <header class="page-head">
+      <div>
+        <span class="kicker">APPROVALS</span>
+        <h1>审批</h1>
+      </div>
+      <span class="head-count">待办 {{ todoStore.approvalCount }} 项</span>
+    </header>
+
     <template v-if="visibleTabs.length">
       <van-tabs v-model:active="activeTab" class="approval-tabs" sticky>
         <van-tab v-for="t in visibleTabs" :key="t.key" :title="t.label" :name="t.key" />
@@ -445,7 +453,9 @@ function makeFeed(loader: (pageNum: number) => Promise<{ records: any[]; total: 
   const pageNum = ref(1)
 
   async function loadMore() {
-    if (finished.value || loading.value) return
+    // van-list 会在触发 load 前先把 loading 置为 true，这里不能再用 loading 做去重，
+    // 否则会直接 return、永远不把 loading 复位，表现为一直转圈
+    if (finished.value) return
     loading.value = true
     try {
       const res = await loader(pageNum.value)
@@ -665,6 +675,33 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: calc(env(safe-area-inset-top) + 24px) var(--page-x) var(--sp-3);
+}
+.page-head h1 {
+  margin-top: 5px;
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.head-count {
+  flex: none;
+  margin-bottom: 3px;
+  padding: 3px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 11px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
 .approval-tabs :deep(.van-tabs__wrap) {
   background: var(--surface);
   border-bottom: 1px solid var(--line);
@@ -684,6 +721,9 @@ onMounted(() => {
 .approval-tabs :deep(.van-tabs__line) {
   background: var(--brand);
   border-radius: var(--r-tag);
+}
+.approval-tabs :deep(.van-sticky--fixed) {
+  top: env(safe-area-inset-top) !important;
 }
 
 .list-count {

@@ -59,7 +59,18 @@ watch(
   min-height: 100dvh;
   background: var(--bg);
 }
+.tab-layout :deep(.van-tabbar) {
+  left: 50%;
+  right: auto;
+  width: min(100%, 560px);
+  transform: translateX(-50%);
+  background: var(--surface);
+}
 .tab-layout :deep(.van-tabbar-item) {
   font-weight: 500;
+  padding-bottom: 2px;
+}
+.tab-layout :deep(.van-tabbar-item__text) {
+  letter-spacing: 0.02em;
 }
 </style>

@@ -6,9 +6,11 @@
 
     <template v-if="!loading && paper">
       <!-- Countdown -->
-      <div class="card countdown-bar">
-        <van-icon name="clock-o" />
-        <span>剩余时间：{{ formatCountdown(remaining) }}</span>
+      <div class="card countdown-bar" :class="{ urgent: remaining <= 60 }">
+        <span class="countdown-icon"><van-icon name="clock-o" size="16" /></span>
+        <span class="countdown-label">剩余时间</span>
+        <span class="countdown-time">{{ formatCountdown(remaining) }}</span>
+        <span class="countdown-total">共 {{ questions.length }} 题</span>
       </div>
 
       <!-- Questions -->
@@ -63,8 +65,8 @@
       <div class="result-content">
         <van-icon
           :name="passedResult ? 'passed' : 'close'"
-          :color="passedResult ? '#07c160' : '#ee0a24'"
-          size="60"
+          :color="passedResult ? 'var(--ok)' : 'var(--bad)'"
+          size="56"
         />
         <p class="result-score">得分：{{ result?.score }} / {{ result?.totalScore ?? 100 }}</p>
         <p v-if="passedResult" class="result-hint">恭喜您通过了考试！</p>
@@ -186,8 +188,9 @@ onMounted(async () => {
     }
 
     startCountdown()
-  } catch {
-    showToast('加载试卷失败')
+  } catch (e: any) {
+    // 展示后端的具体校验原因（如"请先完成课程视频学习后再参加测验"）
+    showToast(e?.message || '加载试卷失败')
   } finally {
     loading.value = false
   }
@@ -202,68 +205,151 @@ onBeforeUnmount(() => {
 .countdown-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #ee0a24;
-  font-weight: 500;
+  gap: var(--sp-2);
+  padding: 13px var(--sp-4);
+  border-color: var(--accent-line);
+  background: var(--accent-tint);
+  box-shadow: none;
 }
+.countdown-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--accent-line);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--accent-strong);
+}
+.countdown-label {
+  font-size: 12px;
+  color: var(--ink-2);
+}
+.countdown-time {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent-strong);
+  font-variant-numeric: tabular-nums;
+}
+.countdown-total {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.countdown-bar.urgent {
+  border-color: #edcfcd;
+  background: var(--bad-tint);
+}
+.countdown-bar.urgent .countdown-icon,
+.countdown-bar.urgent .countdown-time {
+  border-color: #edcfcd;
+  color: var(--bad);
+}
+
 .question-card {
-  margin-bottom: 0;
-  border-bottom: 1px solid #f5f5f5;
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-4);
 }
 .q-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--sp-2);
+  margin-bottom: 10px;
 }
 .q-num {
-  background: #1989fa;
-  color: #fff;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--brand);
+  font-family: var(--font-serif);
   font-size: 12px;
   font-weight: 600;
+  color: #fff;
 }
 .q-type {
-  font-size: 12px;
-  color: #969799;
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-tag);
+  background: var(--surface-2);
+  font-size: 10px;
+  color: var(--ink-3);
 }
 .q-score {
-  font-size: 12px;
-  color: #ff976a;
   margin-left: auto;
+  font-family: var(--font-serif);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-strong);
 }
 .q-content {
+  margin-bottom: var(--sp-3);
   font-size: 15px;
-  line-height: 1.6;
-  margin-bottom: 12px;
+  line-height: 1.7;
+  color: var(--ink);
 }
 .option-item {
-  padding: 8px 0;
+  margin-bottom: var(--sp-2);
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-chip);
+  background: var(--surface-2);
+  transition: border-color 0.16s, background-color 0.16s;
+}
+.option-item:last-child {
+  margin-bottom: 0;
+}
+.option-item:has(.van-radio__icon--checked),
+.option-item:has(.van-checkbox__icon--checked) {
+  border-color: var(--brand-line);
+  background: var(--brand-tint);
+}
+.option-item :deep(.van-radio),
+.option-item :deep(.van-checkbox) {
+  width: 100%;
+}
+.option-item :deep(.van-radio__label),
+.option-item :deep(.van-checkbox__label) {
+  color: var(--ink-2);
+  font-size: 14px;
+  line-height: 1.55;
 }
 .submit-bar {
-  padding: 16px;
   position: sticky;
   bottom: 0;
-  background: #f7f8fa;
+  z-index: 2;
+  padding: var(--sp-3) var(--page-x) calc(var(--sp-3) + env(safe-area-inset-bottom));
+  background: rgba(244, 242, 236, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.submit-bar :deep(.van-button) {
+  height: 46px;
+  font-size: 15px;
+  letter-spacing: 0.06em;
 }
 .result-content {
-  padding: 24px 20px;
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
   text-align: center;
 }
 .result-score {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 16px 0 8px;
+  margin: 14px 0 8px;
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 .result-hint {
-  font-size: 14px;
-  color: #646566;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--ink-3);
 }
 .loading-center {
   display: flex;

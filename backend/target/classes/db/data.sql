@@ -22,7 +22,20 @@ INSERT IGNORE INTO sys_user (id,username,password,real_name,phone,id_card,org_id
  (4,'student','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','王小雨','13800000004','110101199501010046',3,3,4,4,1,0,'护理部学员'),
  (5,'student2','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','赵晨','13800000005','110101199401010057',3,3,4,4,1,0,'护理部学员'),
  (6,'student3','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','陈思远','13800000006','11010119960101006X',4,4,4,4,1,0,'信息技术部学员'),
- (7,'teacher2','$2b$10$gSmNx0baZC1K665fur9DN.TQ0MoDT6i6ske1dmJ66KHyGbXbWtUSO','周涛','13800000007','110101198301010071',2,4,3,3,1,0,'信息技术课程讲师');
+ (7,'teacher2','$2b$10$gSmNx0baZC1K665fur9DN.TQ0MoDT6i6ske1dmJ66KHyGbXbWtUSO','周涛','13800000007','110101198301010071',2,4,3,3,1,0,'信息技术课程讲师'),
+ -- 模拟学员：学员台账/统计演示数据，密码均为 student123
+ (20,'student20','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','李文静','13800000020','110101199201010015',3,3,4,4,1,0,'护理部学员'),
+ (21,'student21','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','周子航','13800000021','110101199301010022',3,3,4,4,1,0,'护理部学员'),
+ (22,'student22','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','吴丽娟','13800000022','110101199401010033',3,3,4,4,1,0,'护理部学员'),
+ (23,'student23','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','郑凯文','13800000023','11010119950101004X',3,3,4,4,1,0,'护理部学员'),
+ (24,'student24','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','孙一鸣','13800000024','110101199601010051',3,3,4,4,1,0,'护理部学员'),
+ (25,'student25','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','马晓婷','13800000025','110101199701010062',3,3,4,4,1,0,'护理部学员'),
+ (26,'student26','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','朱浩然','13800000026','11010119980101007X',4,4,4,4,1,0,'信息技术部学员'),
+ (27,'student27','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','胡美琳','13800000027','110101199901010081',4,4,4,4,1,0,'信息技术部学员'),
+ (28,'student28','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','高志远','13800000028','11010120000101009X',5,6,4,4,1,0,'医务部学员'),
+ (29,'student29','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','林晓芳','13800000029','110101200101010102',5,6,4,4,1,0,'医务部学员'),
+ (30,'student30','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','何俊杰','13800000030','110101200201010113',3,3,4,4,0,0,'已停用账号'),
+ (31,'student31','$2b$10$TGOdEM2c..Ah3oDOhY4K7.pPwT8TR6nunLV09uQX5NadMkCBGjqZW','郭雨桐','13800000031','110101200301010124',5,6,4,4,1,0,'尚未加入培训班');
 
 INSERT IGNORE INTO sys_menu (id,parent_id,menu_name,menu_type,path,component,icon,perms,sort,hidden,mobile_visible,status) VALUES
  (100,0,'工作台',2,'/dashboard','dashboard/index','DashboardOutlined','dashboard:view',1,0,0,1),
@@ -43,6 +56,7 @@ INSERT IGNORE INTO sys_menu (id,parent_id,menu_name,menu_type,path,component,ico
  (221,200,'身份核验记录',2,'/verify/record','verify/record','CameraOutlined','verify:list',4,0,0,1),
  (222,200,'核验异常清单',2,'/verify/abnormal','verify/abnormal','WarningOutlined','verify:abnormal',5,0,0,1),
  (223,200,'核验档位模板',2,'/verify/gear','verify/gear','ControlOutlined','verify:gear',6,0,0,1),
+ (224,200,'学员台账',2,'/student/list','student/list','UsergroupAddOutlined','student:list',7,0,0,1),
  (230,0,'学分管理',1,'/credit',NULL,'CreditCardOutlined',NULL,3,0,0,1),
  (231,230,'学分台账',2,'/credit/list','credit/list','ProfileOutlined','credit:list',1,0,0,1),
  (232,230,'学分补录',2,'/credit/apply','credit/apply','PlusSquareOutlined','credit:apply',2,0,0,1),
@@ -85,10 +99,10 @@ INSERT IGNORE INTO sys_menu (id,parent_id,menu_name,menu_type,path,component,ico
 INSERT IGNORE INTO sys_role_menu (role_id,menu_id) SELECT 1,id FROM sys_menu;
 -- 领导：查看 + 审批 + 报表
 INSERT IGNORE INTO sys_role_menu (role_id,menu_id) VALUES
- (2,100),(2,200),(2,201),(2,210),(2,220),(2,221),(2,222),(2,230),(2,231),(2,233),(2,240),(2,241),(2,242),(2,250),(2,251),(2,252),(2,253),(2,254),(2,255);
+ (2,100),(2,200),(2,201),(2,210),(2,220),(2,221),(2,222),(2,224),(2,230),(2,231),(2,233),(2,240),(2,241),(2,242),(2,250),(2,251),(2,252),(2,253),(2,254),(2,255);
 -- 教员：课程管理、学习监控、核验记录、学分补录、毕业初审
 INSERT IGNORE INTO sys_role_menu (role_id,menu_id) VALUES
- (3,100),(3,200),(3,201),(3,2014),(3,210),(3,211),(3,212),(3,213),(3,214),(3,215),(3,220),(3,221),(3,222),(3,230),(3,231),(3,232),(3,240),(3,241),(3,250),(3,251),(3,252),(3,253),(3,254),(3,255);
+ (3,100),(3,200),(3,201),(3,2014),(3,210),(3,211),(3,212),(3,213),(3,214),(3,215),(3,220),(3,221),(3,222),(3,224),(3,230),(3,231),(3,232),(3,240),(3,241),(3,250),(3,251),(3,252),(3,253),(3,254),(3,255);
 
 INSERT IGNORE INTO verify_gear (id,gear_code,gear_name,trigger_points,interval_minute,timeout_second,max_fail_count,fail_strategy,built_in,status,description) VALUES
  (1,0,'不验证','[]',0,60,3,1,1,1,'全程不触发人员身份核验，仅保留原有防刷（切屏、随机弹窗确认）。适用于普通选修课。'),
@@ -116,8 +130,10 @@ INSERT IGNORE INTO sys_config (id,config_name,config_key,config_value,config_typ
  (16,'微信通知模式','wechat.mock','true','boolean','本地演示使用模拟推送'),
  (17,'审批超时工作日','approval.timeoutDays','3','number','审批节点超时天数'),
  (18,'OSS存储配置','oss.config','{"provider":"local","bucket":"adult-edu"}','json','本地演示使用本地磁盘，生产可切换 OSS'),
- (19,'学分补录需领导复核','credit.needLeaderAudit','false','boolean','开启后补录申请先由领导复核再由管理员终审'),
  (20,'证书下载开放','cert.download','true','boolean','学员是否可下载电子证书');
+
+-- 补录流程已改为「教员发起 → 领导审核即终审」，原开关配置已废弃
+DELETE FROM sys_config WHERE config_key='credit.needLeaderAudit';
 
 INSERT IGNORE INTO sys_dict (dict_name,dict_type,dict_value,dict_label,sort,status) VALUES
  ('账号类型','user_type','1','管理员',1,1),('账号类型','user_type','2','领导',2,1),('账号类型','user_type','3','教员',3,1),('账号类型','user_type','4','学员',4,1),
@@ -141,7 +157,11 @@ INSERT IGNORE INTO training_project (id,project_name,project_code,description,st
  (3,'2025年度公需科目培训','P2025-01','2025 年度公需科目学习项目，已结束归档。','2025-01-01 00:00:00','2025-12-31 23:59:59',4.00,2,1,0,1,1,1,1);
 
 INSERT IGNORE INTO project_member (project_id,user_id,completion_status) VALUES
- (1,4,0),(1,5,0),(1,6,0),(2,4,0),(2,5,0),(3,6,1);
+ (1,4,0),(1,5,0),(1,6,0),(2,4,0),(2,5,0),(3,6,1),
+ -- 模拟学员分班
+ (1,20,0),(1,21,0),(1,22,0),(1,23,0),(1,24,0),(1,25,0),(1,26,0),(1,27,0),(1,28,0),(1,29,0),(1,30,0),
+ (2,20,0),(2,21,0),(2,22,0),(2,27,0),(2,28,0),
+ (3,26,1);
 
 INSERT IGNORE INTO project_teacher (project_id,user_id) VALUES (1,3),(2,3),(1,7),(3,7);
 
@@ -196,7 +216,20 @@ INSERT IGNORE INTO study_record (id,user_id,course_id,project_id,start_time,end_
  (2,4,2,1,'2026-03-03 14:00:00',NULL,4200,1,0,'iPhone / iOS','127.0.0.1',0,45.00,0,0,0,1,81),
  (3,5,1,1,'2026-03-01 10:00:00','2026-03-01 11:20:00',21600,1,0,'Android','127.0.0.1',0,100.00,0,0,0,2,180),
  (4,5,3,1,'2026-03-04 15:00:00',NULL,1200,0,1,'Android','127.0.0.1',0,30.00,0,0,0,1,54),
- (5,6,1,1,'2026-03-05 08:30:00',NULL,600,0,0,'Chrome / Windows','127.0.0.1',0,10.00,0,0,0,1,18);
+ (5,6,1,1,'2026-03-05 08:30:00',NULL,600,0,0,'Chrome / Windows','127.0.0.1',0,10.00,0,0,0,1,18),
+ -- 模拟学员学习记录：覆盖已完成/学习中/未开始多种状态
+ (101,20,1,1,'2026-03-06 09:00:00','2026-03-06 10:40:00',21600,1,0,'iPhone / iOS','127.0.0.1',0,100.00,0,0,0,2,180),
+ (102,20,2,1,'2026-03-08 14:00:00',NULL,9000,1,1,'iPhone / iOS','127.0.0.1',0,60.00,0,0,0,1,108),
+ (103,21,1,1,'2026-03-02 10:00:00','2026-03-02 11:30:00',21600,0,0,'Android','127.0.0.1',0,100.00,0,0,0,2,180),
+ (104,21,2,1,'2026-03-05 15:00:00','2026-03-05 16:20:00',21600,1,0,'Android','127.0.0.1',0,100.00,0,0,0,2,180),
+ (105,21,3,1,'2026-03-09 09:30:00',NULL,1800,0,0,'Android','127.0.0.1',0,25.00,0,0,0,1,45),
+ (106,22,1,1,'2026-03-07 19:00:00',NULL,11000,2,1,'Chrome / Windows','127.0.0.1',0,80.00,0,0,0,1,144),
+ (107,22,2,1,'2026-03-10 20:00:00',NULL,2400,1,0,'iPhone / iOS','127.0.0.1',0,40.00,0,0,0,1,72),
+ (108,23,1,1,'2026-03-11 09:00:00',NULL,900,0,0,'Android','127.0.0.1',0,15.00,0,0,0,1,27),
+ (109,24,5,2,'2026-04-02 09:00:00','2026-04-02 10:30:00',21600,2,0,'iPhone / iOS','127.0.0.1',0,100.00,0,0,0,2,180),
+ (110,24,6,2,'2026-04-05 14:00:00',NULL,6000,1,0,'iPhone / iOS','127.0.0.1',0,50.00,0,0,0,1,90),
+ (111,27,5,2,'2026-04-08 10:00:00',NULL,3600,0,2,'Android','127.0.0.1',0,30.00,0,0,0,1,54),
+ (112,28,6,2,'2026-04-10 16:00:00',NULL,1200,0,0,'Chrome / Windows','127.0.0.1',0,20.00,0,0,0,1,36);
 
 INSERT INTO study_heartbeat_log (study_record_id,user_id,course_id,report_time,delta_seconds,progress,in_foreground,screen_switch,ip)
 SELECT 2,4,2,'2026-03-03 14:10:00',30,35.00,1,0,'127.0.0.1' FROM DUAL
@@ -213,7 +246,27 @@ INSERT IGNORE INTO credit_record (id,user_id,project_id,course_id,credit_value,s
  (1,4,1,1,3.00,1,2,NULL,'2026-03-02 10:30:00',NULL,'完成课程《继续教育政策与法规》自动发放'),
  (2,5,1,1,3.00,1,2,NULL,'2026-03-01 11:20:00',NULL,'完成课程《继续教育政策与法规》自动发放'),
  (3,5,1,NULL,7.00,2,2,1,'2026-02-20 09:00:00',3,'参加线下专题培训，补录 7 学分'),
- (4,6,3,7,4.00,1,2,NULL,'2025-12-20 16:00:00',NULL,'完成课程《公需科目：数字经济》自动发放');
+ (4,6,3,7,4.00,1,2,NULL,'2025-12-20 16:00:00',NULL,'完成课程《公需科目：数字经济》自动发放'),
+ -- 模拟学员学分：与 study_record 演示数据(status=2 已完成)对应
+ (9701,20,1,1,3.00,1,2,NULL,'2026-03-05 09:10:00',NULL,'完成课程《继续教育政策与法规》自动发放'),
+ (9702,21,1,1,3.00,1,2,NULL,'2026-03-04 10:05:00',NULL,'完成课程《继续教育政策与法规》自动发放'),
+ (9703,21,1,2,3.00,1,2,NULL,'2026-03-12 14:30:00',NULL,'完成课程《护理专业知识》自动发放'),
+ (9704,24,2,5,3.00,1,2,NULL,'2026-02-25 16:20:00',NULL,'完成课程自动发放');
+
+-- 补录审批流程模拟数据：教员（李静，id=3）发起，领导（张明，id=2）审核即终审
+INSERT IGNORE INTO credit_record (id,user_id,project_id,course_id,credit_value,source_type,audit_status,audit_user_id,audit_time,audit_node,apply_user_id,remark) VALUES
+ (9801,22,1,NULL,2.00,2,1,NULL,NULL,'LEADER',3,'参加院外护理学术年会，折算继续教育学分'),
+ (9802,27,2,NULL,3.00,2,1,NULL,NULL,'LEADER',3,'完成院感防控实操培训并取得结业证书'),
+ (9803,25,1,NULL,1.50,2,3,2,'2026-03-18 10:20:00','REJECTED',3,'参加科室内部业务培训'),
+ (9804,24,2,NULL,2.00,2,2,2,'2026-03-15 15:40:00','DONE',3,'参加市级护理技能竞赛获奖折算');
+
+INSERT IGNORE INTO approval_log (biz_type,biz_id,node,auditor_id,auditor_name,action,opinion) VALUES
+ ('CREDIT',9801,'CREDIT',3,'李静','SUBMIT','参加院外护理学术年会，折算继续教育学分'),
+ ('CREDIT',9802,'CREDIT',3,'李静','SUBMIT','完成院感防控实操培训并取得结业证书'),
+ ('CREDIT',9803,'CREDIT',3,'李静','SUBMIT','参加科室内部业务培训'),
+ ('CREDIT',9803,'CREDIT',2,'张明','REJECT','补录材料不完整，请补充培训证明后重新提交'),
+ ('CREDIT',9804,'CREDIT',3,'李静','SUBMIT','参加市级护理技能竞赛获奖折算'),
+ ('CREDIT',9804,'CREDIT',2,'张明','APPROVE','获奖材料齐全，同意折算学分');
 
 INSERT INTO user_verify_log (user_id,course_id,project_id,study_record_id,trigger_point,verify_time,verify_type,img_url,verify_result,status,similarity,fail_reason,remark)
 SELECT 4,2,1,2,'pct:50','2026-03-03 14:16:00',1,NULL,1,1,0.9312,NULL,'演示：核验通过' FROM DUAL
