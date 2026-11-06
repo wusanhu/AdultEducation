@@ -71,7 +71,8 @@ export const verifyApi = {
 }
 
 export const studentApi = {
-  page: (params: Record<string, unknown>) => get<PageResult<StudentRow>>('/students', params)
+  page: (params: Record<string, unknown>) => get<PageResult<StudentRow>>('/students', params),
+  updateFaceImg: (id: number, faceImg: string) => put<void>(`/students/${id}/face-img`, { faceImg })
 }
 
 export const creditApi = {
@@ -112,6 +113,7 @@ export const systemApi = {
   userStatus: (id: number, status: number) => put<void>(`/system/users/${id}/status`, { status }),
   removeUser: (id: number) => del<void>(`/system/users/${id}`),
   importUsers: (file: File) => upload<Record<string, unknown>>('/system/users/import', file),
+  upload: (file: File) => upload<{ url: string }>('/files/upload', file),
   exportUsers: (params: Record<string, unknown>) => download('/system/users/export', params, '账号列表.xlsx'),
   roles: () => get<RoleRow[]>('/system/roles'),
   roleDetail: (id: number) => get<{ role: RoleRow; menuIds: number[]; orgIds: number[] }>(`/system/roles/${id}`),

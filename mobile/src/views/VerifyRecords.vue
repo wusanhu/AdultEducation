@@ -148,6 +148,7 @@ function typeText(item: any) {
   switch (item.verifyType) {
     case 1: case 'face': return '人脸比对'
     case 2: case 'sms': return '短信验证码'
+    case 3: return '学习验证'
     default: return '其他'
   }
 }

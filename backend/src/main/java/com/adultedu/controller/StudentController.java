@@ -7,6 +7,9 @@ import com.adultedu.security.SecurityUtils;
 import com.adultedu.service.StudentService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,5 +40,16 @@ public class StudentController {
             @RequestParam(required = false) Long projectId) {
         LoginUser current = SecurityUtils.current();
         return R.ok(studentService.page(current, pageNum, pageSize, keyword, orgId, status, projectId));
+    }
+
+    /**
+     * 保存学员人脸基准照（核验 1:1 比对依据），faceImg 为文件上传接口返回的 URL，传空清除。
+     */
+    @PutMapping("/{id}/face-img")
+    @PreAuthorize("hasAuthority('student:list')")
+    public R<Void> updateFaceImg(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        LoginUser current = SecurityUtils.current();
+        studentService.updateFaceImg(current, id, body.get("faceImg"));
+        return R.ok();
     }
 }

@@ -20,6 +20,8 @@
               <div style="display:flex;align-items:center;gap:8px">
                 <span style="font-size:16px;font-weight:600">{{ gear.gearName }}</span>
                 <a-tag v-if="gear.builtIn === 1" color="blue">预置</a-tag>
+                <a-tag v-if="gear.liveCheck === 1" color="purple">真人活体</a-tag>
+                <a-tag v-if="gear.verifyMode === 2" color="cyan">学习验证</a-tag>
                 <a-tag :color="gear.status === 1 ? 'green' : 'default'">{{ gear.status === 1 ? '启用' : '停用' }}</a-tag>
               </div>
               <div style="font-size:12px;color:#94a3b8;margin-top:4px;line-height:1.7">{{ gear.description || '暂无说明' }}</div>
@@ -68,6 +70,21 @@
             <a-radio :value="2">标记异常，需人工复核</a-radio>
           </a-radio-group>
         </a-form-item>
+        <a-form-item label="核验方式">
+          <a-radio-group v-model:value="form.verifyMode">
+            <a-radio :value="1">人脸核验</a-radio>
+            <a-radio :value="2">学习验证（弹窗确认）</a-radio>
+          </a-radio-group>
+        </a-form-item>
+        <a-form-item v-if="form.verifyMode === 1">
+          <template #label>
+            <span>真人活体核验</span>
+            <a-tooltip title="开启后，学员触发核验时须完成真人活体检测，并通过百度云与人脸基准照的 1:1 比对（需在学员管理中上传基准照；未上传基准照时仅完成活体检测）。">
+              <QuestionCircleOutlined style="margin-left:6px;color:#94a3b8" />
+            </a-tooltip>
+          </template>
+          <a-switch v-model:checked="form.liveCheck" checked-children="开启" un-checked-children="关闭" />
+        </a-form-item>
         <a-form-item label="档位说明"><a-textarea v-model:value="form.description" :rows="3" placeholder="说明适用课程与核验要求" /></a-form-item>
         <a-form-item label="状态"><a-switch v-model:checked="form.enabled" checked-children="启用" un-checked-children="停用" /></a-form-item>
       </a-form>
@@ -78,7 +95,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { message } from 'ant-design-vue'
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons-vue'
 import { courseApi } from '../../api'
 import type { VerifyGear } from '../../types'
 
@@ -88,7 +105,7 @@ const saving = ref(false)
 const builtIn = ref(false)
 const form = reactive({
   id: 0, gearCode: 9, gearName: '', triggerPoints: '[40,80]', intervalMinute: 0,
-  timeoutSecond: 60, maxFailCount: 3, failStrategy: 1, description: '', enabled: true
+  timeoutSecond: 60, maxFailCount: 3, failStrategy: 1, liveCheck: false, verifyMode: 1, description: '', enabled: true
 })
 
 function displayPoints(points?: string) {
@@ -99,7 +116,7 @@ async function load() {
   try { gears.value = await courseApi.gears() } catch (e) { message.error((e as Error).message) }
 }
 function reset() {
-  Object.assign(form, { id: 0, gearCode: 9, gearName: '', triggerPoints: '[40,80]', intervalMinute: 0, timeoutSecond: 60, maxFailCount: 3, failStrategy: 1, description: '', enabled: true })
+  Object.assign(form, { id: 0, gearCode: 9, gearName: '', triggerPoints: '[40,80]', intervalMinute: 0, timeoutSecond: 60, maxFailCount: 3, failStrategy: 1, liveCheck: false, verifyMode: 1, description: '', enabled: true })
   builtIn.value = false
 }
 function openCreate() { reset(); open.value = true }
@@ -107,7 +124,7 @@ function openEdit(gear: VerifyGear) {
   Object.assign(form, {
     id: gear.id, gearCode: gear.gearCode, gearName: gear.gearName, triggerPoints: gear.triggerPoints || '[]',
     intervalMinute: gear.intervalMinute, timeoutSecond: gear.timeoutSecond, maxFailCount: gear.maxFailCount,
-    failStrategy: gear.failStrategy, description: gear.description || '', enabled: gear.status === 1
+    failStrategy: gear.failStrategy, liveCheck: gear.liveCheck === 1, verifyMode: gear.verifyMode || 1, description: gear.description || '', enabled: gear.status === 1
   })
   builtIn.value = gear.builtIn === 1
   open.value = true
@@ -120,7 +137,7 @@ async function save() {
     await courseApi.saveGear({
       id: form.id || null, gearCode: form.gearCode, gearName: form.gearName, triggerPoints: form.triggerPoints,
       intervalMinute: form.intervalMinute, timeoutSecond: form.timeoutSecond, maxFailCount: form.maxFailCount,
-      failStrategy: form.failStrategy, status: form.enabled ? 1 : 0, description: form.description
+      failStrategy: form.failStrategy, liveCheck: form.liveCheck ? 1 : 0, verifyMode: form.verifyMode, status: form.enabled ? 1 : 0, description: form.description
     })
     message.success('保存成功')
     open.value = false

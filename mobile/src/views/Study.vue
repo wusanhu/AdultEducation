@@ -140,7 +140,9 @@
       :close-on-click-overlay="false"
     >
       <div class="popup-content">
-        <p>需要进行身份核验以继续学习</p>
+        <p>{{ verifyLiveCheck
+          ? '需完成真人活体核验：请正对摄像头实时拍摄，确保光线充足、正脸无遮挡'
+          : '需要进行身份核验以继续学习' }}</p>
         <p v-if="verifyRemaining > 0" class="verify-countdown">剩余 {{ verifyRemaining }} 秒</p>
         <input
           ref="faceInput"
@@ -153,23 +155,6 @@
         <van-button type="primary" block round size="small" class="mt-12" :loading="verifying" @click="doFaceVerify">
           人脸核验
         </van-button>
-        <van-button plain type="default" block round size="small" class="mt-8" @click="doSmsVerify">
-          短信验证码核验
-        </van-button>
-      </div>
-    </van-dialog>
-
-    <!-- SMS Code Dialog -->
-    <van-dialog
-      v-model:show="showSmsDialog"
-      title="输入验证码"
-      show-cancel-button
-      @confirm="submitSmsCode"
-    >
-      <div class="popup-content">
-        <p class="mb-8">验证码已发送至 {{ smsPhone || userStore.user?.phone }}</p>
-        <p v-if="smsMockCode" class="mock-code">演示验证码：{{ smsMockCode }}</p>
-        <van-field v-model="smsCode" placeholder="请输入6位验证码" maxlength="6" type="digit" />
       </div>
     </van-dialog>
 
@@ -239,14 +224,14 @@ const popupTimeoutCount = ref(0)
 
 // Verify
 const showVerify = ref(false)
-const showSmsDialog = ref(false)
-const smsCode = ref('')
 const verifyLogId = ref(0)
 const faceInput = ref<HTMLInputElement | null>(null)
 const verifying = ref(false)
 const verifyRemaining = ref(0)
-const smsPhone = ref('')
-const smsMockCode = ref('')
+/** 当前档位是否要求真人活体核验（开启后须正脸实时拍摄，服务端做活体检测+1:1比对） */
+const verifyLiveCheck = ref(false)
+/** 学习验证方式核验（verifyMode=2）的核验记录 ID，>0 时「学习验证」弹窗提交走核验接口 */
+const quizVerifyLogId = ref(0)
 let verifyTimer: ReturnType<typeof setInterval> | null = null
 
 // Heartbeat
@@ -566,7 +551,12 @@ function applyHeartbeatState(res: any) {
     presentPopup(Number(res.popupRemaining || res.popupTimeout || 60))
   }
   if (res.needVerify && res.verify?.logId) {
-    openVerify(Number(res.verify.logId), Number(res.verify.remainingSeconds || 60))
+    openVerify(
+      Number(res.verify.logId),
+      Number(res.verify.remainingSeconds || 60),
+      res.verify.liveCheck === 1,
+      Number(res.verify.verifyMode || 1)
+    )
   }
   if (res.paused && res.pauseReason) {
     videoRef.value?.pause()
@@ -640,6 +630,25 @@ function presentPopup(seconds: number) {
 }
 
 async function submitPopup() {
+  // 学习验证方式核验：确认即提交核验接口，通过后恢复学习
+  if (quizVerifyLogId.value) {
+    const logId = quizVerifyLogId.value
+    if (popupTimer) {
+      clearInterval(popupTimer)
+      popupTimer = null
+    }
+    showPopup.value = false
+    try {
+      const res = await study.verifyQuiz(logId)
+      quizVerifyLogId.value = 0
+      popupQuestion.value = null
+      handleVerifyResult(res)
+    } catch {
+      quizVerifyLogId.value = 0
+      showToast('学习验证失败，请继续学习')
+    }
+    return
+  }
   if (!popupAnswered.value) {
     showToast('请选择正确答案后再确认')
     return
@@ -661,6 +670,14 @@ async function submitPopup() {
 }
 
 function onPopupTimeout() {
+  // 学习验证方式核验超时：关闭弹窗并通知后端判定，等待下一次核验/心跳提示
+  if (quizVerifyLogId.value) {
+    closeQuizVerify()
+    showWarningMsg('学习验证超时，学习计时已暂停')
+    videoRef.value?.pause()
+    sendHeartbeat()
+    return
+  }
   showPopup.value = false
   popupTimeoutCount.value++
   popupTriggeredAt = -1
@@ -677,10 +694,16 @@ function onPopupTimeout() {
 }
 
 // Identity verification
-function openVerify(logId: number, remainingSeconds = 60) {
+function openVerify(logId: number, remainingSeconds = 60, liveCheck = false, verifyMode = 1) {
   if (!logId) return
+  // 档位为「学习验证」方式时，中途核验弹学习验证弹窗（确认制），不走人脸核验
+  if (verifyMode === 2) {
+    openQuizVerify(logId, remainingSeconds)
+    return
+  }
   verifyLogId.value = logId
   verifyRemaining.value = Math.max(1, Math.floor(remainingSeconds))
+  verifyLiveCheck.value = liveCheck
   showVerify.value = true
   // 核验期间后端不计学时且冻结进度，视频若继续播放会被判成拖拽快进
   videoRef.value?.pause()
@@ -705,6 +728,30 @@ function closeVerify() {
     verifyTimer = null
   }
   verifyRemaining.value = 0
+}
+
+/**
+ * 学习验证方式核验（档位 verifyMode=2）：复用「学习验证」弹窗（确认制）。
+ * 与随机防刷弹窗共用 UI，但提交走核验接口、倒计时用档位剩余时间。
+ */
+function openQuizVerify(logId: number, remainingSeconds = 60) {
+  if (!logId) return
+  quizVerifyLogId.value = logId
+  popupQuestion.value = mockPopupQuestion()
+  popupTriggeredAt = -1
+  presentPopup(remainingSeconds)
+}
+
+function closeQuizVerify() {
+  quizVerifyLogId.value = 0
+  showPopup.value = false
+  if (popupTimer) {
+    clearInterval(popupTimer)
+    popupTimer = null
+  }
+  popupQuestion.value = null
+  popupAnswer.value = ''
+  popupAnswerMulti.value = []
 }
 
 async function doFaceVerify() {
@@ -788,44 +835,6 @@ function handleVerifyResult(res: any) {
   }
 }
 
-async function doSmsVerify() {
-  try {
-    if (!verifyLogId.value) {
-      const startRes = await study.verifyStart(courseId.value, 'manual')
-      verifyLogId.value = Number(startRes?.logId || 0)
-    }
-    if (!verifyLogId.value) {
-      showToast('无法开始身份核验')
-      return
-    }
-    const res = await study.verifySmsSend(verifyLogId.value)
-    smsPhone.value = res?.phone || userStore.user?.phone || ''
-    smsMockCode.value = res?.mockCode || ''
-    if (res?.mockCode) {
-      smsCode.value = res.mockCode
-    }
-    showVerify.value = false
-    showSmsDialog.value = true
-    showToast(res?.mockCode ? `演示验证码：${res.mockCode}` : '验证码已发送')
-  } catch {
-    showToast('发送验证码失败')
-  }
-}
-
-async function submitSmsCode() {
-  try {
-    const res = await study.verifySmsSubmit(verifyLogId.value, smsCode.value)
-    handleVerifyResult(res)
-    if (res?.passed) {
-      showSmsDialog.value = false
-      smsCode.value = ''
-      smsMockCode.value = ''
-    }
-  } catch {
-    showToast('验证码错误')
-  }
-}
-
 function showWarningMsg(msg: string) {
   warningText.value = msg
   showWarning.value = true
@@ -897,7 +906,7 @@ async function initStudy() {
     }
     if (res?.resumeVerifyId) {
       // 异常解锁后重新进入，必须先完成一次核验
-      openVerify(Number(res.resumeVerifyId), 60)
+      openVerify(Number(res.resumeVerifyId), 60, res.liveCheck === 1, Number(res.verifyMode || 1))
     } else if (res?.locked) {
       showWarningMsg(res.abnormalReason || '学习记录已标记异常，请联系教员复核')
     }

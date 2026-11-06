@@ -102,6 +102,7 @@
 /Users/work/项目源码/统筹项目/continuingEducation/backend/src/main/java/com/adultedu/service/CreditService.java
 /Users/work/项目源码/统筹项目/continuingEducation/backend/src/main/java/com/adultedu/service/DataScopeService.java
 /Users/work/项目源码/统筹项目/continuingEducation/backend/src/main/java/com/adultedu/service/ExamService.java
+/Users/work/项目源码/统筹项目/continuingEducation/backend/src/main/java/com/adultedu/service/FaceVerifyService.java
 /Users/work/项目源码/统筹项目/continuingEducation/backend/src/main/java/com/adultedu/service/FileStorageService.java
 /Users/work/项目源码/统筹项目/continuingEducation/backend/src/main/java/com/adultedu/service/GraduateService.java
 /Users/work/项目源码/统筹项目/continuingEducation/backend/src/main/java/com/adultedu/service/NotificationService.java

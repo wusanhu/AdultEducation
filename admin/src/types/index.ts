@@ -106,6 +106,8 @@ export interface StudentRow {
   orgId?: number
   orgName?: string
   deptName?: string
+  /** 人脸基准照URL，核验 1:1 比对依据 */
+  faceImg?: string
   status: number
   createTime?: string
   lastLoginTime?: string
@@ -223,6 +225,10 @@ export interface VerifyGear {
   timeoutSecond: number
   maxFailCount: number
   failStrategy: number
+  /** 是否真人活体核验 0否 1是 */
+  liveCheck: number
+  /** 核验方式 1人脸核验 2学习验证 */
+  verifyMode: number
   builtIn: number
   status: number
   description?: string

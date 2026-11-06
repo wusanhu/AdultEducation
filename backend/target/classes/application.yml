@@ -89,6 +89,12 @@ app:
     threshold: 0.75
     mock-pass-similarity: 0.92
     mock-fail-similarity: 0.32
+    # 百度云人脸（mock=false 时生效）：前端采集 → 服务端在线活体检测 + 1:1 比对，密钥仅存服务端
+    baidu:
+      api-key: ${BAIDU_FACE_API_KEY:}
+      secret-key: ${BAIDU_FACE_SECRET_KEY:}
+      compare-threshold: 80
+      liveness-threshold: 0.90
   sms:
     mock: ${APP_SMS_MOCK:true}
     code-expire-seconds: 300

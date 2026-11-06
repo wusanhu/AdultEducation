@@ -690,6 +690,8 @@ public class CourseService {
         gear.setTimeoutSecond(req.timeoutSecond() == null ? 60 : req.timeoutSecond());
         gear.setMaxFailCount(req.maxFailCount() == null ? 3 : req.maxFailCount());
         gear.setFailStrategy(req.failStrategy() == null ? 1 : req.failStrategy());
+        gear.setLiveCheck(req.liveCheck() == null ? 0 : req.liveCheck());
+        gear.setVerifyMode(req.verifyMode() == null ? 1 : req.verifyMode());
         gear.setStatus(req.status() == null ? 1 : req.status());
         gear.setDescription(req.description());
         if (gear.getId() == null) {

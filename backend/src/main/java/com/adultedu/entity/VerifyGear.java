@@ -22,6 +22,10 @@ public class VerifyGear {
     private Integer timeoutSecond;
     private Integer maxFailCount;
     private Integer failStrategy;
+    /** 是否真人活体核验 0否 1是 */
+    private Integer liveCheck;
+    /** 核验方式 1人脸核验 2学习验证（弹窗确认） */
+    private Integer verifyMode;
     private Integer builtIn;
     private Integer status;
     private String description;

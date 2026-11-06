@@ -19,6 +19,8 @@ public class SysUser extends BaseEntity {
     private String realName;
     private String phone;
     private String idCard;
+    /** 人脸基准照URL，用于核验 1:1 比对 */
+    private String faceImg;
     private Long orgId;
     private Long deptId;
     private Long roleId;

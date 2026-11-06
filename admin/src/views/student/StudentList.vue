@@ -33,11 +33,31 @@
         <template v-else-if="column.key === 'status'">
           <a-tag :color="record.status === 1 ? 'green' : 'default'">{{ record.status === 1 ? '正常' : '已停用' }}</a-tag>
         </template>
+        <template v-else-if="column.key === 'face'">
+          <a-tag v-if="record.faceImg" color="blue">已设置</a-tag>
+          <a-tag v-else color="warning">未设置</a-tag>
+          <a @click="openFaceUpload(record)">上传</a>
+        </template>
         <template v-else-if="column.key === 'lastStudy'">
           <span style="font-size:12px;color:#64748b">{{ record.lastStudyTime || '暂未学习' }}</span>
         </template>
       </template>
     </a-table>
+
+    <a-modal v-model:open="faceModal" :title="`上传人脸基准照 - ${faceTarget?.realName || ''}`" :footer="null" :width="420">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:6px 0 2px">
+        <img v-if="facePreview" :src="facePreview" alt="基准照" style="width:150px;height:150px;object-fit:cover;border-radius:12px;border:1px solid #e2e8f0" />
+        <div v-else style="width:150px;height:150px;border-radius:12px;border:1px dashed #cbd5e1;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:12px">
+          暂无基准照
+        </div>
+        <div style="font-size:12px;color:#64748b;text-align:center;line-height:1.7">
+          用于学员核验时与人脸采集照进行 1:1 比对，<br />请上传清晰的本人正脸免冠照（≤8MB）。
+        </div>
+        <a-upload :show-upload-list="false" :before-upload="onFaceFile" accept="image/*">
+          <a-button type="primary" :loading="faceUploading">{{ facePreview ? '重新上传' : '选择图片上传' }}</a-button>
+        </a-upload>
+      </div>
+    </a-modal>
   </div>
 </template>
 
@@ -77,6 +97,7 @@ const columns = [
   { title: '累计学分', key: 'credits', width: 100, align: 'center' as const },
   { title: '最近学习', key: 'lastStudy', width: 170 },
   { title: '状态', key: 'status', width: 90, align: 'center' as const },
+  { title: '人脸基准照', key: 'face', width: 130, align: 'center' as const },
   { title: '创建时间', dataIndex: 'createTime', width: 110 }
 ]
 
@@ -100,6 +121,33 @@ async function load() {
 function reload() { query.pageNum = 1; void load() }
 function reset() { query.keyword = ''; query.projectId = undefined; query.orgId = undefined; query.status = undefined; reload() }
 function onTableChange(pag: TablePaginationConfig) { query.pageNum = Number(pag.current || 1); query.pageSize = Number(pag.pageSize || 10); void load() }
+
+const faceModal = ref(false)
+const faceUploading = ref(false)
+const faceTarget = ref<StudentRow | null>(null)
+const facePreview = ref('')
+
+function openFaceUpload(record: StudentRow) {
+  faceTarget.value = record
+  facePreview.value = record.faceImg || ''
+  faceModal.value = true
+}
+async function onFaceFile(file: File) {
+  if (!faceTarget.value) return false
+  if (!/^image\//.test(file.type)) { message.warning('请选择图片文件'); return false }
+  if (file.size > 8 * 1024 * 1024) { message.warning('图片不能超过 8MB'); return false }
+  faceUploading.value = true
+  try {
+    const res = await systemApi.upload(file)
+    const url = (res as { url?: string }).url || (res as unknown as string)
+    await studentApi.updateFaceImg(faceTarget.value.id, String(url))
+    facePreview.value = String(url)
+    message.success('基准照已保存')
+    faceModal.value = false
+    await load()
+  } catch (e) { message.error((e as Error).message) } finally { faceUploading.value = false }
+  return false
+}
 
 onMounted(async () => {
   try { await loadMeta() } catch (e) { message.error((e as Error).message) }

@@ -75,6 +75,8 @@ public final class BizDtos {
             Integer timeoutSecond,
             Integer maxFailCount,
             Integer failStrategy,
+            Integer liveCheck,
+            Integer verifyMode,
             Integer status,
             String description
     ) {
@@ -102,12 +104,6 @@ public final class BizDtos {
     }
 
     public record VerifySubmitRequest(@NotNull(message = "核验记录不能为空") Long logId, String imageBase64) {
-    }
-
-    public record SmsVerifySendRequest(@NotNull(message = "核验记录不能为空") Long logId) {
-    }
-
-    public record SmsVerifySubmitRequest(@NotNull Long logId, @NotBlank String code) {
     }
 
     public record VerifyReviewRequest(@NotBlank String action, String remark) {

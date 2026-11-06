@@ -162,6 +162,7 @@ public class StudentService {
             row.put("orgName", u.getOrgId() == null ? null : orgNames.get(u.getOrgId()));
             row.put("deptName", u.getDeptId() == null ? null : orgNames.get(u.getDeptId()));
             row.put("status", u.getStatus());
+            row.put("faceImg", u.getFaceImg());
             row.put("createTime", u.getCreateTime());
             row.put("lastLoginTime", u.getLastLoginTime());
             row.put("enrolledProjects", projectCount.getOrDefault(u.getId(), 0L));
@@ -172,5 +173,21 @@ public class StudentService {
             rows.add(row);
         }
         return rows;
+    }
+
+    /**
+     * 保存学员人脸基准照（管理端上传后回写 URL），用于核验时 1:1 比对。
+     */
+    public void updateFaceImg(LoginUser current, Long userId, String faceImg) {
+        SysUser user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new com.adultedu.common.BusinessException("学员不存在");
+        }
+        List<Long> scope = dataScopeService.accessibleOrgIds(current);
+        if (scope != null && user.getOrgId() != null && !scope.contains(user.getOrgId())) {
+            throw new com.adultedu.common.BusinessException(403, "无权操作该学员");
+        }
+        user.setFaceImg(StrUtil.isBlank(faceImg) ? null : faceImg.trim());
+        userMapper.updateById(user);
     }
 }

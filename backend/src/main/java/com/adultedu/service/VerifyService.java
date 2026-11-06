@@ -165,7 +165,7 @@ public class VerifyService {
             m.put("triggerPoint", log.getTriggerPoint());
             m.put("verifyTime", log.getVerifyTime());
             m.put("verifyType", log.getVerifyType());
-            m.put("verifyTypeLabel", log.getVerifyType() != null && log.getVerifyType() == 2 ? "短信验证码" : "人脸比对");
+            m.put("verifyTypeLabel", typeLabel(log.getVerifyType()));
             m.put("imgUrl", hideImage ? null : log.getImgUrl());
             m.put("verifyResult", log.getVerifyResult());
             m.put("verifyResultLabel", resultLabel(log.getVerifyResult()));
@@ -420,6 +420,16 @@ public class VerifyService {
             m.put("locked", studyService.isLockedPublic(recordId));
         }
         return PageResult.of(list, page.getTotal(), pageNum, pageSize);
+    }
+
+    /** 核验方式标签：1人脸核验 2短信核验（已下线） 3学习验证 */
+    private String typeLabel(Integer verifyType) {
+        if (verifyType == null) return "人脸比对";
+        return switch (verifyType) {
+            case 2 -> "短信验证码";
+            case 3 -> "学习验证";
+            default -> "人脸比对";
+        };
     }
 
     @Transactional

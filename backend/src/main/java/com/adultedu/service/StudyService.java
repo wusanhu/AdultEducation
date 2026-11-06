@@ -9,7 +9,6 @@ import cn.hutool.json.JSONUtil;
 import com.adultedu.common.BusinessException;
 import com.adultedu.common.NotificationTemplates;
 import com.adultedu.dto.BizDtos.HeartbeatRequest;
-import com.adultedu.dto.BizDtos.SmsVerifySubmitRequest;
 import com.adultedu.dto.BizDtos.VerifyStartRequest;
 import com.adultedu.dto.BizDtos.VerifySubmitRequest;
 import com.adultedu.entity.Course;
@@ -77,6 +76,7 @@ public class StudyService {
     private final SysConfigMapper configMapper;
     private final CreditService creditService;
     private final NotificationService notificationService;
+    private final FaceVerifyService faceVerifyService;
     private final StringRedisTemplate redis;
 
     @Value("${app.study.heartbeat-seconds:30}")
@@ -180,6 +180,8 @@ public class StudyService {
             // 学习异常后重新进入：要求先完成一次核验，通过后才恢复计时
             UserVerifyLog resume = createVerifyLog(record, "resume", gear);
             extra.put("resumeVerifyId", resume.getId());
+            extra.put("liveCheck", gear.liveCheck());
+            extra.put("verifyMode", gear.verifyMode());
         }
         return state(record, course, gear, extra);
     }
@@ -501,7 +503,11 @@ public class StudyService {
         Map<String, Object> map = verifyMap(log, gear, true);
         map.put("faceMock", faceMock);
         map.put("faceThreshold", faceThreshold);
-        map.put("message", "为确认是本人学习，请完成人脸核验，非本人核验将不计入学时学分。");
+        map.put("message", gear.verifyMode() == 2
+                ? "为确认是本人学习，请在弹窗中完成学习验证，非本人核验将不计入学时学分。"
+                : gear.liveCheck() == 1
+                        ? "为确认是本人学习，请完成真人活体核验，非本人核验将不计入学时学分。"
+                        : "为确认是本人学习，请完成人脸核验，非本人核验将不计入学时学分。");
         return map;
     }
 
@@ -523,9 +529,6 @@ public class StudyService {
         }
         String base64 = req.imageBase64();
         boolean validImage = StrUtil.isNotBlank(base64) && base64.length() > 200;
-        if (!faceMock) {
-            throw new BusinessException(503, "人脸核验服务未配置，请联系管理员");
-        }
         String data = base64 == null ? "" : base64;
         int comma = data.indexOf(',');
         if (data.startsWith("data:") && comma > 0) {
@@ -537,64 +540,68 @@ public class StudyService {
         } catch (IllegalArgumentException e) {
             bytes = new byte[0];
         }
-        double similarity = (validImage && bytes.length > 0) ? mockPassSimilarity : mockFailSimilarity;
-        boolean passed = bytes.length > 0 && similarity >= faceThreshold;
-        if (bytes.length > 0) {
+        boolean hasImage = bytes.length > 0;
+        if (!faceMock && !faceVerifyService.configured()) {
+            throw new BusinessException(503, "人脸核验服务未配置，请联系管理员");
+        }
+        double similarity;
+        boolean passed;
+        String failReason = hasImage ? null : "未获取到有效人脸照片";
+        String passNote = null;
+        if (faceMock) {
+            // 本地演示模式：不调用第三方服务，有有效图片即模拟通过（活体视为通过）
+            similarity = hasImage ? mockPassSimilarity : mockFailSimilarity;
+            passed = hasImage && similarity >= faceThreshold;
+            if (!passed && failReason == null) {
+                failReason = "人脸相似度低于阈值";
+            }
+        } else {
+            // 真实模式：百度云「服务端比对」——在线活体检测 + 与基准照 1:1 比对，密钥不下发前端
+            if (gear.liveCheck() == 1) {
+                FaceVerifyService.LivenessResult live = faceVerifyService.liveness(bytes);
+                similarity = live.score();
+                if (!live.passed()) {
+                    failReason = live.message();
+                }
+            } else {
+                similarity = 0;
+            }
+            if (failReason == null) {
+                SysUser learner = userMapper.selectById(record.getUserId());
+                byte[] baseline = readUploadImage(learner == null ? null : learner.getFaceImg());
+                if (baseline.length > 0) {
+                    FaceVerifyService.MatchResult match = faceVerifyService.match(bytes, baseline);
+                    similarity = match.score() / 100.0;
+                    if (!match.ok()) {
+                        failReason = "与基准照片比对相似度不足";
+                    }
+                } else {
+                    passNote = gear.liveCheck() == 1
+                            ? "该学员未设置人脸基准照片，本次仅完成活体检测"
+                            : "该学员未设置人脸基准照片，本次核验仅采集留档";
+                }
+            }
+            passed = failReason == null;
+        }
+        if (hasImage) {
             String url = saveVerifyImage(record.getUserId(), bytes);
             log.setImgUrl(url);
         }
         if (passed) {
             handleVerifyPass(record, log, similarity, gear);
-            return verifyResult(log, true, "核验通过，继续学习");
+            return verifyResult(log, true, passNote == null ? "核验通过，继续学习" : "核验通过，继续学习（" + passNote + "）");
         }
-        handleVerifyFailure(record, log, similarity, bytes.length == 0 ? "未获取到有效人脸照片" : "人脸相似度低于阈值", gear);
-        return verifyResult(log, false, "核验失败，请正对摄像头重试");
+        handleVerifyFailure(record, log, similarity, failReason, gear);
+        return verifyResult(log, false, failReason == null ? "核验失败，请正对摄像头重试" : failReason);
     }
 
+    /**
+     * 学习验证方式核验（档位 verifyMode=2）：学员在「学习验证」弹窗中确认正在学习后提交。
+     * 原短信验证码核验已下线，本接口替代其提交入口。
+     */
     @Transactional
-    public Map<String, Object> sendSmsCode(LoginUser current, Long logId) {
+    public Map<String, Object> submitQuiz(LoginUser current, Long logId) {
         UserVerifyLog log = requireVerifyLog(current.getId(), logId);
-        if (log.getStatus() != null && log.getStatus() != 0) {
-            throw new BusinessException("该核验记录已处理");
-        }
-        SysUser user = userMapper.selectById(current.getId());
-        if (user == null || StrUtil.isBlank(user.getPhone())) {
-            throw new BusinessException("账号未绑定手机号，无法使用短信核验");
-        }
-        String resendKey = "sms:verify:resend:" + logId;
-        if (Boolean.TRUE.equals(redis.hasKey(resendKey))) {
-            Long ttl = redis.getExpire(resendKey, java.util.concurrent.TimeUnit.SECONDS);
-            throw new BusinessException("验证码发送过于频繁，请 " + (ttl == null ? smsResendSeconds : ttl) + " 秒后再试");
-        }
-        String dayKey = "sms:verify:daily:" + current.getId() + ":" + LocalDate.now().format(DAY);
-        String countStr = redis.opsForValue().get(dayKey);
-        int count = countStr == null ? 0 : Integer.parseInt(countStr);
-        int limit = configInt("sms.dailyLimit", smsDailyLimit);
-        if (count >= limit) {
-            throw new BusinessException("今日短信验证码发送次数已达上限");
-        }
-        String code = RandomUtil.randomNumbers(6);
-        redis.opsForValue().set("sms:verify:code:" + logId, code, Duration.ofSeconds(smsExpireSeconds));
-        redis.opsForValue().set(resendKey, "1", Duration.ofSeconds(smsResendSeconds));
-        redis.opsForValue().set(dayKey, String.valueOf(count + 1), Duration.ofDays(1));
-        log.setVerifyType(2);
-        log.setSmsPhone(maskPhone(user.getPhone()));
-        verifyMapper.updateById(log);
-        StudyService.log.info("[短信服务-模拟] 发送核验验证码至 {}，code={}", maskPhone(user.getPhone()), code);
-        Map<String, Object> map = new LinkedHashMap<>();
-        map.put("sent", true);
-        map.put("phone", maskPhone(user.getPhone()));
-        map.put("expireSeconds", smsExpireSeconds);
-        map.put("resendSeconds", smsResendSeconds);
-        if (smsMock) {
-            map.put("mockCode", code);
-        }
-        return map;
-    }
-
-    @Transactional
-    public Map<String, Object> submitSms(LoginUser current, SmsVerifySubmitRequest req) {
-        UserVerifyLog log = requireVerifyLog(current.getId(), req.logId());
         if (log.getStatus() != null && log.getStatus() != 0) {
             throw new BusinessException("该核验记录已处理");
         }
@@ -608,19 +615,8 @@ public class StudyService {
             map.put("timeout", true);
             return map;
         }
-        String key = "sms:verify:code:" + log.getId();
-        String code = redis.opsForValue().get(key);
-        if (code == null) {
-            handleVerifyFailure(record, log, null, "验证码已过期", gear);
-            return verifyResult(log, false, "验证码已过期，请重新获取");
-        }
-        if (!code.equals(req.code().trim())) {
-            handleVerifyFailure(record, log, null, "验证码错误", gear);
-            return verifyResult(log, false, "验证码错误");
-        }
-        redis.delete(key);
         handleVerifyPass(record, log, null, gear);
-        return verifyResult(log, true, "核验通过，继续学习");
+        return verifyResult(log, true, "学习验证通过，继续学习");
     }
 
     private void handleVerifyPass(StudyRecord record, UserVerifyLog log, Double similarity, GearConfig gear) {
@@ -689,7 +685,8 @@ public class StudyService {
         log.setStudyRecordId(record.getId());
         log.setTriggerPoint(triggerPoint);
         log.setVerifyTime(LocalDateTime.now());
-        log.setVerifyType(1);
+        // 核验方式：1人脸核验 3学习验证（弹窗确认）；原短信核验已下线
+        log.setVerifyType(gear.verifyMode() == 2 ? 3 : 1);
         log.setStatus(0);
         verifyMapper.insert(log);
         record.setVerifyTotal(nz(record.getVerifyTotal()) + 1);
@@ -720,9 +717,14 @@ public class StudyService {
         long elapsed = log.getVerifyTime() == null ? 0
                 : Math.max(0, Duration.between(log.getVerifyTime(), LocalDateTime.now()).getSeconds());
         m.put("remainingSeconds", Math.max(0, gear.timeoutSecond() - elapsed));
-        m.put("smsAvailable", true);
+        m.put("verifyMode", gear.verifyMode());
+        m.put("liveCheck", gear.liveCheck());
         if (withMessage) {
-            m.put("message", "为确认是本人学习，请完成本人核验，非本人核验将不计入学时学分。");
+            m.put("message", gear.verifyMode() == 2
+                    ? "为确认是本人学习，请在弹窗中完成学习验证，非本人核验将不计入学时学分。"
+                    : gear.liveCheck() == 1
+                            ? "为确认是本人学习，请完成真人活体核验，非本人核验将不计入学时学分。"
+                            : "为确认是本人学习，请完成本人核验，非本人核验将不计入学时学分。");
         }
         return m;
     }
@@ -881,6 +883,8 @@ public class StudyService {
         int timeout = gear == null || gear.getTimeoutSecond() == null ? 60 : gear.getTimeoutSecond();
         int maxFail = gear == null || gear.getMaxFailCount() == null ? 3 : gear.getMaxFailCount();
         int strategy = gear == null || gear.getFailStrategy() == null ? 1 : gear.getFailStrategy();
+        int liveCheck = gear == null || gear.getLiveCheck() == null ? 0 : gear.getLiveCheck();
+        int verifyMode = gear == null || gear.getVerifyMode() == null ? 1 : gear.getVerifyMode();
         String json = course == null ? null : course.getVerifyGearJson();
         if (StrUtil.isNotBlank(json)) {
             try {
@@ -902,6 +906,12 @@ public class StudyService {
                     if (obj.containsKey("failStrategy")) {
                         strategy = obj.getInt("failStrategy", strategy);
                     }
+                    if (obj.containsKey("liveCheck")) {
+                        liveCheck = obj.getInt("liveCheck", liveCheck);
+                    }
+                    if (obj.containsKey("verifyMode")) {
+                        verifyMode = obj.getInt("verifyMode", verifyMode);
+                    }
                 } else {
                     JSONArray arr = JSONUtil.parseArray(json);
                     arr.forEach(v -> points.add(Integer.parseInt(String.valueOf(v))));
@@ -917,11 +927,12 @@ public class StudyService {
             } catch (Exception ignored) {
             }
         }
-        return new GearConfig(gearCode, name, points, interval, Math.max(10, timeout), Math.max(1, maxFail), strategy);
+        return new GearConfig(gearCode, name, points, interval, Math.max(10, timeout), Math.max(1, maxFail), strategy, liveCheck, verifyMode);
     }
 
     public record GearConfig(int gearCode, String gearName, List<Integer> triggerPoints,
-                             int intervalMinute, int timeoutSecond, int maxFailCount, int failStrategy) {
+                             int intervalMinute, int timeoutSecond, int maxFailCount, int failStrategy,
+                             int liveCheck, int verifyMode) {
     }
 
     private Course requireCourse(Long courseId, boolean mustOnline) {
@@ -1048,6 +1059,28 @@ public class StudyService {
         ensureProjectWritable(record.getProjectId());
         unlock(recordId, clearAbnormal);
         log.info("解除学习限制: recordId={}, operator={}, remark={}", recordId, current.getUsername(), remark);
+    }
+
+    /** 读取学员人脸基准照（faceImg 为 /uploads/... 相对地址或外链）；读不到返回空数组 */
+    private byte[] readUploadImage(String url) {
+        if (StrUtil.isBlank(url)) {
+            return new byte[0];
+        }
+        try {
+            if (url.startsWith("http")) {
+                return cn.hutool.http.HttpUtil.downloadBytes(url);
+            }
+            Path root = Paths.get(uploadDir).normalize();
+            String rel = url.startsWith("/uploads/") ? url.substring("/uploads/".length()) : url.replaceFirst("^/+", "");
+            Path file = root.resolve(rel).normalize();
+            if (!file.startsWith(root) || !Files.isRegularFile(file)) {
+                return new byte[0];
+            }
+            return Files.readAllBytes(file);
+        } catch (Exception e) {
+            log.warn("读取人脸基准照失败: {}", url, e);
+            return new byte[0];
+        }
     }
 
     private String saveVerifyImage(Long userId, byte[] bytes) {

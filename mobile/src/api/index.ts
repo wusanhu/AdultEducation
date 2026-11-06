@@ -68,10 +68,7 @@ export const study = {
     post<any>('/study/verify/start', { courseId, triggerPoint }),
   verifyFace: (logId: number, imageBase64?: string) =>
     post<any>('/study/verify/face', { logId, imageBase64 }),
-  verifySmsSend: (logId: number) =>
-    post<any>(`/study/verify/sms/send?logId=${logId}`),
-  verifySmsSubmit: (logId: number, code: string) =>
-    post<any>('/study/verify/sms/submit', { logId, code }),
+  verifyQuiz: (logId: number) => post<any>(`/study/verify/quiz?logId=${logId}`),
 }
 
 // pause needs courseId as query param

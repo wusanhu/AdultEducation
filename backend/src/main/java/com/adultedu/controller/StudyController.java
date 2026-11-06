@@ -3,7 +3,6 @@ package com.adultedu.controller;
 import com.adultedu.common.R;
 import com.adultedu.dto.BizDtos.HeartbeatRequest;
 import com.adultedu.dto.BizDtos.PopupConfirmRequest;
-import com.adultedu.dto.BizDtos.SmsVerifySubmitRequest;
 import com.adultedu.dto.BizDtos.StudyStartRequest;
 import com.adultedu.dto.BizDtos.VerifyStartRequest;
 import com.adultedu.dto.BizDtos.VerifySubmitRequest;
@@ -59,14 +58,12 @@ public class StudyController {
         return R.ok(studyService.submitFace(SecurityUtils.current(), req));
     }
 
-    @PostMapping("/verify/sms/send")
-    public R<Map<String, Object>> sendSms(@RequestParam Long logId) {
-        return R.ok(studyService.sendSmsCode(SecurityUtils.current(), logId));
-    }
-
-    @PostMapping("/verify/sms/submit")
-    public R<Map<String, Object>> submitSms(@Valid @RequestBody SmsVerifySubmitRequest req) {
-        return R.ok(studyService.submitSms(SecurityUtils.current(), req));
+    /**
+     * 学习验证方式核验提交（verifyMode=2 的档位），原短信验证码核验已下线。
+     */
+    @PostMapping("/verify/quiz")
+    public R<Map<String, Object>> submitQuiz(@RequestParam Long logId) {
+        return R.ok(studyService.submitQuiz(SecurityUtils.current(), logId));
     }
 
     @GetMapping("/state")
