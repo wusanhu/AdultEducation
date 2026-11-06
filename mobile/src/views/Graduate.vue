@@ -43,7 +43,7 @@
           <van-progress
             :percentage="creditPercent"
             :show-pivot="false"
-            color="var(--accent)"
+            color="var(--brand)"
             track-color="var(--surface-3)"
             stroke-width="6"
           />
@@ -371,9 +371,9 @@ onMounted(async () => {
   border: 1px solid var(--accent-line);
   border-radius: var(--r-card);
   background:
-    radial-gradient(120% 100% at 0% 0%, rgba(173, 122, 53, 0.1) 0%, transparent 52%),
-    #fcf9f1;
-  box-shadow: inset 0 0 0 4px #fcf9f1, inset 0 0 0 5px var(--accent-line);
+    radial-gradient(120% 100% at 0% 0%, rgba(29, 78, 216, 0.08) 0%, transparent 52%),
+    #f8fafd;
+  box-shadow: inset 0 0 0 4px #f8fafd, inset 0 0 0 5px var(--accent-line);
 }
 
 .cert-watermark {
@@ -383,7 +383,7 @@ onMounted(async () => {
   font-family: var(--font-serif);
   font-size: 88px;
   line-height: 1;
-  color: rgba(173, 122, 53, 0.08);
+  color: rgba(29, 78, 216, 0.07);
   pointer-events: none;
   user-select: none;
 }

@@ -107,7 +107,7 @@ async function onSubmit() {
   border: 1px solid var(--line);
   border-radius: var(--r-card);
   background:
-    radial-gradient(100% 120% at 100% 0%, rgba(173, 122, 53, 0.1) 0%, transparent 58%),
+    radial-gradient(100% 120% at 100% 0%, rgba(29, 78, 216, 0.08) 0%, transparent 58%),
     var(--surface);
   box-shadow: var(--shadow-card);
 }

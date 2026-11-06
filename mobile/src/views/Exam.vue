@@ -241,12 +241,12 @@ onBeforeUnmount(() => {
   color: var(--ink-3);
 }
 .countdown-bar.urgent {
-  border-color: #edcfcd;
+  border-color: var(--bad-line);
   background: var(--bad-tint);
 }
 .countdown-bar.urgent .countdown-icon,
 .countdown-bar.urgent .countdown-time {
-  border-color: #edcfcd;
+  border-color: var(--bad-line);
   color: var(--bad);
 }
 
@@ -325,7 +325,7 @@ onBeforeUnmount(() => {
   bottom: 0;
   z-index: 2;
   padding: var(--sp-3) var(--page-x) calc(var(--sp-3) + env(safe-area-inset-bottom));
-  background: rgba(244, 242, 236, 0.94);
+  background: rgba(245, 247, 251, 0.94);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }

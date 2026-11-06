@@ -67,7 +67,7 @@
       <van-progress
         :percentage="row.percent"
         :show-pivot="false"
-        color="var(--accent)"
+        color="var(--brand)"
         stroke-width="5"
         track-color="var(--surface-3)"
       />
@@ -414,7 +414,7 @@ onMounted(async () => {
   overflow: hidden;
   padding: calc(env(safe-area-inset-top) + 24px) var(--page-x) var(--sp-5);
   color: var(--ink);
-  background: linear-gradient(180deg, #edf3f9 0%, #f3f6fa 58%, var(--bg) 100%);
+  background: linear-gradient(180deg, #e8eefc 0%, #f1f5fe 58%, var(--bg) 100%);
 }
 .hero-ornament {
   position: absolute;
@@ -423,7 +423,7 @@ onMounted(async () => {
   font-family: var(--font-serif);
   font-size: 96px;
   line-height: 1;
-  color: rgba(79, 109, 143, 0.09);
+  color: rgba(29, 78, 216, 0.09);
   pointer-events: none;
   user-select: none;
 }
@@ -694,7 +694,7 @@ onMounted(async () => {
 .todo-time {
   display: block;
   font-size: 11px;
-  color: var(--ink-4);
+  color: var(--ink-3);
   margin-top: 4px;
 }
 .warn-item {

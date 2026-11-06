@@ -64,7 +64,7 @@
         <van-progress
           :percentage="item.courseTotal ? Math.round(((item.completedCourse || 0) / item.courseTotal) * 100) : 0"
           :show-pivot="false"
-          color="var(--accent)"
+          color="var(--brand)"
           track-color="var(--surface-3)"
           stroke-width="5"
         />

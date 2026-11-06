@@ -1,6 +1,7 @@
 /**
  * 移动端导航的唯一来源：能力全部由后端登录时下发的 perms 推导，
- * 前端不维护「角色名 → 功能」白名单，后台调整授权即移动端自动跟随。
+ * 后台调整授权即移动端自动跟随。唯一例外是审批入口：审批节点只属于教员与领导，
+ * 管理员不参与流程，因此额外用 roleCode 排除。
  */
 
 export interface Caps {
@@ -23,10 +24,12 @@ export interface Caps {
 
 const has = (perms: string[], perm: string) => perms.includes(perm)
 
-export function buildCaps(perms: string[] | undefined): Caps {
+export function buildCaps(perms: string[] | undefined, roleCode?: string): Caps {
   const list = perms || []
-  const canApproveCredit = has(list, 'credit:audit')
-  const canAuditGraduate = has(list, 'graduate:list')
+  // 审批流只有教员初审与领导复审两个节点；管理员账号即便被授权，也不暴露审批入口
+  const inAuditFlow = roleCode === 'teacher' || roleCode === 'leader'
+  const canApproveCredit = inAuditFlow && has(list, 'credit:audit')
+  const canAuditGraduate = inAuditFlow && has(list, 'graduate:list')
   const canReviewVerify = has(list, 'verify:abnormal')
   return {
     perms: list,

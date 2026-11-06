@@ -438,7 +438,7 @@ onMounted(async () => {
 .hb-more {
   margin-top: var(--sp-2);
   font-size: 11px;
-  color: var(--ink-4);
+  color: var(--ink-3);
   text-align: center;
 }
 

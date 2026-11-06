@@ -3,6 +3,14 @@ import { showToast } from 'vant'
 
 const API_BASE = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 
+/** 学习会话失效事件：由学习页监听并弹窗退出，避免只弹 toast 后停留在失效页面 */
+export const STUDY_SESSION_INVALID_EVENT = 'study-session-invalid'
+const STUDY_SESSION_INVALID_MSG = '学习会话已失效'
+
+function isStudySessionInvalid(code: unknown, msg: unknown): boolean {
+  return Number(code) === 409 && typeof msg === 'string' && msg.includes(STUDY_SESSION_INVALID_MSG)
+}
+
 const http = axios.create({
   baseURL: API_BASE,
   timeout: 30000,
@@ -36,12 +44,19 @@ http.interceptors.response.use(
       redirectToLogin()
       return Promise.reject(new Error(res.msg || '登录已过期'))
     }
+    // 仅会话失效这一种 409 交给学习页弹窗处理，其余错误仍走 toast
+    if (isStudySessionInvalid(res.code, res.msg)) {
+      window.dispatchEvent(new Event(STUDY_SESSION_INVALID_EVENT))
+      return Promise.reject(new Error(res.msg))
+    }
     showToast(res.msg || '请求失败')
     return Promise.reject(new Error(res.msg || '请求失败'))
   },
   (error) => {
     if (error.response?.status === 401) {
       redirectToLogin()
+    } else if (isStudySessionInvalid(error.response?.status, error.response?.data?.msg)) {
+      window.dispatchEvent(new Event(STUDY_SESSION_INVALID_EVENT))
     } else {
       showToast(error.response?.data?.msg || '网络异常')
     }

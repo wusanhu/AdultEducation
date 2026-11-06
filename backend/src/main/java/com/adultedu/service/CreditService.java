@@ -412,22 +412,18 @@ public class CreditService {
         if (record.getAuditStatus() == null || record.getAuditStatus() != 1) {
             throw new BusinessException("该申请已处理，不能重复审批");
         }
-        boolean admin = current.isSuperAdmin() || (current.getDataScope() != null && current.getDataScope() == 1);
-        if (!admin) {
-            if (!"leader".equals(current.getRoleCode())) {
-                throw new BusinessException(403, "无权审批学分补录");
-            }
-            if (!"LEADER".equals(record.getAuditNode())) {
-                throw new BusinessException(403, "当前节点无需领导审批");
-            }
-            if (!canSeeUser(current, record.getUserId())) {
-                throw new BusinessException(403, "无权审批其他单位学员的申请");
-            }
+        if (!"leader".equals(current.getRoleCode())) {
+            throw new BusinessException(403, "学分补录由教员发起、单位领导审核，管理员不参与审批");
+        }
+        if (!"LEADER".equals(record.getAuditNode())) {
+            throw new BusinessException(403, "当前节点无需领导审批");
+        }
+        if (!canSeeUser(current, record.getUserId())) {
+            throw new BusinessException(403, "无权审批其他单位学员的申请");
         }
         if (record.getProjectId() != null) {
             projectService.assertProjectEditable(record.getProjectId());
         }
-        String node = StrUtil.blankToDefault(record.getAuditNode(), "ADMIN");
         if (!approve) {
             record.setAuditStatus(3);
             record.setAuditNode("REJECTED");
@@ -440,30 +436,22 @@ public class CreditService {
                     Map.of("credit", record.getCreditValue(),
                             "reason", StrUtil.blankToDefault(remark, "未填写")),
                     id);
+            // 办结后清理待办消息，避免领导点开消息却无审批项
+            notificationService.clearApprovalTodos("/credit/audit", id);
             return;
         }
-        if ("LEADER".equals(node) && !admin) {
-            // 领导审核即终审：通过后学分立即发放
-            record.setAuditStatus(2);
-            record.setAuditNode("DONE");
-            record.setAuditUserId(current.getId());
-            record.setAuditTime(LocalDateTime.now());
-            record.setAuditRemark(remark);
-            creditMapper.updateById(record);
-            writeLog("CREDIT", id, "APPROVE", current, StrUtil.blankToDefault(remark, "领导审核通过"));
-            notificationService.sendByTemplate(NotificationTemplates.CREDIT_APPROVED, record.getUserId(),
-                    Map.of("credit", record.getCreditValue()), id);
-            return;
-        }
+        // 领导审核即终审：通过后学分立即发放
         record.setAuditStatus(2);
         record.setAuditNode("DONE");
         record.setAuditUserId(current.getId());
         record.setAuditTime(LocalDateTime.now());
         record.setAuditRemark(remark);
         creditMapper.updateById(record);
-        writeLog("CREDIT", id, "APPROVE", current, StrUtil.blankToDefault(remark, "审批通过"));
+        writeLog("CREDIT", id, "APPROVE", current, StrUtil.blankToDefault(remark, "领导审核通过"));
         notificationService.sendByTemplate(NotificationTemplates.CREDIT_APPROVED, record.getUserId(),
                 Map.of("credit", record.getCreditValue()), id);
+        // 办结后清理待办消息，避免领导点开消息却无审批项
+        notificationService.clearApprovalTodos("/credit/audit", id);
     }
 
     @Transactional

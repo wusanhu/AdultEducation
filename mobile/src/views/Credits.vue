@@ -370,7 +370,7 @@ onMounted(async () => {
   font-family: var(--font-serif);
   font-size: 92px;
   line-height: 1;
-  color: rgba(79, 109, 143, 0.07);
+  color: rgba(29, 78, 216, 0.07);
   pointer-events: none;
 }
 
@@ -386,7 +386,7 @@ onMounted(async () => {
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.2em;
-  color: var(--ink-4);
+  color: var(--ink-3);
 }
 
 .pass-badge {
@@ -540,7 +540,7 @@ onMounted(async () => {
 .ledger-y {
   margin-top: 2px;
   font-size: 9px;
-  color: var(--ink-4);
+  color: var(--ink-3);
   font-variant-numeric: tabular-nums;
 }
 

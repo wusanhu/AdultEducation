@@ -1,36 +1,39 @@
 /* ==========================================================================
    继续教育学分管理平台 · 移动端设计系统
-   方向：浅色通透 / 低饱和灰蓝 + 少量暖铜，白卡分层，轻阴影，16px 基准间距
+   方向：浅色通透 / 深蓝主色（与管理端登录页同源），白卡分层，轻阴影，16px 基准间距
    ========================================================================== */
 
 :root {
-  /* ---------- 品牌色：低饱和灰蓝 ---------- */
-  --brand: #4f6d8f;
-  --brand-strong: #435d7a;
-  --brand-deep: #34495f;
-  --brand-soft: #6d88a6;
-  --brand-tint: #eff4f9;
-  --brand-line: #dde7f1;
+  /* ---------- 品牌色：深蓝（与 `#0A1733 → #143AA8` 渐变同族） ---------- */
+  --brand: #1d4ed8;
+  --brand-strong: #1e40af;
+  --brand-deep: #1e3a8a;
+  --brand-soft: #93c5fd;
+  --brand-tint: #eef3ff;
+  --brand-line: #bfdbfe;
 
-  /* ---------- 强调色：暖铜（仅关键操作/进度/证书） ---------- */
-  --accent: #b3864b;
-  --accent-strong: #96703c;
-  --accent-tint: #fbf5e9;
-  --accent-line: #efe2cd;
+  /* ---------- 强调色：深蓝（仅关键操作/进度/证书描边） ---------- */
+  --accent: #1e3a8a;
+  --accent-strong: #1e40af;
+  --accent-tint: #e8eefc;
+  --accent-line: #c7d5f8;
 
-  /* ---------- 语义色 ---------- */
-  --ok: #3d8a6b;
-  --ok-tint: #eaf5f0;
-  --warn: #b07a3b;
-  --warn-tint: #fbf3e7;
-  --bad: #c05a56;
-  --bad-tint: #fbeeed;
+  /* ---------- 语义色：低饱和，与深蓝体系协调 ---------- */
+  --ok: #2f7d5b;
+  --ok-tint: #e9f4ef;
+  --ok-line: #c9e3d5;
+  --warn: #9a6414;
+  --warn-tint: #fbf2e1;
+  --warn-line: #ebd6af;
+  --bad: #b4453f;
+  --bad-tint: #fbeae8;
+  --bad-line: #eac4c0;
 
   /* ---------- 文本 ---------- */
-  --ink: #1f2937;
-  --ink-2: #4b5563;
-  --ink-3: #6b7280;
-  --ink-4: #9ca3af;
+  --ink: #0f172a;
+  --ink-2: #475569;
+  --ink-3: #64748b;
+  --ink-4: #74869c;
 
   /* ---------- 深色内容区（视频/封面遮罩）上的文本 ---------- */
   --on-ink: #ffffff;
@@ -38,14 +41,14 @@
   --on-ink-3: rgba(255, 255, 255, 0.55);
 
   /* ---------- 面：近白分层 ---------- */
-  --bg: #f5f7fa;
+  --bg: #f5f7fb;
   --surface: #ffffff;
   --surface-2: #f8fafc;
-  --surface-3: #eef2f6;
+  --surface-3: #eef2f7;
 
   /* ---------- 描边 ---------- */
-  --line: #e6ebf1;
-  --line-strong: #d9e1e9;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
 
   /* ---------- 圆角 ---------- */
   --r-sheet: 24px;
@@ -58,7 +61,7 @@
   --shadow-card: none;
   --shadow-float: none;
   --shadow-hero: none;
-  --shadow-pop: 0 1px 10px rgba(31, 41, 55, 0.1);
+  --shadow-pop: 0 1px 10px rgba(15, 23, 42, 0.1);
 
   /* ---------- 字体 ---------- */
   --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', Roboto,
@@ -101,8 +104,8 @@
   --van-text-color: var(--ink);
   --van-text-color-2: var(--ink-2);
   --van-text-color-3: var(--ink-3);
-  --van-gray-1: #f7f9fb;
-  --van-gray-2: #f2f5f8;
+  --van-gray-1: #f8fafc;
+  --van-gray-2: #f1f5f9;
   --van-gray-3: var(--surface-3);
   --van-gray-4: var(--line);
   --van-gray-5: var(--ink-4);
@@ -161,7 +164,7 @@
   --van-tab-active-text-color: var(--brand);
   --van-tab-text-color: var(--ink-2);
   --van-tab-font-size: 15px;
-  --van-tabs-bottom-bar-color: var(--accent);
+  --van-tabs-bottom-bar-color: var(--brand);
   --van-tabs-bottom-bar-height: 2px;
   --van-tabs-nav-background: transparent;
 
@@ -178,7 +181,7 @@
   /* 表单 */
   --van-field-label-color: var(--ink-2);
   --van-field-input-text-color: var(--ink);
-  --van-field-placeholder-text-color: var(--ink-4);
+  --van-field-placeholder-text-color: var(--ink-3);
   --van-field-label-font-size: 14px;
 
   /* 其他控件 */
@@ -202,7 +205,7 @@
   --van-dialog-title-font-size: 17px;
   --van-popup-round-radius: var(--r-sheet);
   --van-popup-background: var(--surface);
-  --van-overlay-background: rgba(31, 41, 55, 0.42);
+  --van-overlay-background: rgba(15, 23, 42, 0.42);
 
   --van-empty-description-color: var(--ink-3);
   --van-skeleton-paragraph-background: var(--surface-3);
@@ -211,9 +214,9 @@
   --van-progress-color: var(--brand);
   --van-progress-background: var(--surface-3);
   --van-progress-pivot-background: var(--brand);
-  --van-badge-background: var(--accent);
+  --van-badge-background: var(--brand);
   --van-badge-font-size: 10px;
-  --van-toast-background: rgba(31, 41, 55, 0.88);
+  --van-toast-background: rgba(15, 23, 42, 0.88);
   --van-toast-radius: 12px;
   --van-picker-toolbar-height: 48px;
 }
@@ -311,7 +314,7 @@ textarea {
   font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--ink-4);
+  color: var(--ink-3);
 }
 
 /* ---------- 卡片 ---------- */
@@ -418,13 +421,13 @@ textarea {
 }
 
 .pill--ok {
-  border-color: #cfe5da;
+  border-color: var(--ok-line);
   background: var(--ok-tint);
   color: var(--ok);
 }
 
 .pill--warn {
-  border-color: var(--accent-line);
+  border-color: var(--warn-line);
   background: var(--warn-tint);
   color: var(--warn);
 }

@@ -66,7 +66,7 @@
         <van-progress
           :percentage="progressPercent"
           :show-pivot="false"
-          color="var(--accent)"
+          color="var(--brand)"
           stroke-width="5"
           track-color="var(--surface-3)"
         />
@@ -191,9 +191,10 @@ import {
   Icon as VanIcon, Button as VanButton, Progress as VanProgress,
   Dialog as VanDialog, Field as VanField, RadioGroup as VanRadioGroup,
   Radio as VanRadio, CheckboxGroup as VanCheckboxGroup, Checkbox as VanCheckbox,
-  showToast,
+  showToast, showDialog,
 } from 'vant'
 import { study, pauseStudy, courses, exam as examApi } from '@/api'
+import { STUDY_SESSION_INVALID_EVENT } from '@/api/http'
 import { useUserStore } from '@/stores/user'
 
 const route = useRoute()
@@ -303,6 +304,50 @@ function safePause() {
 function onBack() {
   safePause()
   router.back()
+}
+
+/** 停止播放、心跳与核验/弹题轮询；会话已失效时不再补发 pause，避免再次触发 409 */
+function stopStudyActivity(sendPause: boolean) {
+  stopHeartbeat()
+  if (popupTimer) {
+    clearInterval(popupTimer)
+    popupTimer = null
+  }
+  if (verifyTimer) {
+    clearInterval(verifyTimer)
+    verifyTimer = null
+  }
+  videoRef.value?.pause()
+  document.removeEventListener('visibilitychange', onVisibilityChange)
+  if (sendPause) safePause()
+}
+
+/** 无站内历史记录时回培训班列表，避免 router.back() 后白屏 */
+function leaveStudy() {
+  const back = (window.history.state as { back?: string | null } | null)?.back
+  if (back) router.back()
+  else router.replace('/projects')
+}
+
+let sessionInvalidHandling = false
+
+/** 后端返回「学习会话已失效」时弹窗退出；同一波并发请求只处理一次，避免弹窗叠层 */
+async function onStudySessionInvalid() {
+  if (sessionInvalidHandling) return
+  sessionInvalidHandling = true
+  sessionId.value = ''
+  stopStudyActivity(false)
+  try {
+    await showDialog({
+      title: '提示',
+      message: '学习会话已失效，请重新进入课程',
+      showCancelButton: false,
+      confirmButtonText: '确定',
+      closeOnPopstate: false,
+    })
+  } finally {
+    leaveStudy()
+  }
 }
 
 function onLoadedMetadata() {
@@ -637,6 +682,8 @@ function openVerify(logId: number, remainingSeconds = 60) {
   verifyLogId.value = logId
   verifyRemaining.value = Math.max(1, Math.floor(remainingSeconds))
   showVerify.value = true
+  // 核验期间后端不计学时且冻结进度，视频若继续播放会被判成拖拽快进
+  videoRef.value?.pause()
   if (verifyTimer) clearInterval(verifyTimer)
   verifyTimer = setInterval(() => {
     verifyRemaining.value--
@@ -869,6 +916,7 @@ onMounted(() => {
   initStudy()
   // Listen for visibility changes
   document.addEventListener('visibilitychange', onVisibilityChange)
+  window.addEventListener(STUDY_SESSION_INVALID_EVENT, onStudySessionInvalid)
 })
 
 // Reload when navigating directly from one course to another
@@ -894,11 +942,8 @@ watch(courseId, async (id, oldId) => {
 })
 
 onBeforeUnmount(() => {
-  stopHeartbeat()
-  if (popupTimer) clearInterval(popupTimer)
-  if (verifyTimer) clearInterval(verifyTimer)
-  safePause()
-  document.removeEventListener('visibilitychange', onVisibilityChange)
+  stopStudyActivity(true)
+  window.removeEventListener(STUDY_SESSION_INVALID_EVENT, onStudySessionInvalid)
 })
 </script>
 

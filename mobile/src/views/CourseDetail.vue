@@ -142,14 +142,14 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   height: 100%;
-  background: linear-gradient(135deg, var(--brand-tint) 0%, #e3ecf4 58%, #f1f5f9 100%);
+  background: linear-gradient(135deg, var(--brand-tint) 0%, #dbe6fb 58%, #eef3fc 100%);
 }
 
 .cover-glyph {
   font-family: var(--font-serif);
   font-size: 88px;
   line-height: 1;
-  color: rgba(79, 109, 143, 0.16);
+  color: rgba(29, 78, 216, 0.16);
 }
 
 /* ---------- 概要 ---------- */

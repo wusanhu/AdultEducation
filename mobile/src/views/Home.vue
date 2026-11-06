@@ -104,7 +104,7 @@
           <van-progress
             :percentage="Math.min(100, Math.round(item.progress || 0))"
             :show-pivot="false"
-            color="var(--accent)"
+            color="var(--brand)"
             stroke-width="4"
             track-color="var(--surface-3)"
           />
@@ -173,7 +173,7 @@ const greetingText = computed(() => {
   return '晚上好'
 })
 
-/** 学分/证书类入口用铜金，其余用墨青，避免宫格出现彩虹色 */
+/** 学分/证书类入口用深蓝强调，其余用主色，避免宫格出现彩虹色 */
 function entryTone(key: string) {
   if (['credits', 'graduate', 'creditApply'].includes(key)) return 'accent'
   if (['monitor', 'exam', 'creditAudit', 'graduateAudit', 'verifyReview'].includes(key)) return 'ink'
@@ -252,7 +252,7 @@ onMounted(async () => {
   overflow: hidden;
   padding: calc(env(safe-area-inset-top) + 24px) var(--page-x) 54px;
   color: var(--ink);
-  background: linear-gradient(180deg, #edf3f9 0%, #f3f6fa 58%, var(--bg) 100%);
+  background: linear-gradient(180deg, #e8eefc 0%, #f1f5fe 58%, var(--bg) 100%);
 }
 
 .hero-ornament {
@@ -262,7 +262,7 @@ onMounted(async () => {
   font-family: var(--font-serif);
   font-size: 96px;
   line-height: 1;
-  color: rgba(79, 109, 143, 0.09);
+  color: rgba(29, 78, 216, 0.09);
   pointer-events: none;
   user-select: none;
 }
@@ -437,7 +437,7 @@ onMounted(async () => {
 
 .entry-hint {
   font-size: 11px;
-  color: var(--ink-4);
+  color: var(--ink-3);
 }
 
 .entry-grid {
@@ -519,7 +519,7 @@ onMounted(async () => {
   height: 68px;
   overflow: hidden;
   border-radius: var(--r-chip);
-  background: linear-gradient(135deg, var(--brand-tint) 0%, #dfe9f3 100%);
+  background: linear-gradient(135deg, var(--brand-tint) 0%, #d5e2fa 100%);
   border: 1px solid var(--brand-line);
 }
 
@@ -677,7 +677,7 @@ onMounted(async () => {
 .notify-time {
   flex: none;
   font-size: 11px;
-  color: var(--ink-4);
+  color: var(--ink-3);
   font-variant-numeric: tabular-nums;
 }
 

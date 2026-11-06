@@ -182,9 +182,15 @@ public class ReportService {
 
         m.put("unreadCount", notificationService.unread(current.getId()));
         m.put("trend", trend(userIds, projectIds, courseIds));
-        m.put("recentGraduate", recentGraduate(userIds, projectIds));
+        // 「近 7 天」区块：毕业学员与学分入账均限定最近一周
+        LocalDateTime weekStart = LocalDateTime.now().minusDays(7);
+        m.put("recentGraduate", recentGraduate(userIds, projectIds, weekStart));
         m.put("recentCredits", credits.stream()
                 .filter(c -> c.getAuditStatus() != null && c.getAuditStatus() == 2)
+                .filter(c -> {
+                    LocalDateTime t = c.getAuditTime() == null ? c.getCreateTime() : c.getAuditTime();
+                    return t != null && !t.isBefore(weekStart);
+                })
                 .sorted((a, b) -> {
                     LocalDateTime x = a.getAuditTime() == null ? a.getCreateTime() : a.getAuditTime();
                     LocalDateTime y = b.getAuditTime() == null ? b.getCreateTime() : b.getAuditTime();
@@ -339,9 +345,11 @@ public class ReportService {
         return result;
     }
 
-    private List<Map<String, Object>> recentGraduate(List<Long> userIds, List<Long> projectIds) {
+    private List<Map<String, Object>> recentGraduate(List<Long> userIds, List<Long> projectIds, LocalDateTime weekStart) {
         List<GraduateFile> files = graduateFiles(userIds, projectIds);
-        return files.stream().sorted((a, b) -> {
+        return files.stream()
+                .filter(f -> f.getGraduateTime() != null && !f.getGraduateTime().isBefore(weekStart))
+                .sorted((a, b) -> {
                     LocalDateTime x = a.getGraduateTime();
                     LocalDateTime y = b.getGraduateTime();
                     return y == null ? 1 : (x == null ? -1 : y.compareTo(x));

@@ -227,9 +227,9 @@ async function onReadAll() {
   color: var(--ink-2);
 }
 .cat-badge--primary { border-color: var(--brand-line); background: var(--brand-tint); color: var(--brand); }
-.cat-badge--success { border-color: #cfe5da; background: var(--ok-tint); color: var(--ok); }
-.cat-badge--warning { border-color: var(--accent-line); background: var(--warn-tint); color: var(--warn); }
-.cat-badge--danger { border-color: #edcfcd; background: var(--bad-tint); color: var(--bad); }
+.cat-badge--success { border-color: var(--ok-line); background: var(--ok-tint); color: var(--ok); }
+.cat-badge--warning { border-color: var(--warn-line); background: var(--warn-tint); color: var(--warn); }
+.cat-badge--danger { border-color: var(--bad-line); background: var(--bad-tint); color: var(--bad); }
 .unread-dot {
   flex: none;
   width: 6px;
@@ -248,7 +248,7 @@ async function onReadAll() {
 .notify-time {
   flex: none;
   font-size: 11px;
-  color: var(--ink-4);
+  color: var(--ink-3);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }

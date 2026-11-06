@@ -251,7 +251,7 @@ onMounted(() => {
   border: 1px solid var(--line);
   border-radius: var(--r-chip);
   background: var(--surface-2);
-  color: var(--ink-4);
+  color: var(--ink-3);
 }
 .verify-thumb img {
   width: 100%;
@@ -297,12 +297,12 @@ onMounted(() => {
   line-height: 1.5;
 }
 .verify-result.is-ok {
-  border-color: #cfe5da;
+  border-color: var(--ok-line);
   background: var(--ok-tint);
   color: var(--ok);
 }
 .verify-result.is-bad {
-  border-color: #edcfcd;
+  border-color: var(--bad-line);
   background: var(--bad-tint);
   color: var(--bad);
 }
@@ -324,7 +324,7 @@ onMounted(() => {
 }
 .verify-fail {
   padding: 6px 10px;
-  border: 1px solid #edcfcd;
+  border: 1px solid var(--bad-line);
   border-radius: var(--r-tag);
   background: var(--bad-tint);
   font-size: 11px;

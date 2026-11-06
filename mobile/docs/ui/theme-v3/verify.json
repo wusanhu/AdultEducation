@@ -1,0 +1,133 @@
+{
+  "study": {
+    "bad": [],
+    "toast": true,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "overflow": false,
+    "hash": "#/study/3"
+  },
+  "course": {
+    "bad": [],
+    "toast": true,
+    "scrollWidth": 390,
+    "innerWidth": 390,
+    "overflow": false,
+    "hash": "#/course/3"
+  },
+  "student": {
+    "home": {
+      "bad": [],
+      "toast": true,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "overflow": false,
+      "hash": "#/"
+    },
+    "projects": {
+      "bad": [],
+      "toast": true,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "overflow": false,
+      "hash": "#/projects"
+    },
+    "credits": {
+      "bad": [],
+      "toast": true,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "overflow": false,
+      "hash": "#/credits"
+    },
+    "profile": {
+      "bad": [],
+      "toast": true,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "overflow": false,
+      "hash": "#/profile"
+    },
+    "studyId": "3",
+    "errors": []
+  },
+  "studentNarrow360": {
+    "home": {
+      "bad": [],
+      "toast": true,
+      "scrollWidth": 360,
+      "innerWidth": 360,
+      "overflow": false,
+      "hash": "#/"
+    },
+    "projects": {
+      "bad": [],
+      "toast": true,
+      "scrollWidth": 360,
+      "innerWidth": 360,
+      "overflow": false,
+      "hash": "#/projects"
+    },
+    "credits": {
+      "bad": [],
+      "toast": true,
+      "scrollWidth": 360,
+      "innerWidth": 360,
+      "overflow": false,
+      "hash": "#/credits"
+    },
+    "profile": {
+      "bad": [],
+      "toast": true,
+      "scrollWidth": 360,
+      "innerWidth": 360,
+      "overflow": false,
+      "hash": "#/profile"
+    }
+  },
+  "leader": {
+    "home": {
+      "bad": [],
+      "toast": true,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "overflow": false,
+      "hash": "#/"
+    },
+    "approvals": {
+      "bad": [],
+      "toast": true,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "overflow": false,
+      "hash": "#/approvals"
+    },
+    "credits": {
+      "bad": [],
+      "toast": true,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "overflow": false,
+      "hash": "#/credits"
+    },
+    "profile": {
+      "bad": [],
+      "toast": true,
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "overflow": false,
+      "hash": "#/profile"
+    },
+    "errors": []
+  },
+  "leaderNarrow360": {
+    "approvals": {
+      "bad": [],
+      "toast": true,
+      "scrollWidth": 360,
+      "innerWidth": 360,
+      "overflow": false,
+      "hash": "#/approvals"
+    }
+  }
+}

@@ -76,19 +76,19 @@ const label = computed(() => entry.value?.label || String(props.status))
 }
 
 .status-tag--success {
-  border-color: #cfe5da;
+  border-color: var(--ok-line);
   background: var(--ok-tint);
   color: var(--ok);
 }
 
 .status-tag--warning {
-  border-color: var(--accent-line);
+  border-color: var(--warn-line);
   background: var(--warn-tint);
   color: var(--warn);
 }
 
 .status-tag--danger {
-  border-color: #edcfcd;
+  border-color: var(--bad-line);
   background: var(--bad-tint);
   color: var(--bad);
 }

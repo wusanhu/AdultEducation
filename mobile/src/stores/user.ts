@@ -14,7 +14,7 @@ export const useUserStore = defineStore('user', () => {
   const mustChangePwd = ref(localStorage.getItem('mobile_must_change') === '1')
 
   const isLoggedIn = computed(() => !!token.value)
-  const caps = computed(() => buildCaps(user.value?.perms))
+  const caps = computed(() => buildCaps(user.value?.perms, user.value?.roleCode))
   const tabs = computed(() => buildTabs(caps.value))
   const entries = computed(() => buildEntries(caps.value))
 

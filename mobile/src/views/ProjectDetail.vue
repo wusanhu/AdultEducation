@@ -261,7 +261,7 @@ onMounted(async () => {
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.2em;
-  color: var(--ink-4);
+  color: var(--ink-3);
 }
 
 .detail-title {

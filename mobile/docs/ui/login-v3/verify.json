@@ -1,0 +1,116 @@
+[
+  {
+    "case": "390x844",
+    "metrics": {
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "scrollWidth": 390,
+      "bodyScrollWidth": 390,
+      "brandHeight": 338,
+      "brandRatio": 40,
+      "sheetTop": 316,
+      "inputHeight": 48,
+      "btnHeight": 48,
+      "clipped": [],
+      "btnColor": "rgb(29, 78, 216)",
+      "docHeight": 901,
+      "footer": {
+        "top": 838,
+        "linkText": "切换至管理端",
+        "linkHref": "http://127.0.0.1:5290/admin/"
+      },
+      "brandBg": "linear-gradient(135deg, rgb(10, 23, 51) 0%, rgb(16, 36, 92) 46%, rgb(20, 58, 168"
+    },
+    "filled": {
+      "user": "student",
+      "pwd": "student123"
+    },
+    "loggedIn": true,
+    "after": {
+      "path": "/m/",
+      "hasBrand": false
+    },
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    ],
+    "bad": [
+      "404 http://127.0.0.1:5290/favicon.ico",
+      "404 http://127.0.0.1:5290/favicon.ico"
+    ]
+  },
+  {
+    "case": "375x812",
+    "metrics": {
+      "viewport": {
+        "w": 375,
+        "h": 812
+      },
+      "scrollWidth": 375,
+      "bodyScrollWidth": 375,
+      "brandHeight": 325,
+      "brandRatio": 40,
+      "sheetTop": 303,
+      "inputHeight": 48,
+      "btnHeight": 48,
+      "clipped": [],
+      "btnColor": "rgb(29, 78, 216)",
+      "docHeight": 889,
+      "footer": {
+        "top": 826,
+        "linkText": "切换至管理端",
+        "linkHref": "http://127.0.0.1:5290/admin/"
+      },
+      "brandBg": "linear-gradient(135deg, rgb(10, 23, 51) 0%, rgb(16, 36, 92) 46%, rgb(20, 58, 168"
+    },
+    "filled": {
+      "user": "student",
+      "pwd": "student123"
+    },
+    "loggedIn": true,
+    "after": {
+      "path": "/m/",
+      "hasBrand": false
+    },
+    "errors": [],
+    "bad": []
+  },
+  {
+    "case": "360x740",
+    "metrics": {
+      "viewport": {
+        "w": 360,
+        "h": 740
+      },
+      "scrollWidth": 360,
+      "bodyScrollWidth": 360,
+      "brandHeight": 304,
+      "brandRatio": 41.1,
+      "sheetTop": 282,
+      "inputHeight": 48,
+      "btnHeight": 48,
+      "clipped": [],
+      "btnColor": "rgb(29, 78, 216)",
+      "docHeight": 867,
+      "footer": {
+        "top": 804,
+        "linkText": "切换至管理端",
+        "linkHref": "http://127.0.0.1:5290/admin/"
+      },
+      "brandBg": "linear-gradient(135deg, rgb(10, 23, 51) 0%, rgb(16, 36, 92) 46%, rgb(20, 58, 168"
+    },
+    "filled": {
+      "user": "student",
+      "pwd": "student123"
+    },
+    "loggedIn": true,
+    "after": {
+      "path": "/m/",
+      "hasBrand": false
+    },
+    "errors": [],
+    "bad": []
+  }
+]

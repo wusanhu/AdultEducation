@@ -211,7 +211,7 @@ async function onLogout() {
   position: relative;
   overflow: hidden;
   padding: calc(env(safe-area-inset-top) + 20px) var(--page-x) var(--sp-2);
-  background: linear-gradient(180deg, #edf3f9 0%, #f3f6fa 66%, var(--bg) 100%);
+  background: linear-gradient(180deg, #e8eefc 0%, #f1f5fe 66%, var(--bg) 100%);
 }
 
 .hero-ornament {
@@ -221,7 +221,7 @@ async function onLogout() {
   font-family: var(--font-serif);
   font-size: 96px;
   line-height: 1;
-  color: rgba(79, 109, 143, 0.09);
+  color: rgba(29, 78, 216, 0.09);
   pointer-events: none;
   user-select: none;
 }
@@ -289,7 +289,7 @@ async function onLogout() {
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.16em;
-  color: var(--ink-4);
+  color: var(--ink-3);
 }
 
 .profile-name {
@@ -375,6 +375,6 @@ async function onLogout() {
   font-size: 14px;
   font-weight: 500;
   background: var(--surface);
-  border-color: #eccfcd;
+  border-color: var(--bad-line);
 }
 </style>

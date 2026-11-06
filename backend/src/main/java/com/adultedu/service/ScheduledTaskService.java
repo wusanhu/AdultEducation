@@ -113,7 +113,7 @@ public class ScheduledTaskService {
         List<CreditRecord> credits = creditMapper.selectList(new LambdaQueryWrapper<CreditRecord>()
                 .eq(CreditRecord::getAuditStatus, 1).lt(CreditRecord::getCreateTime, before));
         for (CreditRecord credit : credits) {
-            for (Long userId : roleUsers("LEADER".equals(credit.getAuditNode()) ? "leader" : "super_admin")) {
+            for (Long userId : roleUsers("leader")) {
                 creditCounts.merge(userId, 1, Integer::sum);
             }
         }
@@ -147,7 +147,7 @@ public class ScheduledTaskService {
                     .stream().map(Course::getCreateUserId).toList());
             return ids.stream().distinct().toList();
         }
-        return roleUsers("LEADER".equals(node) ? "leader" : "super_admin");
+        return roleUsers("leader");
     }
 
     private List<Long> roleUsers(String roleCode) {

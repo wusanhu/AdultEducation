@@ -371,6 +371,8 @@ public class GraduateService {
             writeLog(id, "REJECT", current, node, req.opinion());
             notificationService.sendByTemplate(NotificationTemplates.GRADUATE_REJECTED, apply.getUserId(),
                     Map.of("projectName", project.getProjectName(), "reason", req.opinion()), id);
+            // 办结后清理待办消息，避免审批人点开消息却无审批项
+            notificationService.clearApprovalTodos("/graduate/apply", id);
             return;
         }
         fillAudit(apply, node, current, now, req.opinion());
@@ -393,8 +395,12 @@ public class GraduateService {
             }
             notificationService.sendByTemplate(NotificationTemplates.GRADUATE_APPROVED, apply.getUserId(),
                     Map.of("projectName", project.getProjectName()), id);
+            // 办结后清理待办消息，避免审批人点开消息却无审批项
+            notificationService.clearApprovalTodos("/graduate/apply", id);
             log.info("毕业证书生成: applyId={}, url={}", id, file.getCertificateUrl());
         } else {
+            // 节点流转：先清理上一节点的待办消息，再给下一节点审批人发新待办
+            notificationService.clearApprovalTodos("/graduate/apply", id);
             apply.setCurrentNode(next);
             applyMapper.updateById(apply);
             notifyNode(apply, next, current.getId());
@@ -410,17 +416,10 @@ public class GraduateService {
             apply.setSecondAuditUser(current.getId());
             apply.setSecondAuditTime(now);
             apply.setSecondAuditOpinion(opinion);
-        } else {
-            apply.setFinalAuditUser(current.getId());
-            apply.setFinalAuditTime(now);
-            apply.setFinalAuditOpinion(opinion);
         }
     }
 
     private boolean canAudit(LoginUser current, GraduateApply apply, String node) {
-        if (current.isSuperAdmin()) {
-            return true;
-        }
         if ("TEACHER".equals(node)) {
             return "teacher".equals(current.getRoleCode()) && isProjectTeacher(current.getId(), apply.getProjectId());
         }

@@ -284,10 +284,9 @@ public class StudyService {
             effective = 0;
             reportedPosition = oldPosition;
         }
-        if (!paused || popupPending || pending != null) {
-            // 暂停期间不接受播放进度推进，避免核验/弹窗期间刷进度
-            reportedPosition = oldPosition;
-        }
+        // 暂停期间（弹题/核验/切屏/心跳中断）学时与进度均不计（见上方 effective/progress 逻辑），
+        // 但 lastPosition 如实记录：视频在被暂停前已播放到当前位置，若冻结回旧位置，
+        // 恢复播放后的第一次心跳位置领先量会超过 effective + 5 秒，被误判为拖拽快进锁定记录
         record.setLastPosition(reportedPosition);
         record.setValidDuration(nz(record.getValidDuration()) + effective);
 

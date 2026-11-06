@@ -268,6 +268,32 @@ INSERT IGNORE INTO approval_log (biz_type,biz_id,node,auditor_id,auditor_name,ac
  ('CREDIT',9804,'CREDIT',3,'李静','SUBMIT','参加市级护理技能竞赛获奖折算'),
  ('CREDIT',9804,'CREDIT',2,'张明','APPROVE','获奖材料齐全，同意折算学分');
 
+-- 毕业演示数据：陈思远（student3）已完成 2025 公需科目培训全部课程并获 4 学分（满足 4 分结业要求）
+INSERT IGNORE INTO graduate_apply (id,user_id,project_id,apply_time,current_node,audit_status,credit_snapshot,study_hour_snapshot) VALUES
+ (2,6,3,'2025-12-10 09:00:00','DONE',1,4.00,8.00);
+
+INSERT IGNORE INTO approval_log (biz_type,biz_id,node,auditor_id,auditor_name,action,opinion) VALUES
+ ('GRADUATE',2,'TEACHER',6,'陈思远','SUBMIT','已满足项目学分要求，申请毕业'),
+ ('GRADUATE',2,'TEACHER',3,'李静','APPROVE','学习记录完整，同意初审'),
+ ('GRADUATE',2,'LEADER',2,'张明','APPROVE','学分达标，同意复审'),
+ ('GRADUATE',2,'ADMIN',1,'系统管理员','APPROVE','审核通过，准予毕业');
+
+INSERT IGNORE INTO graduate_file (id,apply_id,user_id,project_id,certificate_no,graduate_time,credit_value) VALUES
+ (9901,2,6,3,'CERT-2025-3-001',DATE_SUB(NOW(), INTERVAL 2 DAY),4.00);
+
+-- 演示数据时间对齐：已发放学分与毕业时间保持在工作台「近 7 天」统计窗口内（每次启动刷新）
+UPDATE credit_record SET audit_time = DATE_SUB(NOW(), INTERVAL 6 DAY) WHERE id = 1;
+UPDATE credit_record SET audit_time = DATE_SUB(NOW(), INTERVAL 5 DAY) WHERE id = 2;
+UPDATE credit_record SET audit_time = DATE_SUB(NOW(), INTERVAL 2 DAY) WHERE id = 3;
+UPDATE credit_record SET audit_time = DATE_SUB(NOW(), INTERVAL 3 DAY) WHERE id = 4;
+UPDATE credit_record SET audit_time = DATE_SUB(NOW(), INTERVAL 6 DAY) WHERE id = 9701;
+UPDATE credit_record SET audit_time = DATE_SUB(NOW(), INTERVAL 5 DAY) WHERE id = 9702;
+UPDATE credit_record SET audit_time = DATE_SUB(NOW(), INTERVAL 3 DAY) WHERE id = 9703;
+UPDATE credit_record SET audit_time = DATE_SUB(NOW(), INTERVAL 2 DAY) WHERE id = 9704;
+UPDATE credit_record SET audit_time = DATE_SUB(NOW(), INTERVAL 4 DAY) WHERE id = 9801;
+UPDATE credit_record SET audit_time = DATE_SUB(NOW(), INTERVAL 1 DAY) WHERE id = 9804;
+UPDATE graduate_file SET graduate_time = DATE_SUB(NOW(), INTERVAL 2 DAY) WHERE id = 9901;
+
 INSERT INTO user_verify_log (user_id,course_id,project_id,study_record_id,trigger_point,verify_time,verify_type,img_url,verify_result,status,similarity,fail_reason,remark)
 SELECT 4,2,1,2,'pct:50','2026-03-03 14:16:00',1,NULL,1,1,0.9312,NULL,'演示：核验通过' FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM user_verify_log v WHERE v.user_id=4 AND v.course_id=2 AND v.verify_time='2026-03-03 14:16:00');
@@ -319,3 +345,12 @@ INSERT IGNORE INTO notification_template (template_code,template_name,type,title
  ('account_created','账号开通通知','ACCOUNT','账号开通通知','您的继续教育平台账号已开通，账号：{username}，初始密码：{password}，首次登录请修改密码。',NULL,NULL,1),
  ('password_reset','密码重置通知','ACCOUNT','密码重置通知','管理员已重置您的登录密码，初始密码为手机号后 6 位，登录后请立即修改。',NULL,NULL,1),
  ('approval_timeout','待办审批超时提醒','APPROVAL','待办审批超时提醒','您有 {count} 项审批事项已超过 24 小时未处理，{detail}，请及时登录平台办理。','/approvals','/credit/audit',1);
+
+-- 存量待办消息清理：审批办结后同步移除对应待办消息（与 CreditService/GraduateService 的 clearApprovalTodos 口径一致）
+-- 除 admin_link 外补充标题匹配，兜底早期无链接的历史消息（如「新的毕业申请待初审」）
+DELETE n FROM notification n JOIN credit_record c ON n.biz_id = c.id
+ WHERE n.type='APPROVAL' AND c.audit_status <> 1
+   AND (n.admin_link='/credit/audit' OR n.title LIKE '%学分补录待%' OR n.title LIKE '%待办审批超时%');
+DELETE n FROM notification n JOIN graduate_apply a ON n.biz_id = a.id
+ WHERE n.type='APPROVAL' AND a.audit_status <> 0
+   AND (n.admin_link='/graduate/apply' OR n.title LIKE '%毕业申请待%');

@@ -228,4 +228,19 @@ public class NotificationService {
         }
         notificationMapper.deleteById(id);
     }
+
+    /**
+     * 审批办结或节点流转后，清理该业务对应的全部待办消息（含各审批人、超时提醒），
+     * 避免“消息还挂在列表里、点进去却没有审批项”的误导。
+     * admin_link 用于区分业务线：/credit/audit=学分补录，/graduate/apply=毕业申请。
+     */
+    public void clearApprovalTodos(String adminLink, Long bizId) {
+        if (bizId == null) {
+            return;
+        }
+        notificationMapper.delete(new LambdaQueryWrapper<Notification>()
+                .eq(Notification::getType, "APPROVAL")
+                .eq(Notification::getBizId, bizId)
+                .eq(Notification::getAdminLink, adminLink));
+    }
 }
